@@ -1,0 +1,242 @@
+﻿<style>
+    body {
+        background: #eef2f7;
+    }
+
+    .dashboard-card {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(0,0,0,.08);
+    }
+
+        .dashboard-card .card-header {
+            background: linear-gradient(90deg,#3b82f6,#2563eb);
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            font-size: 15px;
+        }
+
+    .kpi-card {
+        border-radius: 18px;
+        color: #fff;
+        padding: 22px;
+        text-align: center;
+        transition: .3s;
+        box-shadow: 0 8px 18px rgba(0,0,0,.15);
+    }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .kpi-card h2 {
+            margin-top: 8px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .kpi-card small {
+            opacity: .9;
+            font-size: 14px;
+        }
+
+    .total {
+        background: linear-gradient(135deg,#4f46e5,#6366f1);
+    }
+
+    .success {
+        background: linear-gradient(135deg,#10b981,#34d399);
+    }
+
+    .warning {
+        background: linear-gradient(135deg,#f59e0b,#fbbf24);
+    }
+
+    .info {
+        background: linear-gradient(135deg,#0ea5e9,#38bdf8);
+    }
+
+    .table td,
+    .table th {
+        padding: .55rem;
+    }
+
+    canvas {
+        width: 100% !important;
+    }
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- Top Row -->
+    <div class="row g-3">
+
+        <!-- Meter Summary -->
+        <div class="col-lg-4">
+
+            <div class="card dashboard-card h-100">
+
+                <div class="card-header">
+                    <i class="bi bi-speedometer2"></i>
+                    Meter Summary
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row align-items-center">
+
+                        <div class="col-6">
+
+                            <table class="table table-sm table-borderless mb-0">
+
+                                <tbody>
+
+                                    <tr>
+                                        <td>Allied</td>
+                                        <td class="fw-bold text-primary text-end"
+                                            id="alliedCount">
+                                            0
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Kimbal</td>
+                                        <td class="fw-bold text-success text-end"
+                                            id="kimbalCount">
+                                            0
+                                        </td>
+                                    </tr>
+
+                                    <tr class="border-top">
+                                        <th>Total</th>
+                                        <th class="text-end"
+                                            id="totalMeter">0</th>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                        <div class="col-6">
+
+                            <canvas id="meterTypeChart"
+                                    height="220"></canvas>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="col-lg-8">
+
+            <div class="row g-3">
+
+                <div class="col-md-3">
+
+                    <div class="kpi-card total">
+
+                        <small>Total Meters</small>
+
+                        <h2 id="totalMeters">0</h2>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="kpi-card success">
+
+                        <small>HES Download</small>
+
+                        <h2 id="hesDownload">0</h2>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="kpi-card warning">
+
+                        <small>Not Downloaded</small>
+
+                        <h2 id="manualForwarding">0</h2>
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="kpi-card info">
+
+                        <small>Download %</small>
+
+                        <h2 id="downloadPercentage">0%</h2>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Charts -->
+
+    <div class="row mt-3 g-3">
+
+        <div class="col-lg-6">
+
+            <div class="card dashboard-card">
+
+                <div class="card-header">
+                    Department Distribution
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="departmentChart"
+                            height="250"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-6">
+
+            <div class="card dashboard-card">
+
+                <div class="card-header">
+                    Reading Trend
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="readingTrendChart"
+                            height="250"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

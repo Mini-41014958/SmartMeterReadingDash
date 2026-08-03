@@ -1,22 +1,68 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
 
 body {
-  margin-bottom: 60px;
+    background: #f4f6f9;
+    font-family: "Segoe UI", sans-serif;
+    margin: 0;
+}
+
+.dashboard-header {
+    background: #fff;
+    border-bottom: 1px solid #dcdcdc;
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    margin-right: 15px;
+    border-radius: 6px;
+}
+
+.title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1b2430;
+    margin: 0;
+}
+
+.month {
+    color: #7d8b99;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+    .month::before {
+        content: "•";
+        color: #8fb9b6;
+        margin-right: 8px;
+    }
+
+.generated {
+    text-align: right;
+}
+
+    .generated small {
+        display: block;
+        color: #7c8ba0;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .generated strong {
+        color: #2c3e50;
+        font-size: 12px;
+    }
+
+.page-content {
+    padding: 20px;
 }

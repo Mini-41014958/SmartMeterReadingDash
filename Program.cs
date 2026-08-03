@@ -1,7 +1,14 @@
+using Oracle.ManagedDataAccess.Client;
+using SmartMeterReadingDash.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Add Oracle connection service
+builder.Services.AddScoped<OracleCon>();
+builder.Services.AddScoped<Dashboard>();
 
 var app = builder.Build();
 
@@ -22,6 +29,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Dashboard}/{action=Index}/{id?}");
 
 app.Run();
