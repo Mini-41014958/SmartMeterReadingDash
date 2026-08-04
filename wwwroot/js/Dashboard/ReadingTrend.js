@@ -1,7 +1,12 @@
-﻿async function loadReadingTrend() {
+﻿let readingTrendChart = null;
 
-    const response =
-        await fetch("api/dashboardapi/reading_trend_date_wise");
+async function loadReadingTrend() {
+
+    const response = await fetch("/api/dashboardapi/reading_trend_date_wise");
+
+    if (!response.ok) {
+        throw new Error("Failed to load Reading Trend.");
+    }
 
     const data = await response.json();
 
@@ -18,7 +23,13 @@
 
     const values = data.map(x => x.readingCount);
 
-    new Chart(document.getElementById("readingTrendChart"), {
+    const ctx = document.getElementById("readingTrendChart");
+
+    if (readingTrendChart) {
+        readingTrendChart.destroy();
+    }
+
+    readingTrendChart = new Chart(ctx, {
 
         type: "line",
 
@@ -32,6 +43,9 @@
 
                 data: values,
 
+                borderColor: "#0d6efd",
+                backgroundColor: "#0d6efd",
+
                 fill: false,
 
                 tension: 0.35
@@ -44,11 +58,25 @@
 
             responsive: true,
 
+            maintainAspectRatio: false,
+
             plugins: {
 
                 legend: {
-
                     display: false
+                }
+
+            },
+
+            scales: {
+
+                y: {
+
+                    beginAtZero: true,
+
+                    ticks: {
+                        precision: 0
+                    }
 
                 }
 

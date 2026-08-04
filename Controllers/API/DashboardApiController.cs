@@ -84,5 +84,34 @@ namespace SmartMeterReadingDash.Controllers.API
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
+        [HttpGet("temp-hes-wise-data")]
+        public IActionResult TempGetHESDATA()
+        {
+            try
+            {
+                var tempdata = _dashboard.TempDashBoardHESCount();
+
+                return Ok(tempdata);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+        [HttpGet("temp-hes-failed-wise-data")]
+        public IActionResult TempGetHESDATAFailed()
+        {
+            try
+            {
+                var tempdatafailed = _dashboard.TempHESFailed();
+
+                return Ok(tempdatafailed);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
     } 
 }

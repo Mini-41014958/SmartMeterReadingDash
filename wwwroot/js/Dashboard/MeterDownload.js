@@ -1,40 +1,34 @@
 ﻿async function loadMeterDownloadSummary() {
 
-    try {
+    const [downloadRes, failedRes] = await Promise.all([
+        fetch("/api/dashboardapi/temp-hes-wise-data"),
+        fetch("/api/dashboardapi/temp-hes-failed-wise-data")
+    ]);
 
-        const response = await fetch("api/dashboardapi/meter-download-summary");
+    const download = (await downloadRes.json())[0];
+    const failed = (await failedRes.json())[0];
 
-        if (!response.ok) {
-            throw new Error("Unable to load meter download summary.");
-        }
+    const hesDownload = download.hesDownload;
+    const downloadFailed = failed.hesFailed;
+    const totalMeters = hesDownload + downloadFailed;
 
-        const data = await response.json();
+    const percentage =
+        totalMeters === 0
+            ? 0
+            : (hesDownload / totalMeters) * 100;
 
-        // Total Meter
-        document.getElementById("totalMeters").textContent =
-            data.totalMetersCount.toLocaleString();
+    document.getElementById("totalMeters").textContent =
+        totalMeters.toLocaleString();
 
-        // HES Download
-        document.getElementById("hesDownload").textContent =
-            data.hesDownloadCount.toLocaleString();
+    document.getElementById("hesDownload").textContent =
+        hesDownload.toLocaleString();
 
-        // Manual / Forwarding = Manual + Pending + Mismatch
-        const manualForwarding =
-            data.manualForwardinCount +
-            data.pendingCount +
-            data.mismatchCount;
+    document.getElementById("downloadFailed").textContent =
+        downloadFailed.toLocaleString();
 
-        document.getElementById("manualForwarding").textContent =
-            manualForwarding.toLocaleString();
+    document.getElementById("downloadPercentage").textContent =
+        percentage.toFixed(2) + "%";
 
-        // Download Percentage
-        document.getElementById("downloadPercentage").textContent =
-            data.hesDownloadPercentage.toFixed(1) + "%";
-
-    }
-    catch (error) {
-
-        console.error("Meter Download Summary Error:", error);
-
-    }
+    document.getElementById("summaryDate").textContent =
+        new Date().toLocaleDateString("en-GB");
 }

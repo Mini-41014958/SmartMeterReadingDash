@@ -34,65 +34,56 @@ namespace SmartMeterReadingDash.Services
 
                 string query = @"	
                    SELECT /*+ PARALLEL(8) */
-                        SUM(TOTAL_METERS) AS TOTAL_METERS,
-                        SUM(ALLIED_COUNT) AS ALLIED_COUNT,
-                        SUM(KIMBAL_COUNT) AS KIMBAL_COUNT,
-                        SUM(SLCC_COUNT) AS SLCC_COUNT,
-                        SUM(MLCC_COUNT) AS MLCC_COUNT,
-                        SUM(GCC_COUNT) AS GCC_COUNT,
-                        SUM(KCC_COUNT) AS KCC_COUNT
-                    FROM
-                    (
-                        -- SAP_SLCC_FORMY
-                        SELECT  /*+ PARALLEL(SF,8) */
-                            COUNT(*) AS TOTAL_METERS,
-                            SUM(CASE WHEN SUBSTR(METERNO,1,2) IN ('90','AL') THEN 1 ELSE 0 END) AS ALLIED_COUNT,
-                            SUM(CASE WHEN SUBSTR(METERNO,1,2)='91' THEN 1 ELSE 0 END) AS KIMBAL_COUNT,
-                            SUM(CASE WHEN SAP_DEPARTMENT='SLCC' THEN 1 ELSE 0 END) AS SLCC_COUNT,
-                            0 AS MLCC_COUNT,
-                            0 AS GCC_COUNT,
-                            0 AS KCC_COUNT
-                        FROM RCMPA.SAP_SLCC_FORMY
-                      WHERE SAP_COMPANY = 'BRPL'
-                      AND READING_MONTH = TO_CHAR(SYSDATE,'YYYYMM')
-                      AND SAP_MRO_DOWNLOAD_DATE >= trunc(SYSDATE -1 ,'MM')
-                      AND SAP_MRO_DOWNLOAD_DATE < trunc(SYSDATE)
-                      AND NOT (
-                        TRUNC(SAP_MRO_DOWNLOAD_DATE) = TO_DATE('23/07/2026','DD/MM/YYYY')
-                        AND SAP_DEPARTMENT = 'GCC'
-                    )
-                     AND SAP_MR_REASON_CODE = '01' 
-                      AND CSTS_CD = 'R'
-                      AND METERNO NOT LIKE '%D%'
-                      AND (
-                           (SUBSTR(METERNO,1,2) = '91' AND LENGTH(METERNO)=8)
-                        OR (SUBSTR(METERNO,1,2) = '90' AND LENGTH(METERNO)=8)
-                        OR (SUBSTR(METERNO,1,2) = 'AL' AND LENGTH(METERNO)=10)
-                      )
-                        UNION ALL
-                        -- SAP_FORMY
-                        SELECT /*+ PARALLEL(F,8) */
-                            COUNT(*) AS TOTAL_METERS,
-                            SUM(CASE WHEN SUBSTR(METERNO,1,2) IN ('90','AL') THEN 1 ELSE 0 END),
-                            SUM(CASE WHEN SUBSTR(METERNO,1,2)='91' THEN 1 ELSE 0 END),
-                            SUM(CASE WHEN SAP_DEPARTMENT='SLCC' THEN 1 ELSE 0 END),
-                            SUM(CASE WHEN SAP_DEPARTMENT='MLCC' AND CYCLE<>'0N' THEN 1 ELSE 0 END),
-                            SUM(CASE WHEN SAP_DEPARTMENT='GCC' THEN 1 ELSE 0 END),
-                            SUM(CASE WHEN SAP_DEPARTMENT='MLCC' AND CYCLE='0N' THEN 1 ELSE 0 END)
-                        FROM RCMPA.SAP_FORMY
-                    WHERE SAP_COMPANY = 'BRPL'
-                      AND READING_MONTH = TO_CHAR(SYSDATE,'YYYYMM')
-                      AND SAP_MRO_DOWNLOAD_DATE >= trunc(SYSDATE -1 ,'MM')
-                      AND SAP_MRO_DOWNLOAD_DATE < trunc(SYSDATE)
-                      AND SAP_MRO_DOWNLOAD_DATE <> to_date('23/07/2026','dd/mm/yyyy')
-                      AND SAP_MR_REASON_CODE = '01' 
-                      AND CSTS_CD = 'R'
-                      AND METERNO NOT LIKE '%D%'
-                      AND (
-                           (SUBSTR(METERNO,1,2) = '91' AND LENGTH(METERNO)=8)
-                        OR (SUBSTR(METERNO,1,2) = '90' AND LENGTH(METERNO)=8)
-                        OR (SUBSTR(METERNO,1,2) = 'AL' AND LENGTH(METERNO)=10)
-                    ))
+                    SUM(TOTAL_METERS) AS TOTAL_METERS,
+                    SUM(ALLIED_COUNT) AS ALLIED_COUNT,
+                    SUM(KIMBAL_COUNT) AS KIMBAL_COUNT,
+                    SUM(SLCC_COUNT) AS SLCC_COUNT,
+                    SUM(MLCC_COUNT) AS MLCC_COUNT,
+                    SUM(GCC_COUNT) AS GCC_COUNT,
+                    SUM(KCC_COUNT) AS KCC_COUNT
+                FROM
+                (
+                    -- SAP_SLCC_FORMY
+                    SELECT  /*+ PARALLEL(SF,8) */
+                        COUNT(*) AS TOTAL_METERS,
+                        SUM(CASE WHEN SUBSTR(METERNO,1,2) IN ('90','AL') THEN 1 ELSE 0 END) AS ALLIED_COUNT,
+                        SUM(CASE WHEN SUBSTR(METERNO,1,2)='91' THEN 1 ELSE 0 END) AS KIMBAL_COUNT,
+                        SUM(CASE WHEN SAP_DEPARTMENT='SLCC' THEN 1 ELSE 0 END) AS SLCC_COUNT,
+                        0 AS MLCC_COUNT,
+                        0 AS GCC_COUNT,
+                        0 AS KCC_COUNT
+                    FROM RCMPA.SAP_SLCC_FORMY
+                  WHERE SAP_COMPANY = 'BRPL'
+                  AND READING_MONTH = TO_CHAR(SYSDATE,'YYYYMM')
+                 AND SAP_MR_REASON_CODE = '01' 
+                  AND CSTS_CD = 'R'
+                  AND METERNO NOT LIKE '%D%'
+                  AND (
+                       (SUBSTR(METERNO,1,2) = '91' AND LENGTH(METERNO)=8)
+                    OR (SUBSTR(METERNO,1,2) = '90' AND LENGTH(METERNO)=8)
+                    OR (SUBSTR(METERNO,1,2) = 'AL' AND LENGTH(METERNO)=10)
+                  )
+                    UNION ALL
+                    -- SAP_FORMY
+                    SELECT /*+ PARALLEL(F,8) */
+                        COUNT(*) AS TOTAL_METERS,
+                        SUM(CASE WHEN SUBSTR(METERNO,1,2) IN ('90','AL') THEN 1 ELSE 0 END),
+                        SUM(CASE WHEN SUBSTR(METERNO,1,2)='91' THEN 1 ELSE 0 END),
+                        SUM(CASE WHEN SAP_DEPARTMENT='SLCC' THEN 1 ELSE 0 END),
+                        SUM(CASE WHEN SAP_DEPARTMENT='MLCC' AND CYCLE<>'0N' THEN 1 ELSE 0 END),
+                        SUM(CASE WHEN SAP_DEPARTMENT='GCC' THEN 1 ELSE 0 END),
+                        SUM(CASE WHEN (SAP_DEPARTMENT = 'MLCC' AND CYCLE = '0N') OR CYCLE IN ('KA','KC','KG') THEN 1 ELSE 0 END) 
+                    FROM RCMPA.SAP_FORMY
+                WHERE SAP_COMPANY = 'BRPL'
+                  AND BILLMONTH = TO_CHAR(SYSDATE,'YYYYMM')
+                  AND SAP_MR_REASON_CODE = '01' 
+                  AND CSTS_CD = 'R'
+                  AND METERNO NOT LIKE '%D%'
+                  AND (
+                       (SUBSTR(METERNO,1,2) = '91' AND LENGTH(METERNO)=8)
+                    OR (SUBSTR(METERNO,1,2) = '90' AND LENGTH(METERNO)=8)
+                    OR (SUBSTR(METERNO,1,2) = 'AL' AND LENGTH(METERNO)=10)
+                ))
                     ";
 
                 using (OracleCommand cmd = new OracleCommand(query,con))
@@ -170,12 +161,6 @@ namespace SmartMeterReadingDash.Services
                  FROM RCMPA.SAP_slcc_FORMY
                 WHERE SAP_COMPANY = 'BRPL'
                   AND READING_MONTH = TO_CHAR(SYSDATE, 'YYYYMM')
-                  AND SAP_MRO_DOWNLOAD_DATE >= trunc(SYSDATE - 1,'MM')
-                  AND SAP_MRO_DOWNLOAD_DATE < trunc(SYSDATE)
-                  AND NOT (
-                    TRUNC(SAP_MRO_DOWNLOAD_DATE) = TO_DATE('23/07/2026','DD/MM/YYYY')
-                    AND SAP_DEPARTMENT = 'GCC'
-                )
                 AND SAP_MR_REASON_CODE = '01' 
                   AND CSTS_CD = 'R'
                   AND METERNO NOT LIKE '%D%'
@@ -226,10 +211,7 @@ namespace SmartMeterReadingDash.Services
                         )
                   FROM RCMPA.SAP_FORMY
                 WHERE SAP_COMPANY = 'BRPL'
-                  AND READING_MONTH = TO_CHAR(SYSDATE,'YYYYMM')
-                  AND SAP_MRO_DOWNLOAD_DATE >= TRUNC(SYSDATE - 1,'MM')
-                  AND SAP_MRO_DOWNLOAD_DATE < TRUNC(SYSDATE)
-                  AND SAP_MRO_DOWNLOAD_DATE <> to_date('23/07/2026','dd/mm/yyyy')
+                  AND BILLMONTH = TO_CHAR(SYSDATE,'YYYYMM')
                   AND SAP_MR_REASON_CODE = '01' 
                   AND CSTS_CD = 'R'
                   AND METERNO NOT LIKE '%D%'
@@ -269,91 +251,191 @@ namespace SmartMeterReadingDash.Services
             {
                 con.Open();
                 string query = @"SELECT /*+ PARALLEL(8) */
-                   METERNO,
-                   SAP_DEPARTMENT,
-                   CASE
-                        WHEN SUBSTR(METERNO,1,2) IN ('90','AL') THEN 'ALLIED'
-                        WHEN SUBSTR(METERNO,1,2) = '91' THEN 'KIMBAL'
-                   END AS METER_TYPE,
-                   CASE
-                       WHEN READING_DATE IS NULL THEN 'PENDING'
-                       WHEN MTR_READ_MODE = '1'
-                            AND (NEW_MTR_NO IS NOT NULL
-                              OR MTR_CORR_STS IS NOT NULL
-                              OR MTR_NO_CORR IS NOT NULL)
-                            THEN 'MISMATCH'
-                       WHEN MTR_READ_MODE = '0'
-                            OR (MTR_READ_MODE IS NULL AND READING_DATE IS NOT NULL)
-                            THEN 'MANUAL'
-                   END AS STATUS
-            FROM RCMPA.SAP_SLCC_FORMY
-            WHERE SAP_COMPANY = 'BRPL'
-              AND READING_MONTH = TO_CHAR(SYSDATE,'YYYYMM')
-              AND SAP_MRO_DOWNLOAD_DATE >= TRUNC(SYSDATE-1,'MM')
-              AND SAP_MRO_DOWNLOAD_DATE < TRUNC(SYSDATE)
-              AND NOT (
-                    TRUNC(SAP_MRO_DOWNLOAD_DATE)=TO_DATE('23/07/2026','DD/MM/YYYY')
-                    AND SAP_DEPARTMENT='GCC'
-              )
-              AND SAP_MR_REASON_CODE='01'
-              AND CSTS_CD='R'
-              AND METERNO NOT LIKE '%D%'
-              AND (
-                   (SUBSTR(METERNO,1,2)='91' AND LENGTH(METERNO)=8)
-                OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
-                OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
-              )
-              AND (
-                   READING_DATE IS NULL
-                OR (MTR_READ_MODE='0'
-                    OR (MTR_READ_MODE IS NULL AND READING_DATE IS NOT NULL))
-                OR (MTR_READ_MODE='1'
-                    AND (NEW_MTR_NO IS NOT NULL
-                      OR MTR_CORR_STS IS NOT NULL
-                      OR MTR_NO_CORR IS NOT NULL))
-              )
-            UNION ALL
-            SELECT /*+ PARALLEL(8) */
-                   METERNO,
-                   SAP_DEPARTMENT,
-                   CASE
-                        WHEN SUBSTR(METERNO,1,2) IN ('90','AL') THEN 'ALLIED'
-                        WHEN SUBSTR(METERNO,1,2) = '91' THEN 'KIMBAL'
-                   END AS METER_TYPE,
-                   CASE
-                       WHEN READING_DATE IS NULL THEN 'PENDING'
-                       WHEN MTR_READ_MODE='1'
-                            AND (NEW_MTR_NO IS NOT NULL
-                              OR MTR_CORR_STS IS NOT NULL
-                              OR MTR_NO_CORR IS NOT NULL)
-                            THEN 'MISMATCH'
-                       WHEN MTR_READ_MODE='0'
-                            OR (MTR_READ_MODE IS NULL AND READING_DATE IS NOT NULL)
-                            THEN 'MANUAL'
-                   END AS STATUS
-            FROM RCMPA.SAP_FORMY
-            WHERE SAP_COMPANY='BRPL'
-              AND READING_MONTH=TO_CHAR(SYSDATE,'YYYYMM')
-              AND SAP_MRO_DOWNLOAD_DATE>=TRUNC(SYSDATE-1,'MM')
-              AND SAP_MRO_DOWNLOAD_DATE<TRUNC(SYSDATE)
-              AND SAP_MRO_DOWNLOAD_DATE<>TO_DATE('23/07/2026','DD/MM/YYYY')
-              AND SAP_MR_REASON_CODE='01'
-              AND CSTS_CD='R'
-              AND METERNO NOT LIKE '%D%'
-              AND (
-                   (SUBSTR(METERNO,1,2)='91' AND LENGTH(METERNO)=8)
-                OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
-                OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
-              )
-              AND (
-                   READING_DATE IS NULL
-                OR (MTR_READ_MODE='0'
-                    OR (MTR_READ_MODE IS NULL AND READING_DATE IS NOT NULL))
-                OR (MTR_READ_MODE='1'
-                    AND (NEW_MTR_NO IS NOT NULL
-                      OR MTR_CORR_STS IS NOT NULL
-                      OR MTR_NO_CORR IS NOT NULL))
-              )";
+                            D.METERNO,
+                            D.SAP_DEPARTMENT,
+                            D.METER_TYPE,
+                            D.STATUS,
+                            L.MESSAGE AS SCHEDULER_MESSAGE,
+                            L.ENTRY_DATE,
+
+                            CASE
+
+                                WHEN D.STATUS = 'PENDING'
+                                     AND L.MESSAGE IS NULL
+                                THEN 'Scheduler Not Executed'
+
+                                WHEN D.STATUS = 'PENDING'
+                                     AND L.MESSAGE IS NOT NULL
+                                THEN L.MESSAGE
+
+                                WHEN D.STATUS = 'MANUAL'
+                                     AND L.MESSAGE IS NULL
+                                THEN 'Manual Download Required'
+
+                                WHEN D.STATUS = 'MANUAL'
+                                     AND L.MESSAGE IS NOT NULL
+                                THEN L.MESSAGE
+
+                                WHEN D.STATUS = 'MISMATCH'
+                                THEN 'Meter Number Mismatch'
+
+                                ELSE 'Unknown'
+
+                            END AS REASON
+
+                        FROM
+                        (
+                            SELECT /*+ PARALLEL(8) */
+                                METERNO,
+                                SAP_DEPARTMENT,
+
+                                CASE
+                                    WHEN SUBSTR(METERNO,1,2) IN ('90','AL')
+                                        THEN 'ALLIED'
+                                    WHEN SUBSTR(METERNO,1,2)='91'
+                                        THEN 'KIMBAL'
+                                END AS METER_TYPE,
+
+                                CASE
+                                    WHEN READING_DATE IS NULL
+                                        THEN 'PENDING'
+
+                                    WHEN MTR_READ_MODE='1'
+                                     AND (
+                                            NEW_MTR_NO IS NOT NULL
+                                         OR MTR_CORR_STS IS NOT NULL
+                                         OR MTR_NO_CORR IS NOT NULL
+                                         )
+                                        THEN 'MISMATCH'
+
+                                    WHEN MTR_READ_MODE='0'
+                                      OR (MTR_READ_MODE IS NULL
+                                          AND READING_DATE IS NOT NULL)
+                                        THEN 'MANUAL'
+
+                                END STATUS
+
+                            FROM RCMPA.SAP_SLCC_FORMY
+
+                            WHERE SAP_COMPANY='BRPL'
+                              AND READING_MONTH=TO_CHAR(SYSDATE,'YYYYMM')
+                              AND SAP_MR_REASON_CODE='01'
+                              AND CSTS_CD='R'
+                              AND METERNO NOT LIKE '%D%'
+                              AND
+                              (
+                                   (SUBSTR(METERNO,1,2)='91' AND LENGTH(METERNO)=8)
+                                OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
+                                OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
+                              )
+                              AND
+                              (
+                                   READING_DATE IS NULL
+                                OR MTR_READ_MODE='0'
+                                OR (MTR_READ_MODE IS NULL
+                                    AND READING_DATE IS NOT NULL)
+                                OR (
+                                    MTR_READ_MODE='1'
+                                    AND (
+                                           NEW_MTR_NO IS NOT NULL
+                                        OR MTR_CORR_STS IS NOT NULL
+                                        OR MTR_NO_CORR IS NOT NULL
+                                    )
+                                )
+                              )
+                            UNION ALL
+                            SELECT /*+ PARALLEL(8) */
+                                METERNO,
+                                SAP_DEPARTMENT,
+
+                                CASE
+                                    WHEN SUBSTR(METERNO,1,2) IN ('90','AL')
+                                        THEN 'ALLIED'
+                                    WHEN SUBSTR(METERNO,1,2)='91'
+                                        THEN 'KIMBAL'
+                                END,
+
+                                CASE
+                                    WHEN READING_DATE IS NULL
+                                        THEN 'PENDING'
+
+                                    WHEN MTR_READ_MODE='1'
+                                     AND (
+                                            NEW_MTR_NO IS NOT NULL
+                                         OR MTR_CORR_STS IS NOT NULL
+                                         OR MTR_NO_CORR IS NOT NULL
+                                         )
+                                        THEN 'MISMATCH'
+
+                                    WHEN MTR_READ_MODE='0'
+                                      OR (MTR_READ_MODE IS NULL
+                                          AND READING_DATE IS NOT NULL)
+                                        THEN 'MANUAL'
+                                END
+
+                            FROM RCMPA.SAP_FORMY
+
+                            WHERE SAP_COMPANY='BRPL'
+                              AND BILLMONTH=TO_CHAR(SYSDATE,'YYYYMM')
+                              AND SAP_MR_REASON_CODE='01'
+                              AND CSTS_CD='R'
+                              AND METERNO NOT LIKE '%D%'
+                              AND
+                              (
+                                   (SUBSTR(METERNO,1,2)='91' AND LENGTH(METERNO)=8)
+                                OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
+                                OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
+                              )
+                              AND
+                              (
+                                   READING_DATE IS NULL
+                                OR MTR_READ_MODE='0'
+                                OR (MTR_READ_MODE IS NULL
+                                    AND READING_DATE IS NOT NULL)
+                                OR (
+                                    MTR_READ_MODE='1'
+                                    AND (
+                                           NEW_MTR_NO IS NOT NULL
+                                        OR MTR_CORR_STS IS NOT NULL
+                                        OR MTR_NO_CORR IS NOT NULL
+                                    )
+                                )
+                              )
+
+                        ) D
+
+                        LEFT JOIN
+                        (
+                            SELECT /*+ PARALLEL(8) */
+                                METERNO,
+                                MESSAGE,
+                                ENTRY_DATE,
+                                ROW_NUMBER() OVER
+                                (
+                                    PARTITION BY METERNO
+                                    ORDER BY ENTRY_DATE DESC
+                                ) RN
+
+                            FROM RCMPA.SMART_METER_SCHEDULER_LOGS
+
+                            WHERE READING_MONTH=TO_CHAR(SYSDATE,'YYYYMM')
+
+                        ) L
+
+                        ON L.METERNO =
+                        CASE
+                            WHEN SUBSTR(D.METERNO,1,2) = '91'
+                            THEN 'AL' || D.METERNO
+                            ELSE D.METERNO
+                        END
+                        AND L.RN = 1
+
+                        AND L.RN=1
+
+                        ORDER BY
+                        D.SAP_DEPARTMENT,
+                        D.STATUS,
+                        D.METERNO";
 
                 using(OracleCommand cmd  = new OracleCommand(query,con))
                 {
@@ -366,8 +448,10 @@ namespace SmartMeterReadingDash.Services
                                 MeterNumber = dr["METERNO"].ToString(),
                                 SapDepartment = dr["SAP_DEPARTMENT"].ToString(),
                                 MeterType = dr["METER_TYPE"].ToString(),
-                                Status = dr["STATUS"].ToString()
-                                
+                                Status = dr["STATUS"].ToString(),
+                                SchedulerMessage = dr["SCHEDULER_MESSAGE"] == DBNull.Value ? null : dr["REASON"].ToString(),
+                                EntryDate = dr["ENTRY_DATE"] == DBNull.Value ? null : Convert.ToDateTime(dr["ENTRY_DATE"])
+
                             });
                         }
                     }
@@ -401,10 +485,6 @@ namespace SmartMeterReadingDash.Services
                         OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
                       )
                       AND CSTS_CD = 'R'
-                      AND NOT (
-                            TRUNC(SAP_MRO_DOWNLOAD_DATE) = TO_DATE('23/07/2026','DD/MM/YYYY')
-                            AND SAP_DEPARTMENT = 'GCC'
-                      )
                     UNION ALL
                     SELECT /*+ PARALLEL(F,8) */ READING_DATE
                     FROM RCMPA.SAP_FORMY
@@ -418,10 +498,6 @@ namespace SmartMeterReadingDash.Services
                         OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
                       )
                       AND CSTS_CD = 'R'
-                      AND NOT (
-                            TRUNC(SAP_MRO_DOWNLOAD_DATE) = TO_DATE('23/07/2026','DD/MM/YYYY')
-                            AND SAP_DEPARTMENT = 'GCC'
-                      )
                 )
                 GROUP BY READING_DATE
                 ORDER BY READING_DATE
@@ -449,18 +525,17 @@ namespace SmartMeterReadingDash.Services
             using(OracleConnection conn = _db.GetConnection())
             {
                 conn.Open();
-                string query = @"
-                    SELECT /*+ PARALLEL(8) */
+                string query = @"SELECT  /*+ PARALLEL(8) */
                     DEPARTMENT,
-                    SUM(TOTAL_METERS)    AS TOTAL_METERS,
-                    SUM(HES_DOWNLOAD)    AS HES_DOWNLOAD,
-                    SUM(MANUAL)          AS MANUAL,
-                    SUM(PENDING)         AS PENDING,
-                    SUM(MISMATCH)        AS MISMATCH,
+                    SUM(TOTAL_METERS) AS TOTAL_METERS,
+                    SUM(HES_DOWNLOAD) AS HES_DOWNLOAD,
+                    SUM(MANUAL) AS MANUAL,
+                    SUM(PENDING) AS PENDING,
+                    SUM(MISMATCH) AS MISMATCH,
                     SUM(MANUAL + MISMATCH) AS NON_COMMUNICATION
                 FROM
                 (
-                    SELECT /*+ PARALLEL(SF,8) */
+                    SELECT/*+ PARALLEL(SF,8) */
                         SAP_DEPARTMENT AS DEPARTMENT,
                         COUNT(*) AS TOTAL_METERS,
                         SUM(CASE
@@ -490,26 +565,26 @@ namespace SmartMeterReadingDash.Services
                     FROM RCMPA.SAP_SLCC_FORMY
                     WHERE SAP_COMPANY='BRPL'
                       AND READING_MONTH=TO_CHAR(SYSDATE,'YYYYMM')
-                      AND SAP_MRO_DOWNLOAD_DATE>=TRUNC(SYSDATE-1,'MM')
-                      AND SAP_MRO_DOWNLOAD_DATE<TRUNC(SYSDATE)
-                      AND NOT (
-                            TRUNC(SAP_MRO_DOWNLOAD_DATE)=TO_DATE('23/07/2026','DD/MM/YYYY')
-                        AND SAP_DEPARTMENT='GCC'
-                      )
                       AND SAP_MR_REASON_CODE='01'
                       AND CSTS_CD='R'
                       AND METERNO NOT LIKE '%D%'
                       AND (
-                           (SUBSTR(METERNO,1,2)='91' AND LENGTH(METERNO)=8)
-                        OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
-                        OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
+                            (SUBSTR(METERNO,1,2)='91' AND LENGTH(METERNO)=8)
+                         OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
+                         OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
                       )
                     GROUP BY SAP_DEPARTMENT
                     UNION ALL
                     SELECT /*+ PARALLEL(F,8) */
                         CASE
-                            WHEN SAP_DEPARTMENT='MLCC' AND CYCLE='0N' THEN 'KCC'
-                            WHEN SAP_DEPARTMENT='MLCC' THEN 'MLCC'
+                            WHEN SAP_DEPARTMENT='MLCC'
+                             AND CYCLE NOT IN ('0N')
+                                THEN 'MLCC'
+                            WHEN SAP_DEPARTMENT='GCC'
+                                THEN 'GCC'
+                            WHEN (SAP_DEPARTMENT='MLCC' AND CYCLE='0N')
+                              OR CYCLE IN ('KA','KC','KG')
+                                THEN 'KCC'
                             ELSE SAP_DEPARTMENT
                         END AS DEPARTMENT,
                         COUNT(*) AS TOTAL_METERS,
@@ -517,17 +592,17 @@ namespace SmartMeterReadingDash.Services
                                 WHEN MTR_READ_MODE='1'
                                  AND USER_ID LIKE 'HES%'
                                 THEN 1 ELSE 0
-                            END),
+                            END) AS HES_DOWNLOAD,
                         SUM(CASE
                                 WHEN MTR_READ_MODE='0'
                                   OR (MTR_READ_MODE IS NULL
                                       AND READING_DATE IS NOT NULL)
                                 THEN 1 ELSE 0
-                            END),
+                            END) AS MANUAL,
                         SUM(CASE
                                 WHEN READING_DATE IS NULL
                                 THEN 1 ELSE 0
-                            END),
+                            END) AS PENDING,
                         SUM(CASE
                                 WHEN MTR_READ_MODE='1'
                                  AND (
@@ -536,25 +611,28 @@ namespace SmartMeterReadingDash.Services
                                      OR MTR_NO_CORR IS NOT NULL
                                  )
                                 THEN 1 ELSE 0
-                            END)
+                            END) AS MISMATCH
                     FROM RCMPA.SAP_FORMY
                     WHERE SAP_COMPANY='BRPL'
-                      AND READING_MONTH=TO_CHAR(SYSDATE,'YYYYMM')
-                      AND SAP_MRO_DOWNLOAD_DATE>=TRUNC(SYSDATE-1,'MM')
-                      AND SAP_MRO_DOWNLOAD_DATE<TRUNC(SYSDATE)
-                      AND SAP_MRO_DOWNLOAD_DATE<>TO_DATE('23/07/2026','DD/MM/YYYY')
+                      AND BILLMONTH=TO_CHAR(SYSDATE,'YYYYMM')
                       AND SAP_MR_REASON_CODE='01'
                       AND CSTS_CD='R'
                       AND METERNO NOT LIKE '%D%'
                       AND (
-                           (SUBSTR(METERNO,1,2)='91' AND LENGTH(METERNO)=8)
-                        OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
-                        OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
+                            (SUBSTR(METERNO,1,2)='91' AND LENGTH(METERNO)=8)
+                         OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
+                         OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
                       )
                     GROUP BY
                         CASE
-                            WHEN SAP_DEPARTMENT='MLCC' AND CYCLE='0N' THEN 'KCC'
-                            WHEN SAP_DEPARTMENT='MLCC' THEN 'MLCC'
+                            WHEN SAP_DEPARTMENT='MLCC'
+                             AND CYCLE NOT IN ('0N')
+                                THEN 'MLCC'
+                            WHEN SAP_DEPARTMENT='GCC'
+                                THEN 'GCC'
+                            WHEN (SAP_DEPARTMENT='MLCC' AND CYCLE='0N')
+                              OR CYCLE IN ('KA','KC','KG')
+                                THEN 'KCC'
                             ELSE SAP_DEPARTMENT
                         END
                 )
@@ -575,6 +653,135 @@ namespace SmartMeterReadingDash.Services
                                 Pending = Convert.ToInt32(dr["PENDING"]),
                                 Mismatch = Convert.ToInt32(dr["MISMATCH"]),
                                 NonCom = Convert.ToInt32(dr["NON_COMMUNICATION"])
+                            });
+                        }
+                    }
+                }
+            }
+            return departmentWiseData;
+        }
+
+        public List<TempDashHesDownload> TempDashBoardHESCount()
+        {
+            List<TempDashHesDownload> departmentWiseData = new List<TempDashHesDownload>();
+            using (OracleConnection conn = _db.GetConnection())
+            {
+                conn.Open();
+                string query = @"SELECT /*+ PARALLEL(8) */
+                    SUM(HES_DOWNLOAD) AS HES_DOWNLOAD,
+                    SUM(ALLIED_COUNT) AS ALLIED_COUNT,
+                    SUM(KIMBAL_COUNT) AS KIMBAL_COUNT,
+                    SUM(SLCC_COUNT) AS SLCC_COUNT,
+                    SUM(MLCC_COUNT) AS MLCC_COUNT,
+                    SUM(GCC_COUNT) AS GCC_COUNT,
+                    SUM(KCC_COUNT) AS KCC_COUNT
+                FROM
+                (
+                    -- SAP_SLCC_FORMY
+                    SELECT  /*+ PARALLEL(SF,8) */
+                        COUNT(*) AS HES_DOWNLOAD,
+                        SUM(CASE WHEN SUBSTR(METERNO,1,2) IN ('90','AL') THEN 1 ELSE 0 END) AS ALLIED_COUNT,
+                        SUM(CASE WHEN SUBSTR(METERNO,1,2)='91' THEN 1 ELSE 0 END) AS KIMBAL_COUNT,
+                        --SUM(CASE WHEN SAP_DEPARTMENT='SLCC' THEN 1 ELSE 0 END) AS SLCC_COUNT,
+                        SUM(CASE WHEN (SAP_DEPARTMENT='SLCC' OR SAP_DEPARTMENT IS NULL) THEN 1 ELSE 0 END) AS SLCC_COUNT,
+                        SUM(CASE WHEN SAP_DEPARTMENT='MLCC' AND CYCLE<>'0N' THEN 1 ELSE 0 END) AS MLCC_COUNT,
+                        SUM(CASE WHEN SAP_DEPARTMENT='GCC' THEN 1 ELSE 0 END) AS GCC_COUNT,
+                        SUM(CASE WHEN (SAP_DEPARTMENT = 'MLCC' AND CYCLE = '0N') OR CYCLE IN ('KA','KC','KG') THEN 1 ELSE 0 END) AS KCC_COUNT
+                    FROM RCMPA.SMART_METER_BILLING_DATA
+                  WHERE --SAP_COMPANY = 'BRPL'
+                  --AND READING_MONTH = TO_CHAR(SYSDATE,'YYYYMM')
+                 --AND SAP_MR_REASON_CODE = '01' 
+                  --AND CSTS_CD = 'R'
+                  --AND METERNO NOT LIKE '%D%'
+                  (
+                       (SUBSTR(METERNO,1,2) = '91' AND LENGTH(METERNO)=8)
+                    OR (SUBSTR(METERNO,1,2) = '90' AND LENGTH(METERNO)=8)
+                    OR (SUBSTR(METERNO,1,2) = 'AL' AND LENGTH(METERNO)=10)
+                  )
+                  )
+  
+                 ";
+                using (OracleCommand cmd = new OracleCommand(query, conn))
+                {
+                    using (OracleDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            departmentWiseData.Add(new TempDashHesDownload
+                            {
+                               HesDownload = dr["HES_DOWNLOAD"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_DOWNLOAD"]),
+                               AlliedCount = dr["ALLIED_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["ALLIED_COUNT"]),
+                               KimbalCount = dr["KIMBAL_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KIMBAL_COUNT"]),
+                               SLCCount = dr["SLCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["SLCC_COUNT"]),
+                               MLCCCount = dr["MLCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["MLCC_COUNT"]),
+                               KCCount = dr["KCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KCC_COUNT"]),
+                               GCCount = dr["GCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["GCC_COUNT"])
+                            });
+                        }
+                    }
+                }
+            }
+            return departmentWiseData;
+        }
+
+        public List<TempDashHesFailed> TempHESFailed()
+        {
+            List<TempDashHesFailed> departmentWiseData = new List<TempDashHesFailed>();
+            using (OracleConnection conn = _db.GetConnection())
+            {
+                conn.Open();
+                string query = @"SELECT
+                        COUNT(DISTINCT METERNO) AS HES_FAILED,
+                        COUNT(DISTINCT CASE
+                            WHEN SUBSTR(METERNO,1,2) IN ('90','AL')
+                            THEN METERNO
+                        END) AS ALLIED_COUNT,
+                        COUNT(DISTINCT CASE
+                            WHEN SUBSTR(METERNO,1,2) = '91'
+                            THEN METERNO
+                        END) AS KIMBAL_COUNT,
+                        COUNT(DISTINCT CASE
+                            WHEN SAP_DEPARTMENT = 'SLCC'
+                              OR SAP_DEPARTMENT IS NULL
+                            THEN METERNO
+                        END) AS SLCC_COUNT,
+                        COUNT(DISTINCT CASE
+                            WHEN SAP_DEPARTMENT = 'MLCC'
+                             AND CYCLE <> '0N'
+                            THEN METERNO
+                        END) AS MLCC_COUNT,
+                        COUNT(DISTINCT CASE
+                            WHEN SAP_DEPARTMENT = 'GCC'
+                            THEN METERNO
+                        END) AS GCC_COUNT,
+                        COUNT(DISTINCT CASE
+                            WHEN (SAP_DEPARTMENT = 'MLCC' AND CYCLE = '0N')
+                              OR CYCLE IN ('KA','KC','KG')
+                            THEN METERNO
+                        END) AS KCC_COUNT
+                    FROM RCMPA.SMART_METER_SCHEDULER_LOGS
+                    WHERE
+                    (
+                           (SUBSTR(METERNO,1,2)='91' AND LENGTH(METERNO)=8)
+                        OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
+                        OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
+                    )
+                    AND MESSAGE NOT LIKE 'Data%'";
+                using (OracleCommand cmd = new OracleCommand(query, conn))
+                {
+                    using (OracleDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            departmentWiseData.Add(new TempDashHesFailed
+                            {
+                                HesFailed = dr["HES_FAILED"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_FAILED"]),
+                                AlliedCount = dr["ALLIED_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["ALLIED_COUNT"]),
+                                KimbalCount = dr["KIMBAL_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KIMBAL_COUNT"]),
+                                SLCCount = dr["SLCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["SLCC_COUNT"]),
+                                MLCCCount = dr["MLCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["MLCC_COUNT"]),
+                                KCCount = dr["KCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KCC_COUNT"]),
+                                GCCount = dr["GCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["GCC_COUNT"])
                             });
                         }
                     }

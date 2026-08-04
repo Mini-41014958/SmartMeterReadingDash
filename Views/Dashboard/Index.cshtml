@@ -1,130 +1,107 @@
-﻿<style>
-    body {
-        background: #eef2f7;
-    }
+﻿
+ <link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
+<div id="dashboardSkeleton">
 
-    .dashboard-card {
-        border: none;
-        border-radius: 18px;
-        overflow: hidden;
-        box-shadow: 0 10px 25px rgba(0,0,0,.08);
-    }
-
-        .dashboard-card .card-header {
-            background: linear-gradient(90deg,#3b82f6,#2563eb);
-            color: #fff;
-            font-weight: 600;
-            border: none;
-            font-size: 15px;
-        }
-
-    .kpi-card {
-        border-radius: 18px;
-        color: #fff;
-        padding: 22px;
-        text-align: center;
-        transition: .3s;
-        box-shadow: 0 8px 18px rgba(0,0,0,.15);
-    }
-
-        .kpi-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .kpi-card h2 {
-            margin-top: 8px;
-            font-size: 32px;
-            font-weight: 700;
-        }
-
-        .kpi-card small {
-            opacity: .9;
-            font-size: 14px;
-        }
-
-    .total {
-        background: linear-gradient(135deg,#4f46e5,#6366f1);
-    }
-
-    .success {
-        background: linear-gradient(135deg,#10b981,#34d399);
-    }
-
-    .warning {
-        background: linear-gradient(135deg,#f59e0b,#fbbf24);
-    }
-
-    .info {
-        background: linear-gradient(135deg,#0ea5e9,#38bdf8);
-    }
-
-    .table td,
-    .table th {
-        padding: .55rem;
-    }
-
-    canvas {
-        width: 100% !important;
-    }
-</style>
-
-<div class="container-fluid py-3">
-
-    <!-- Top Row -->
+    <!-- Skeleton cards -->
     <div class="row g-3">
 
-        <!-- Meter Summary -->
         <div class="col-lg-4">
+            <div class="card p-3">
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-line mt-3"></div>
+                <div class="skeleton skeleton-line"></div>
+                <div class="skeleton skeleton-circle mx-auto mt-3"></div>
+            </div>
+        </div>
 
-            <div class="card dashboard-card h-100">
+        <div class="col-lg-8">
+            <div class="card p-3">
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-table mt-3"></div>
+            </div>
+        </div>
 
-                <div class="card-header">
-                    <i class="bi bi-speedometer2"></i>
-                    Meter Summary
-                </div>
+    </div>
 
-                <div class="card-body">
+    <div class="row mt-3">
 
-                    <div class="row align-items-center">
+        <div class="col-lg-6">
+            <div class="card p-3">
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-chart mt-3"></div>
+            </div>
+        </div>
 
-                        <div class="col-6">
+        <div class="col-lg-6">
+            <div class="card p-3">
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-chart mt-3"></div>
+            </div>
+        </div>
 
-                            <table class="table table-sm table-borderless mb-0">
+    </div>
 
-                                <tbody>
+</div>
 
-                                    <tr>
-                                        <td>Allied</td>
-                                        <td class="fw-bold text-primary text-end"
-                                            id="alliedCount">
-                                            0
-                                        </td>
-                                    </tr>
+<div id="dashboardContent" style="display:none;">
 
-                                    <tr>
-                                        <td>Kimbal</td>
-                                        <td class="fw-bold text-success text-end"
-                                            id="kimbalCount">
-                                            0
-                                        </td>
-                                    </tr>
+  <div class="container-fluid py-3">
+    <!-- Top Row -->
+    <div class="row g-3 ">
+            <!-- Meter Summary -->
+            <div class="col-lg-4">
 
-                                    <tr class="border-top">
-                                        <th>Total</th>
-                                        <th class="text-end"
-                                            id="totalMeter">0</th>
-                                    </tr>
+                <div class="card dashboard-card h-100">
 
-                                </tbody>
+                    <div class="card-header">
+                        <i class="bi bi-speedometer2"></i>
+                        Meter Summary
+                    </div>
 
-                            </table>
+                    <div class="card-body">
 
-                        </div>
+                        <div class="row align-items-center">
 
-                        <div class="col-6">
+                            <div class="col-6">
 
-                            <canvas id="meterTypeChart"
-                                    height="220"></canvas>
+                                <table class="table table-sm table-borderless mb-0">
+
+                                    <tbody>
+
+                                        <tr>
+                                            <td>Allied</td>
+                                            <td class="fw-bold text-primary text-end"
+                                                id="alliedCount">
+                                                0
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td>Kimbal</td>
+                                            <td class="fw-bold text-success text-end"
+                                                id="kimbalCount">
+                                                0
+                                            </td>
+                                        </tr>
+
+                                        <tr class="border-top">
+                                            <th>Total</th>
+                                            <th class="text-end"
+                                                id="totalMeter">0</th>
+                                        </tr>
+
+                                    </tbody>
+
+                                </table>
+
+                            </div>
+
+                            <div class="col-6">
+
+                                <canvas id="meterTypeChart"
+                                        height="220"></canvas>
+
+                            </div>
 
                         </div>
 
@@ -134,58 +111,61 @@
 
             </div>
 
-        </div>
-
-        <!-- KPI Cards -->
+        <!-- Meter Received -->
         <div class="col-lg-8">
 
-            <div class="row g-3">
+            <div class="card dashboard-card h-100">
 
-                <div class="col-md-3">
-
-                    <div class="kpi-card total">
-
-                        <small>Total Meters</small>
-
-                        <h2 id="totalMeters">0</h2>
-
-                    </div>
-
+                <div class="card-header">
+                    <i class="bi bi-download"></i>
+                    Meter Received in MRO
                 </div>
 
-                <div class="col-md-3">
+                <div class="card-body d-flex flex-column justify-content-center">
 
-                    <div class="kpi-card success">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
 
-                        <small>HES Download</small>
+                        <small class="text-muted">
+                            Till Date <span id="summaryDate"></span>
+                        </small>
 
-                        <h2 id="hesDownload">0</h2>
-
-                    </div>
-
-                </div>
-
-                <div class="col-md-3">
-
-                    <div class="kpi-card warning">
-
-                        <small>Not Downloaded</small>
-
-                        <h2 id="manualForwarding">0</h2>
+                        <button class="btn btn-sm btn-primary"
+                                id="btnViewDownloadDetails">
+                            <i class="bi bi-table"></i> View Details
+                        </button>
 
                     </div>
 
-                </div>
+                    <table class="table table-borderless text-center align-middle mb-0">
 
-                <div class="col-md-3">
+                        <thead class="table-light">
 
-                    <div class="kpi-card info">
+                            <tr>
+                                <th>Total</th>
+                                <th>HES Download</th>
+                                <th>Download Failed</th>
+                                <th>Download %</th>
+                            </tr>
 
-                        <small>Download %</small>
+                        </thead>
 
-                        <h2 id="downloadPercentage">0%</h2>
+                        <tbody>
 
-                    </div>
+                            <tr>
+
+                                <td class="fw-bold fs-2" id="totalMeters">0</td>
+
+                                <td class="fw-bold fs-2 text-success" id="hesDownload">0</td>
+
+                                <td class="fw-bold fs-2 text-danger" id="downloadFailed">0</td>
+
+                                <td class="fw-bold fs-2 text-primary" id="downloadPercentage">0%</td>
+
+                            </tr>
+
+                        </tbody>
+
+                    </table>
 
                 </div>
 
@@ -197,7 +177,7 @@
 
     <!-- Charts -->
 
-    <div class="row mt-3 g-3">
+    <div class="row mt-3 g-2">
 
         <div class="col-lg-6">
 
@@ -210,7 +190,7 @@
                 <div class="card-body">
 
                     <canvas id="departmentChart"
-                            height="250"></canvas>
+                            height="220"></canvas>
 
                 </div>
 
@@ -229,7 +209,7 @@
                 <div class="card-body">
 
                     <canvas id="readingTrendChart"
-                            height="250"></canvas>
+                            height="220"></canvas>
 
                 </div>
 
@@ -240,3 +220,316 @@
     </div>
 
 </div>
+
+</div>
+
+@* detailed summary  *@
+<div class="modal fade"
+     id="downloadSummaryModal"
+     tabindex="-1">
+
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Meter Download Detailed Summary
+                </h5>
+
+                <button class="btn-close"
+                        data-bs-dismiss="modal"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row mb-3">
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Department</label>
+                        <select id="departmentFilter" class="form-select">
+                            <option value="">All Departments</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Status</label>
+                        <select id="statusFilter" class="form-select">
+                            <option value="">All Status</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <table id="downloadSummaryTable"
+                       class="table table-bordered table-striped table-hover w-100">
+
+                    <thead class="table-light">
+
+                        <tr>
+                            <th>Meter No</th>
+                            <th>Department</th>
+                            <th>Meter Type</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                            <th>Entry Date</th>
+                        </tr>
+
+                    </thead>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- 1. jQuery FIRST -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- 3. DataTables -->
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+<script>
+      let downloadTable;
+
+// Department Filter (bind only once)
+$(document).on("change", "#departmentFilter", function () {
+
+    if (!downloadTable)
+        return;
+
+    var department = $(this).val();
+
+    downloadTable
+        .column(1)
+        .search(
+            department ? '^' + department + '$' : '',
+            true,
+            false
+        )
+        .draw();
+
+});
+$(document).on("change", "#statusFilter", function () {
+
+    if (!downloadTable) return;
+
+    downloadTable
+        .column(3)          // Status column
+        .search($(this).val() ? '^' + $(this).val() + '$' : '', true, false)
+        .draw();
+
+});
+// View Details Button
+$("#btnViewDownloadDetails").on("click", function () {
+
+    const modal = new bootstrap.Modal(
+        document.getElementById("downloadSummaryModal")
+    );
+
+    modal.show();
+
+    // Already initialized
+    if ($.fn.DataTable.isDataTable("#downloadSummaryTable")) {
+
+        downloadTable.ajax.reload(null, false);
+
+        setTimeout(function () {
+            downloadTable.columns.adjust().responsive.recalc();
+        }, 200);
+
+        return;
+    }
+
+    // Create DataTable
+    downloadTable = $("#downloadSummaryTable").DataTable({
+
+        processing: true,
+        destroy: true,
+        autoWidth: false,
+        responsive: true,
+
+        ajax: {
+            url: "/api/dashboardapi/meter-download-detailed-summary",
+            dataSrc: ""
+        },
+
+        columns: [
+
+            {
+                data: "meterNumber",
+                width: "15%"
+            },
+
+            {
+                data: "sapDepartment",
+                width: "15%"
+            },
+
+            {
+                data: "meterType",
+                width: "12%"
+            },
+
+            {
+                data: "status",
+                width: "12%",
+                className: "text-center",
+                render: function (data) {
+
+                    switch (data) {
+
+                        case "PENDING":
+                            return '<span class="badge bg-warning text-dark">Pending</span>';
+
+                        case "MANUAL":
+                            return '<span class="badge bg-primary">Manual</span>';
+
+                        case "MISMATCH":
+                            return '<span class="badge bg-danger">Mismatch</span>';
+
+                        default:
+                            return '<span class="badge bg-secondary">' + data + '</span>';
+                    }
+                }
+            },
+
+            {
+                data: "schedulerMessage",
+                width: "31%",
+                render: function (data) {
+
+                    return data
+                        ? data
+                        : '<span class="text-muted">--</span>';
+                }
+            },
+
+            {
+                data: "entryDate",
+                width: "15%",
+                render: function (data) {
+
+                    if (!data)
+                        return "--";
+
+                    const dt = new Date(data);
+
+                    if (dt.getFullYear() === 1)
+                        return "--";
+
+                    return dt.toLocaleString("en-GB");
+                }
+            }
+
+        ],
+
+        pageLength: 25,
+
+        scrollY: "500px",
+        scrollCollapse: true,
+
+        fixedHeader: true,
+
+        dom:
+            "<'row mb-2'<'col-md-6'B><'col-md-6'f>>" +
+            "rt" +
+            "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
+
+        buttons: [
+
+            {
+                extend: "copy",
+                className: "btn btn-secondary btn-sm"
+            },
+
+            {
+                extend: "excel",
+                className: "btn btn-success btn-sm",
+                title: "Meter Download Detailed Summary"
+            },
+
+            {
+                extend: "csv",
+                className: "btn btn-info btn-sm",
+                title: "Meter Download Detailed Summary"
+            },
+
+            {
+                extend: "print",
+                className: "btn btn-primary btn-sm",
+                title: "Meter Download Detailed Summary"
+            }
+
+        ],
+
+    initComplete: function () {
+
+    var api = this.api();
+
+    var dept = $("#departmentFilter");
+
+    dept.empty();
+
+    dept.append('<option value="">All Departments</option>');
+
+    api.column(1)
+        .data()
+        .unique()
+        .sort()
+        .each(function (d) {
+
+            dept.append(
+                '<option value="' + d + '">' + d + '</option>'
+            );
+
+        });
+
+    var status = $("#statusFilter");
+
+    status.empty();
+
+    status.append('<option value="">All Status</option>');
+
+    api.column(3)
+        .data()
+        .unique()
+        .sort()
+        .each(function (d) {
+
+            status.append(
+                '<option value="' + d + '">' + d + '</option>'
+            );
+
+        });
+
+}
+
+    });
+
+});
+
+// Fix column widths after modal is visible
+$('#downloadSummaryModal').on('shown.bs.modal', function () {
+
+    if (downloadTable) {
+
+        downloadTable.columns.adjust().responsive.recalc();
+
+    }
+
+});
+</script>
+
+

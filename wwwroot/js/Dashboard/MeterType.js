@@ -2,33 +2,31 @@
 
 async function loadMeterSummary() {
 
-    try {
+    const [downloadRes, failedRes] = await Promise.all([
+        fetch("/api/dashboardapi/temp-hes-wise-data"),
+        fetch("/api/dashboardapi/temp-hes-failed-wise-data")
+    ]);
 
-        const response = await fetch("api/DashboardApi/meter-type-wise-summary");
+    const download = (await downloadRes.json())[0];
+    const failed = (await failedRes.json())[0];
 
-        if (!response.ok) {
-            throw new Error("Failed to load meter summary.");
-        }
+    const alliedCount = download.alliedCount + failed.alliedCount;
+    const kimbalCount = download.kimbalCount + failed.kimbalCount;
+    const totalMeter = alliedCount + kimbalCount;
 
-        const data = await response.json();
+    document.getElementById("alliedCount").textContent =
+        alliedCount.toLocaleString();
 
-        // Update Summary Table
-        document.getElementById("alliedCount").textContent =
-            data.alliedCount.toLocaleString();
+    document.getElementById("kimbalCount").textContent =
+        kimbalCount.toLocaleString();
 
-        document.getElementById("kimbalCount").textContent =
-            data.kimbalCount.toLocaleString();
+    document.getElementById("totalMeter").textContent =
+        totalMeter.toLocaleString();
 
-        document.getElementById("totalMeter").textContent =
-            data.totalMeter.toLocaleString();
-
-        drawMeterTypeChart(data);
-
-    }
-    catch (error) {
-        console.error("Meter Summary Error:", error);
-    }
-
+    drawMeterTypeChart({
+        alliedCount,
+        kimbalCount
+    });
 }
 
 function drawMeterTypeChart(data) {

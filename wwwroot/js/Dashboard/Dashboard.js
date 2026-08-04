@@ -1,11 +1,30 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+﻿document.addEventListener("DOMContentLoaded", async function () {
 
-    loadMeterSummary();
+    $("#dashboardSkeleton").show();
+    $("#dashboardContent").hide();
 
-    loadMeterDownloadSummary();
+    try {
+        await Promise.all([
+            loadMeterSummary(),
+            loadMeterDownloadSummary(),
+            loadDepartmentDistribution(),
+            loadReadingTrend()
+        ]);
 
-    loadDepartmentDistribution();
+    }
+    catch (err) {
 
-    loadReadingTrend();
+        console.error(err);
+
+    }
+    finally {
+
+        $("#dashboardSkeleton").fadeOut(300, function () {
+
+            $("#dashboardContent").fadeIn(300);
+
+        });
+
+    }
 
 });

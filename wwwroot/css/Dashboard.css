@@ -1,0 +1,160 @@
+﻿body {
+    background: #eef2f7;
+}
+
+.dashboard-card {
+    border: none;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px rgba(0,0,0,.08);
+}
+
+    .dashboard-card .card-header {
+        background: linear-gradient(90deg,#3b82f6,#2563eb);
+        color: #fff;
+        font-weight: 600;
+        border: none;
+        font-size: 15px;
+    }
+
+.kpi-card {
+    border-radius: 18px;
+    color: #fff;
+    padding: 22px;
+    text-align: center;
+    transition: .3s;
+    box-shadow: 0 8px 18px rgba(0,0,0,.15);
+}
+
+    .kpi-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .kpi-card h2 {
+        margin-top: 8px;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .kpi-card small {
+        opacity: .9;
+        font-size: 14px;
+    }
+
+.total {
+    background: linear-gradient(135deg,#4f46e5,#6366f1);
+}
+
+.success {
+    background: linear-gradient(135deg,#10b981,#34d399);
+}
+
+.warning {
+    background: linear-gradient(135deg,#f59e0b,#fbbf24);
+}
+
+.info {
+    background: linear-gradient(135deg,#0ea5e9,#38bdf8);
+}
+
+.table td,
+.table th {
+    padding: .55rem;
+}
+
+canvas {
+    width: 100% !important;
+}
+
+.dashboard-card table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.dashboard-card table tbody td {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.dashboard-card .text-success {
+    color: #198754 !important;
+}
+
+.dashboard-card .text-warning {
+    color: #fd7e14 !important;
+}
+
+.dashboard-card .text-danger {
+    color: #dc3545 !important;
+}
+
+.dashboard-card .text-primary {
+    color: #0d6efd !important;
+}
+
+/*#meterTypeChart {
+    max-width: 150px;
+    max-height: 150px;
+    margin: auto;
+}*/
+
+#alliedCount,
+#kimbalCount,
+#totalMeter {
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.table-sm td,
+.table-sm th {
+    padding: .35rem .45rem;
+}
+
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    background: #e9ecef;
+    border-radius: 8px;
+}
+
+    .skeleton::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient( 90deg, transparent, rgba(255,255,255,.7), transparent );
+        animation: shimmer 1.3s infinite;
+    }
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.skeleton-title {
+    height: 22px;
+    width: 40%;
+}
+
+.skeleton-line {
+    height: 18px;
+    margin-top: 12px;
+}
+
+.skeleton-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+}
+
+.skeleton-chart {
+    height: 260px;
+}
+
+.skeleton-table {
+    height: 180px;
+}

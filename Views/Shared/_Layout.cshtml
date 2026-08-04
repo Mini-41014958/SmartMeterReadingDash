@@ -6,6 +6,11 @@
     <title>@ViewData["Title"] - RCM Dashboard</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SmartMeterReadingDash.styles.css" asp-append-version="true" />
 
@@ -26,7 +31,7 @@
                 </h4>
 
                 <div class="month">
-                    @DateTime.Now.ToString("MMMM yyyy")
+                  <strong>  @DateTime.Now.ToString("MMMM yyyy")</strong>
                 </div>
 
             </div>
@@ -49,17 +54,27 @@
         @RenderBody()
     </main>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+
+    <!-- 1. jQuery FIRST (must be before everything else) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- 2. Bootstrap AFTER jQuery -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- 3. DataTables AFTER jQuery -->
+    <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+    <!-- 4. Chart.js (doesn't need jQuery) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- 5. YOUR CUSTOM SCRIPTS LAST (after jQuery is loaded) -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/Dashboard/MeterType.js"></script>
     <script src="~/js/Dashboard/MeterDownload.js"></script>
     <script src="~/js/Dashboard/Departmentwise.js"></script>
     <script src="~/js/Dashboard/ReadingTrend.js"></script>
-
     <script src="~/js/Dashboard/Dashboard.js"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>
