@@ -1,8 +1,8 @@
 ﻿let readingTrendChart = null;
 
 async function loadReadingTrend() {
-
-    const response = await fetch("/api/dashboardapi/reading_trend_date_wise");
+    const month = getReadingMonth();
+    const response = await fetch(`/api/dashboardapi/reading_trend_date_wise?readingMonth=${month}`);
 
     if (!response.ok) {
         throw new Error("Failed to load Reading Trend.");

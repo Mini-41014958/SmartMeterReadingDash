@@ -8,5 +8,6 @@
         public int pendingCount { get; set; }
         public int mismatchCount { get; set; }
         public decimal hesDownloadPercentage { get; set; }
+        public decimal hesFailedPercentage { get; set; }
     }
 }

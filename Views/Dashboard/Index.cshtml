@@ -46,6 +46,37 @@
 <div id="dashboardContent" style="display:none;">
 
   <div class="container-fluid py-3">
+        <div class="card border-0 shadow-sm mb-3 filter-toolbar">
+            <div class="card-body py-2">
+
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+
+                    <div class="d-flex align-items-center gap-3">
+
+                        <div class="fw-semibold text-primary">
+                            <i class="bi bi-calendar3"></i>
+                            Reading Month
+                        </div>
+
+                        <input type="month"
+                               id="readingMonth"
+                               class="form-control form-control-sm"
+                               style="width:160px;" />
+
+                        <button class="btn btn-primary btn-sm px-3"
+                                id="btnLoadDashboard">
+                            <i class="bi bi-search"></i>
+                            Apply
+                        </button>
+
+                    </div>
+
+                   
+
+                </div>
+
+            </div>
+        </div>
     <!-- Top Row -->
     <div class="row g-3 ">
             <!-- Meter Summary -->
@@ -145,6 +176,7 @@
                                 <th>HES Download</th>
                                 <th>Download Failed</th>
                                 <th>Download %</th>
+                                <th>Failed %</th>
                             </tr>
 
                         </thead>
@@ -160,6 +192,8 @@
                                 <td class="fw-bold fs-2 text-danger" id="downloadFailed">0</td>
 
                                 <td class="fw-bold fs-2 text-primary" id="downloadPercentage">0%</td>
+
+                                    <td class="fw-bold fs-2 text-danger" id="failedPercentage">0%</td>
 
                             </tr>
 
@@ -190,7 +224,7 @@
                 <div class="card-body">
 
                     <canvas id="departmentChart"
-                            height="220"></canvas>
+                            ></canvas>
 
                 </div>
 
@@ -209,7 +243,7 @@
                 <div class="card-body">
 
                     <canvas id="readingTrendChart"
-                            height="220"></canvas>
+                           ></canvas>
 
                 </div>
 
@@ -269,7 +303,9 @@
                     <thead class="table-light">
 
                         <tr>
+                            <th>Consumer No</th>
                             <th>Meter No</th>
+                            <th>Division</th>
                             <th>Department</th>
                             <th>Meter Type</th>
                             <th>Status</th>
@@ -294,44 +330,39 @@
 <!-- 3. DataTables -->
 <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
 <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
 
 <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
 
 <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-<script>
-      let downloadTable;
 
-// Department Filter (bind only once)
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+     let downloadTable = null;
+
+// Department Filter
 $(document).on("change", "#departmentFilter", function () {
 
-    if (!downloadTable)
-        return;
-
-    var department = $(this).val();
+    if (!downloadTable) return;
 
     downloadTable
-        .column(1)
-        .search(
-            department ? '^' + department + '$' : '',
-            true,
-            false
-        )
+        .column(3)   // Department
+        .search($(this).val() ? '^' + $(this).val() + '$' : '', true, false)
         .draw();
-
 });
+
+// Status Filter
 $(document).on("change", "#statusFilter", function () {
 
     if (!downloadTable) return;
 
     downloadTable
-        .column(3)          // Status column
+        .column(5)   // Status
         .search($(this).val() ? '^' + $(this).val() + '$' : '', true, false)
         .draw();
-
 });
-// View Details Button
+
+// View Details
 $("#btnViewDownloadDetails").on("click", function () {
 
     const modal = new bootstrap.Modal(
@@ -340,7 +371,6 @@ $("#btnViewDownloadDetails").on("click", function () {
 
     modal.show();
 
-    // Already initialized
     if ($.fn.DataTable.isDataTable("#downloadSummaryTable")) {
 
         downloadTable.ajax.reload(null, false);
@@ -352,84 +382,91 @@ $("#btnViewDownloadDetails").on("click", function () {
         return;
     }
 
-    // Create DataTable
     downloadTable = $("#downloadSummaryTable").DataTable({
 
         processing: true,
         destroy: true,
-        autoWidth: false,
         responsive: true,
+        autoWidth: false,
 
         ajax: {
             url: "/api/dashboardapi/meter-download-detailed-summary",
-            dataSrc: ""
+            data: function () {
+            return {
+            readingMonth: getReadingMonth()
+            };
+        },
+        dataSrc: ""
         },
 
         columns: [
 
             {
+                data: "consRef",
+                width: "14%"
+            },
+
+            {
                 data: "meterNumber",
-                width: "15%"
-            },
-
-            {
-                data: "sapDepartment",
-                width: "15%"
-            },
-
-            {
-                data: "meterType",
                 width: "12%"
             },
 
             {
+                data: "sapDivision",
+                width: "10%",
+                className: "text-center"
+            },
+
+            {
+                data: "sapDepartment",
+                width: "10%"
+            },
+
+            {
+                data: "meterType",
+                width: "10%",
+                className: "text-center"
+            },
+
+            {
                 data: "status",
-                width: "12%",
+                width: "10%",
                 className: "text-center",
+
                 render: function (data) {
 
-                    switch (data) {
-
-                        case "PENDING":
-                            return '<span class="badge bg-warning text-dark">Pending</span>';
-
-                        case "MANUAL":
-                            return '<span class="badge bg-primary">Manual</span>';
-
-                        case "MISMATCH":
-                            return '<span class="badge bg-danger">Mismatch</span>';
-
-                        default:
-                            return '<span class="badge bg-secondary">' + data + '</span>';
+                    if (data === "Download") {
+                        return '<span class="badge bg-success">Download</span>';
                     }
+
+                    if (data === "Failed") {
+                        return '<span class="badge bg-danger">Failed</span>';
+                    }
+
+                    return '<span class="badge bg-secondary">' + data + '</span>';
                 }
             },
 
             {
                 data: "schedulerMessage",
-                width: "31%",
-                render: function (data) {
+                width: "24%",
 
-                    return data
-                        ? data
-                        : '<span class="text-muted">--</span>';
+                render: function (data) {
+                    return data ?? '<span class="text-muted">--</span>';
                 }
             },
 
             {
                 data: "entryDate",
-                width: "15%",
+                width: "12%",
+                className: "text-center",
+
                 render: function (data) {
 
                     if (!data)
                         return "--";
 
-                    const dt = new Date(data);
-
-                    if (dt.getFullYear() === 1)
-                        return "--";
-
-                    return dt.toLocaleString("en-GB");
+                    return new Date(data).toLocaleString("en-GB");
                 }
             }
 
@@ -437,15 +474,16 @@ $("#btnViewDownloadDetails").on("click", function () {
 
         pageLength: 25,
 
+        scrollX: true,
         scrollY: "500px",
         scrollCollapse: true,
 
         fixedHeader: true,
 
         dom:
-            "<'row mb-2'<'col-md-6'B><'col-md-6'f>>" +
+            "<'row mb-3'<'col-md-8'B><'col-md-4'f>>" +
             "rt" +
-            "<'row mt-2'<'col-md-5'i><'col-md-7'p>>",
+            "<'row mt-2'<'col-md-6'i><'col-md-6'p>>",
 
         buttons: [
 
@@ -476,57 +514,41 @@ $("#btnViewDownloadDetails").on("click", function () {
 
     initComplete: function () {
 
-    var api = this.api();
+    const api = this.api();
 
-    var dept = $("#departmentFilter");
+    // Department dropdown
+    const dept = $("#departmentFilter");
+    dept.empty().append('<option value="">All Departments</option>');
 
-    dept.empty();
+    api.column(3).data().unique().sort().each(function (d) {
+    dept.append('<option value="' + d + '">' + d + '</option>');
+    });
 
-    dept.append('<option value="">All Departments</option>');
+    // Status dropdown
+    const status = $("#statusFilter");
+    status.empty().append('<option value="">All Status</option>');
 
-    api.column(1)
-        .data()
-        .unique()
-        .sort()
-        .each(function (d) {
+    api.column(5).data().unique().sort().each(function (d) {
+    status.append('<option value="' + d + '">' + d + '</option>');
+    });
 
-            dept.append(
-                '<option value="' + d + '">' + d + '</option>'
-            );
+    // Default to Failed
+    status.val("Failed");
 
-        });
-
-    var status = $("#statusFilter");
-
-    status.empty();
-
-    status.append('<option value="">All Status</option>');
-
-    api.column(3)
-        .data()
-        .unique()
-        .sort()
-        .each(function (d) {
-
-            status.append(
-                '<option value="' + d + '">' + d + '</option>'
-            );
-
-        });
-
-}
+    api.column(5)
+    .search("^Failed$", true, false)
+    .draw();
+    }
 
     });
 
 });
 
-// Fix column widths after modal is visible
+// Fix columns after modal opens
 $('#downloadSummaryModal').on('shown.bs.modal', function () {
 
     if (downloadTable) {
-
         downloadTable.columns.adjust().responsive.recalc();
-
     }
 
 });

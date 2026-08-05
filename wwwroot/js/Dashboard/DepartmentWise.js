@@ -1,60 +1,36 @@
 ﻿let departmentChart = null;
 
 async function loadDepartmentDistribution() {
+    const month = getReadingMonth();
+    const response = await fetch(`api/DashboardApi/department-wise-data?readingMonth=${month}`);
 
-    const [downloadRes, failedRes] = await Promise.all([
-        fetch("/api/dashboardapi/temp-hes-wise-data"),
-        fetch("/api/dashboardapi/temp-hes-failed-wise-data")
-    ]);
+    if (!response.ok) {
+        throw new Error("Failed to load Department Distribution.");
+    }
 
-    const d = (await downloadRes.json())[0];
-    const f = (await failedRes.json())[0];
-
-    const data = [
-        {
-            department: "SLCC",
-            hesDownload: d.slcCount,
-            nonCom: f.slcCount
-        },
-        {
-            department: "MLCC",
-            hesDownload: d.mlccCount,
-            nonCom: f.mlccCount
-        },
-        {
-            department: "GCC",
-            hesDownload: d.gcCount,
-            nonCom: f.gcCount
-        },
-        {
-            department: "KCC",
-            hesDownload: d.kcCount,
-            nonCom: f.kcCount
-        }
-    ];
+    const data = await response.json();
 
     const ctx = document.getElementById("departmentChart");
 
-    if (departmentChart)
+    if (departmentChart) {
         departmentChart.destroy();
+    }
 
     departmentChart = new Chart(ctx, {
-
         type: "bar",
 
         data: {
-
             labels: data.map(x => x.department),
 
             datasets: [
                 {
-                    label: "Downloaded",
+                    label: "HES Download",
                     data: data.map(x => x.hesDownload),
-                    backgroundColor: "#28a745"
+                    backgroundColor: "#198754"
                 },
                 {
-                    label: "Not Downloaded",
-                    data: data.map(x => x.nonCom),
+                    label: "Download Failed",
+                    data: data.map(x => x.failed),
                     backgroundColor: "#dc3545"
                 }
             ]
@@ -63,7 +39,22 @@ async function loadDepartmentDistribution() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            indexAxis: "y"
+            indexAxis: "y",
+
+            plugins: {
+                legend: {
+                    position: "top"
+                }
+            },
+
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
         }
     });
 }

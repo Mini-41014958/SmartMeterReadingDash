@@ -15,11 +15,11 @@ namespace SmartMeterReadingDash.Controllers.API
         }
 
         [HttpGet("meter-type-wise-summary")]
-        public IActionResult GetMeterSummary()
+        public IActionResult GetMeterSummary(string ReadingMonth)
         {
             try
             {
-                var summary = _dashboard.GetMeterSummary();
+                var summary = _dashboard.GetMeterSummary(ReadingMonth);
                 return Ok(summary);
 
             }catch (Exception ex)
@@ -30,11 +30,11 @@ namespace SmartMeterReadingDash.Controllers.API
         }
 
         [HttpGet("meter-download-summary")]
-        public IActionResult GetMeterDownloadSummary()
+        public IActionResult GetMeterDownloadSummary(string ReadingMonth)
         {
             try
             {
-                var summary = _dashboard.GetMeterReceivedDownloadSummary();
+                var summary = _dashboard.GetMeterReceivedDownloadSummary(ReadingMonth);
 
                 return Ok(summary);
             }
@@ -45,11 +45,11 @@ namespace SmartMeterReadingDash.Controllers.API
 
         }
         [HttpGet("meter-download-detailed-summary")]
-        public IActionResult GetMeterDownloadDetailedSummary()
+        public IActionResult GetMeterDownloadDetailedSummary(string ReadingMonth)
         {
             try
             {
-                var summaryList = _dashboard.MeterDetailedSummary();
+                var summaryList = _dashboard.MeterDetailedSummary(ReadingMonth);
                 return Ok(summaryList);
             }
             catch (Exception ex)
@@ -58,11 +58,11 @@ namespace SmartMeterReadingDash.Controllers.API
             }
         }
         [HttpGet("reading_trend_date_wise")]
-        public IActionResult GetReadingTrend()
+        public IActionResult GetReadingTrend(string ReadingMonth)
         {
             try
             {
-                var readingDateWiseList = _dashboard.GetReadingTrend();
+                var readingDateWiseList = _dashboard.GetReadingTrend(ReadingMonth);
                 return Ok(readingDateWiseList);
             }
             catch(Exception ex)
@@ -71,11 +71,11 @@ namespace SmartMeterReadingDash.Controllers.API
             }
         }
         [HttpGet("department-wise-data")]
-        public IActionResult GetDepartmentWiseData()
+        public IActionResult GetDepartmentWiseData(string ReadingMonth)
         {
             try
             {
-                var departmentWiseData = _dashboard.GetDepartmentSummary();
+                var departmentWiseData = _dashboard.GetDepartmentSummary(ReadingMonth);
 
                 return Ok(departmentWiseData);
             }
@@ -85,33 +85,33 @@ namespace SmartMeterReadingDash.Controllers.API
             }
         }
 
-        [HttpGet("temp-hes-wise-data")]
-        public IActionResult TempGetHESDATA()
-        {
-            try
-            {
-                var tempdata = _dashboard.TempDashBoardHESCount();
+        //[HttpGet("temp-hes-wise-data")]
+        //public IActionResult TempGetHESDATA()
+        //{
+        //    try
+        //    {
+        //        var tempdata = _dashboard.TempDashBoardHESCount();
 
-                return Ok(tempdata);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
-        }
-        [HttpGet("temp-hes-failed-wise-data")]
-        public IActionResult TempGetHESDATAFailed()
-        {
-            try
-            {
-                var tempdatafailed = _dashboard.TempHESFailed();
+        //        return Ok(tempdata);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, "Internal Server Error");
+        //    }
+        //}
+        //[HttpGet("temp-hes-failed-wise-data")]
+        //public IActionResult TempGetHESDATAFailed()
+        //{
+        //    try
+        //    {
+        //        var tempdatafailed = _dashboard.TempHESFailed();
 
-                return Ok(tempdatafailed);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal Server Error");
-            }
-        }
+        //        return Ok(tempdatafailed);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, "Internal Server Error");
+        //    }
+        //}
     } 
 }

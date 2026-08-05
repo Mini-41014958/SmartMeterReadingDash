@@ -1,32 +1,26 @@
 ﻿let meterTypeChart = null;
 
 async function loadMeterSummary() {
+    const month = getReadingMonth();
+    const response = await fetch(`api/DashboardApi/meter-type-wise-summary?readingMonth=${month}`);
 
-    const [downloadRes, failedRes] = await Promise.all([
-        fetch("/api/dashboardapi/temp-hes-wise-data"),
-        fetch("/api/dashboardapi/temp-hes-failed-wise-data")
-    ]);
+    if (!response.ok) {
+        throw new Error("Failed to load Meter Summary.");
+    }
 
-    const download = (await downloadRes.json())[0];
-    const failed = (await failedRes.json())[0];
+    const data = await response.json();
 
-    const alliedCount = download.alliedCount + failed.alliedCount;
-    const kimbalCount = download.kimbalCount + failed.kimbalCount;
-    const totalMeter = alliedCount + kimbalCount;
-
+    // Update Summary
     document.getElementById("alliedCount").textContent =
-        alliedCount.toLocaleString();
+        data.alliedCount.toLocaleString();
 
     document.getElementById("kimbalCount").textContent =
-        kimbalCount.toLocaleString();
+        data.kimbalCount.toLocaleString();
 
     document.getElementById("totalMeter").textContent =
-        totalMeter.toLocaleString();
+        data.totalMeter.toLocaleString();
 
-    drawMeterTypeChart({
-        alliedCount,
-        kimbalCount
-    });
+    drawMeterTypeChart(data);
 }
 
 function drawMeterTypeChart(data) {
@@ -50,12 +44,10 @@ function drawMeterTypeChart(data) {
                     data.alliedCount,
                     data.kimbalCount
                 ],
-
                 backgroundColor: [
                     "#4F46E5",
                     "#10B981"
                 ],
-
                 borderColor: "#ffffff",
                 borderWidth: 2,
                 hoverOffset: 8
@@ -96,8 +88,11 @@ function drawMeterTypeChart(data) {
                             const percentage = ((value / total) * 100).toFixed(1);
 
                             return `${context.label}: ${value.toLocaleString()} (${percentage}%)`;
+
                         }
+
                     }
+
                 }
 
             }
