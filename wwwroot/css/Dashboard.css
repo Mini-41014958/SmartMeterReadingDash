@@ -125,7 +125,15 @@ canvas {
         border-radius: 10px;
         min-width: 90px;
     }
+#downloadSummaryTable td {
+    vertical-align: middle;
+}
 
+    #downloadSummaryTable td:nth-child(6) {
+        max-width: 350px;
+        white-space: normal;
+        word-break: break-word;
+    }
 #alliedCount,
 #kimbalCount,
 #totalMeter {

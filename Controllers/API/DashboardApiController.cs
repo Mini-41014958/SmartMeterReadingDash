@@ -65,7 +65,7 @@ namespace SmartMeterReadingDash.Controllers.API
                 var readingDateWiseList = _dashboard.GetReadingTrend(ReadingMonth);
                 return Ok(readingDateWiseList);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, "Internal Server Error");
             }
@@ -84,6 +84,21 @@ namespace SmartMeterReadingDash.Controllers.API
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
+        [HttpGet("failure-reason-count")]
+        public IActionResult GetFailureReasonCount(string ReadingMonth)
+        {
+            try
+            {
+                var failureReasonCount = _dashboard.FailureReasonCounts(ReadingMonth);
+                return Ok(failureReasonCount);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
 
         //[HttpGet("temp-hes-wise-data")]
         //public IActionResult TempGetHESDATA()

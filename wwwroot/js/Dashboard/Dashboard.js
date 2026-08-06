@@ -1,4 +1,6 @@
-﻿
+﻿// Global reading month shared by all API calls
+let currentReadingMonth = "";
+
 // Loads all dashboard components
 async function loadDashboard() {
 
@@ -11,7 +13,7 @@ async function loadDashboard() {
             loadMeterSummary(),
             loadMeterDownloadSummary(),
             loadDepartmentDistribution(),
-            loadReadingTrend()
+            loadFailureReasonChart()
         ]);
 
     }
@@ -32,22 +34,47 @@ async function loadDashboard() {
 
 }
 
+// Returns the reading month for all APIs
+function getReadingMonth() {
+    return currentReadingMonth;
+}
+
 // Initial Page Load
 document.addEventListener("DOMContentLoaded", function () {
 
-    // Set current month
     const today = new Date();
 
-    const currentMonth =
-        `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+    // Show current month in picker
+    $("#readingMonth").val("");
 
-    $("#readingMonth").val(currentMonth);
+    // Current month
+    const current =
+        today.getFullYear().toString() +
+        String(today.getMonth() + 1).padStart(2, "0");
 
-    // Initial Dashboard Load
+    // Previous month
+    const previousDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+
+    const previous =
+        previousDate.getFullYear().toString() +
+        String(previousDate.getMonth() + 1).padStart(2, "0");
+
+    // Default dashboard = previous + current month
+    currentReadingMonth = previous + "," + current;
+
+    // Initial Load
     loadDashboard();
 
-    // Reload dashboard when month changes
-    $("#readingMonth").on("change", function () {
+    // Apply button click
+    $("#btnLoadDashboard").on("click", function () {
+
+        const selected = $("#readingMonth").val();
+
+        if (!selected)
+            return;
+
+        // After Apply -> only selected month
+        currentReadingMonth = selected.replace("-", "");
 
         loadDashboard();
 

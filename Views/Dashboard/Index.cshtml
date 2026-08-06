@@ -237,7 +237,7 @@
             <div class="card dashboard-card">
 
                 <div class="card-header">
-                    Reading Trend
+                        Failure Reason Summary
                 </div>
 
                 <div class="card-body">
@@ -262,7 +262,7 @@
      id="downloadSummaryModal"
      tabindex="-1">
 
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+<div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
 
         <div class="modal-content">
 
@@ -288,34 +288,92 @@
                         </select>
                     </div>
 
+                </div>
+
+            <div class="table-responsive" style="max-height:75vh;overflow:auto;">
+                <table id="downloadSummaryTable" class="table table-bordered table-striped table-hover mb-0">
+               <thead class="table-dark sticky-top">
+                <tr>
+                    <th>S.No.</th>
+                    <th>Consumer Ref</th>
+                    <th>Meter No</th>
+                    <th>Department</th>
+                    <th>Division</th>
+                    <th>District</th>
+                    <th style="min-width:350px;">Address</th>
+                    <th>Meter Type</th>
+                    <th>Status</th>
+                    <th style="min-width:450px;">HES Failed Reason</th>
+                    <th>Entry Date</th>
+                </tr>
+                </thead>
+
+                <tbody id="downloadSummaryBody"></tbody>
+                </table>
+            </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+    @* detailed summary  *@
+<div class="modal fade"
+     id="downloadSummaryModal"
+     tabindex="-1">
+
+<div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Meter Download Detailed Summary
+                </h5>
+
+                <button class="btn-close"
+                        data-bs-dismiss="modal"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row mb-3">
+
                     <div class="col-md-3">
-                        <label class="form-label fw-bold">Status</label>
-                        <select id="statusFilter" class="form-select">
-                            <option value="">All Status</option>
+                        <label class="form-label fw-bold">Department</label>
+                        <select id="departmentFilter" class="form-select">
+                            <option value="">All Departments</option>
                         </select>
                     </div>
 
                 </div>
 
-                <table id="downloadSummaryTable"
-                       class="table table-bordered table-striped table-hover w-100">
+            <div class="table-responsive" style="max-height:75vh;overflow:auto;">
+                <table id="downloadSummaryTable" class="table table-bordered table-striped table-hover mb-0">
+               <thead class="table-dark sticky-top">
+                <tr>
+                    <th>S.No.</th>
+                    <th>Consumer Ref</th>
+                    <th>Meter No</th>
+                    <th>Department</th>
+                    <th>Division</th>
+                    <th>District</th>
+                    <th style="min-width:350px;">Address</th>
+                    <th>Meter Type</th>
+                    <th>Status</th>
+                    <th style="min-width:450px;">HES Failed Reason</th>
+                    <th>Entry Date</th>
+                </tr>
+                </thead>
 
-                    <thead class="table-light">
-
-                        <tr>
-                            <th>Consumer No</th>
-                            <th>Meter No</th>
-                            <th>Division</th>
-                            <th>Department</th>
-                            <th>Meter Type</th>
-                            <th>Status</th>
-                            <th>Reason</th>
-                            <th>Entry Date</th>
-                        </tr>
-
-                    </thead>
-
+                <tbody id="downloadSummaryBody"></tbody>
                 </table>
+            </div>
 
             </div>
 
@@ -337,32 +395,12 @@
 <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
 <script>
-     let downloadTable = null;
+let allDownloadData = [];
+let filteredData = [];
 
-// Department Filter
-$(document).on("change", "#departmentFilter", function () {
-
-    if (!downloadTable) return;
-
-    downloadTable
-        .column(3)   // Department
-        .search($(this).val() ? '^' + $(this).val() + '$' : '', true, false)
-        .draw();
-});
-
-// Status Filter
-$(document).on("change", "#statusFilter", function () {
-
-    if (!downloadTable) return;
-
-    downloadTable
-        .column(5)   // Status
-        .search($(this).val() ? '^' + $(this).val() + '$' : '', true, false)
-        .draw();
-});
-
-// View Details
+// Open Modal
 $("#btnViewDownloadDetails").on("click", function () {
 
     const modal = new bootstrap.Modal(
@@ -371,187 +409,197 @@ $("#btnViewDownloadDetails").on("click", function () {
 
     modal.show();
 
-    if ($.fn.DataTable.isDataTable("#downloadSummaryTable")) {
+    loadDownloadSummary();
 
-        downloadTable.ajax.reload(null, false);
+});
 
-        setTimeout(function () {
-            downloadTable.columns.adjust().responsive.recalc();
-        }, 200);
+// Load Data
+async function loadDownloadSummary() {
+
+    try {
+
+        $("#downloadSummaryBody").html(`
+            <tr>
+                <td colspan="11" class="text-center">
+                    Loading...
+                </td>
+            </tr>
+        `);
+
+        const response = await fetch(
+            "/api/dashboardapi/meter-download-detailed-summary?readingMonth=" + getReadingMonth()
+        );
+
+        if (!response.ok)
+            throw new Error("Unable to load data");
+
+        allDownloadData = await response.json();
+
+        filteredData = [...allDownloadData];
+
+        loadDepartmentFilter();
+
+        renderTable(filteredData);
+
+    }
+    catch (e) {
+
+        console.error(e);
+
+        $("#downloadSummaryBody").html(`
+            <tr>
+                <td colspan="11" class="text-center text-danger">
+                    Failed to load data.
+                </td>
+            </tr>
+        `);
+
+    }
+
+}
+
+// Load Department Dropdown
+function loadDepartmentFilter() {
+
+    const ddl = $("#departmentFilter");
+
+    ddl.empty();
+
+    ddl.append('<option value="">All Departments</option>');
+
+    const departments = [...new Set(
+        allDownloadData
+            .map(x => x.sapDepartment)
+            .filter(x => x)
+    )].sort();
+
+    departments.forEach(function (d) {
+
+        ddl.append(`<option value="${d}">${d}</option>`);
+
+    });
+
+}
+
+// Department Filter Change
+$("#departmentFilter").on("change", function () {
+
+    applyFilters();
+
+});
+
+// Apply Department Filter
+function applyFilters() {
+
+    const dept = ($("#departmentFilter").val() || "").trim().toLowerCase();
+
+    filteredData = allDownloadData.filter(function (x) {
+
+        return (
+            dept === "" ||
+            (x.sapDepartment ?? "").trim().toLowerCase() === dept
+        );
+
+    });
+
+    renderTable(filteredData);
+
+}
+
+// Render Table
+function renderTable(data) {
+
+    const tbody = $("#downloadSummaryBody");
+
+    tbody.empty();
+
+    if (data.length === 0) {
+
+        tbody.append(`
+            <tr>
+                <td colspan="11" class="text-center">
+                    No Records Found
+                </td>
+            </tr>
+        `);
 
         return;
+
     }
 
-    downloadTable = $("#downloadSummaryTable").DataTable({
+    data.forEach(function (x, index) {
 
-        processing: true,
-        destroy: true,
-        responsive: true,
-        autoWidth: false,
+        let reasonBadge = '<span class="text-muted">--</span>';
 
-        ajax: {
-            url: "/api/dashboardapi/meter-download-detailed-summary",
-            data: function () {
-            return {
-            readingMonth: getReadingMonth()
-            };
-        },
-        dataSrc: ""
-        },
+        if (x.schedulerMessage) {
 
-        columns: [
+            let badge = "secondary";
 
-            {
-                data: "consRef",
-                width: "14%"
-            },
+            const msg = x.schedulerMessage.toUpperCase();
 
-            {
-                data: "meterNumber",
-                width: "12%"
-            },
+            if (msg.includes("SYSTEM TITLE"))
+                badge = "danger";
+            else if (msg.includes("TCP"))
+                badge = "warning text-dark";
+            else if (msg.includes("NO DATA"))
+                badge = "info text-dark";
+            else if (msg.includes("TIMEOUT"))
+                badge = "primary";
 
-            {
-                data: "sapDivision",
-                width: "10%",
-                className: "text-center"
-            },
+            reasonBadge = `
+                <span class="badge bg-${badge}">
+                    ${x.schedulerMessage}
+                </span>
+            `;
+        }
 
-            {
-                data: "sapDepartment",
-                width: "10%"
-            },
+        const entryDate = x.entryDate
+            ? new Date(x.entryDate).toLocaleString("en-GB")
+            : "--";
 
-            {
-                data: "meterType",
-                width: "10%",
-                className: "text-center"
-            },
+        tbody.append(`
+            <tr>
 
-            {
-                data: "status",
-                width: "10%",
-                className: "text-center",
+                <td class="text-center fw-bold">${index + 1}</td>
 
-                render: function (data) {
+                <td>${x.consRef ?? ""}</td>
 
-                    if (data === "Download") {
-                        return '<span class="badge bg-success">Download</span>';
-                    }
+                <td>${x.meterNumber ?? ""}</td>
 
-                    if (data === "Failed") {
-                        return '<span class="badge bg-danger">Failed</span>';
-                    }
+                <td>${x.sapDepartment ?? ""}</td>
 
-                    return '<span class="badge bg-secondary">' + data + '</span>';
-                }
-            },
+                <td>${x.sapDivision ?? ""}</td>
 
-            {
-                data: "schedulerMessage",
-                width: "24%",
+                <td>${x.district ?? ""}</td>
 
-                render: function (data) {
-                    return data ?? '<span class="text-muted">--</span>';
-                }
-            },
+                <td style="min-width:350px;white-space:normal;">
+                    ${x.address ?? "--"}
+                </td>
 
-            {
-                data: "entryDate",
-                width: "12%",
-                className: "text-center",
+                <td class="text-center">
+                    ${x.meterType ?? ""}
+                </td>
 
-                render: function (data) {
+                <td class="text-center">
+                    <span class="badge bg-danger">
+                        ${x.status ?? ""}
+                    </span>
+                </td>
 
-                    if (!data)
-                        return "--";
+                <td style="min-width:450px;white-space:normal;">
+                    ${reasonBadge}
+                </td>
 
-                    return new Date(data).toLocaleString("en-GB");
-                }
-            }
+                <td>
+                    ${entryDate}
+                </td>
 
-        ],
-
-        pageLength: 25,
-
-        scrollX: true,
-        scrollY: "500px",
-        scrollCollapse: true,
-
-        fixedHeader: true,
-
-        dom:
-            "<'row mb-3'<'col-md-8'B><'col-md-4'f>>" +
-            "rt" +
-            "<'row mt-2'<'col-md-6'i><'col-md-6'p>>",
-
-        buttons: [
-
-            {
-                extend: "copy",
-                className: "btn btn-secondary btn-sm"
-            },
-
-            {
-                extend: "excel",
-                className: "btn btn-success btn-sm",
-                title: "Meter Download Detailed Summary"
-            },
-
-            {
-                extend: "csv",
-                className: "btn btn-info btn-sm",
-                title: "Meter Download Detailed Summary"
-            },
-
-            {
-                extend: "print",
-                className: "btn btn-primary btn-sm",
-                title: "Meter Download Detailed Summary"
-            }
-
-        ],
-
-    initComplete: function () {
-
-    const api = this.api();
-
-    // Department dropdown
-    const dept = $("#departmentFilter");
-    dept.empty().append('<option value="">All Departments</option>');
-
-    api.column(3).data().unique().sort().each(function (d) {
-    dept.append('<option value="' + d + '">' + d + '</option>');
-    });
-
-    // Status dropdown
-    const status = $("#statusFilter");
-    status.empty().append('<option value="">All Status</option>');
-
-    api.column(5).data().unique().sort().each(function (d) {
-    status.append('<option value="' + d + '">' + d + '</option>');
-    });
-
-    // Default to Failed
-    status.val("Failed");
-
-    api.column(5)
-    .search("^Failed$", true, false)
-    .draw();
-    }
+            </tr>
+        `);
 
     });
 
-});
-
-// Fix columns after modal opens
-$('#downloadSummaryModal').on('shown.bs.modal', function () {
-
-    if (downloadTable) {
-        downloadTable.columns.adjust().responsive.recalc();
-    }
-
-});
-</script>
+}
+</script> 
 
 

@@ -1,86 +1,122 @@
 ﻿let readingTrendChart = null;
 
-async function loadReadingTrend() {
+function loadFailureReasonChart(readingMonth) {
     const month = getReadingMonth();
-    const response = await fetch(`/api/dashboardapi/reading_trend_date_wise?readingMonth=${month}`);
+    $.ajax({
 
-    if (!response.ok) {
-        throw new Error("Failed to load Reading Trend.");
-    }
+        url: "api/dashboardApi/failure-reason-count",
 
-    const data = await response.json();
-
-    const labels = data.map(x => {
-
-        const d = new Date(x.readingDate);
-
-        return d.toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short"
-        });
-
-    });
-
-    const values = data.map(x => x.readingCount);
-
-    const ctx = document.getElementById("readingTrendChart");
-
-    if (readingTrendChart) {
-        readingTrendChart.destroy();
-    }
-
-    readingTrendChart = new Chart(ctx, {
-
-        type: "line",
+        type: "GET",
 
         data: {
-
-            labels: labels,
-
-            datasets: [{
-
-                label: "Readings",
-
-                data: values,
-
-                borderColor: "#0d6efd",
-                backgroundColor: "#0d6efd",
-
-                fill: false,
-
-                tension: 0.35
-
-            }]
-
+            ReadingMonth: month
         },
 
-        options: {
+        success: function (result) {
 
-            responsive: true,
+            const labels = result.map(x => x.feilureReason);
+            const counts = result.map(x => x.count);
 
-            maintainAspectRatio: false,
+            const colors = labels.map(label => {
 
-            plugins: {
+                switch (label.toUpperCase()) {
 
-                legend: {
-                    display: false
+                    case "SYSTEM TITLE":
+                        return "#DC3545";      // Red (Critical)
+
+                    case "TCP":
+                        return "#FD7E14";      // Orange
+
+                    case "NO DATA":
+                        return "#FFC107";      // Yellow
+
+
+                    default:
+                        return "#6C757D";      // Gray
+
                 }
 
-            },
+            });
 
-            scales: {
+            if (readingTrendChart != null) {
+                readingTrendChart.destroy();
+            }
 
-                y: {
+            readingTrendChart = new Chart(
+                document.getElementById("readingTrendChart"),
+                {
 
-                    beginAtZero: true,
+                    type: "bar",
 
-                    ticks: {
-                        precision: 0
+                    data: {
+
+                        labels: labels,
+
+                        datasets: [{
+
+                            label: "Failed Meters",
+
+                            data: counts,
+
+                            backgroundColor: colors,
+
+                            borderRadius: 8,
+
+                            maxBarThickness: 60
+
+                        }]
+
+                    },
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+                                display: false
+                            },
+
+                            title: {
+
+                                display: true,
+
+                                text: "Failure Reason Wise Count"
+
+                            }
+
+                        },
+
+                        scales: {
+
+                            x: {
+
+                                grid: {
+                                    display: false
+                                }
+
+                            },
+
+                            y: {
+
+                                beginAtZero: true,
+
+                                ticks: {
+
+                                    precision: 0
+
+                                }
+
+                            }
+
+                        }
+
                     }
 
-                }
-
-            }
+                });
 
         }
 
