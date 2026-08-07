@@ -304,9 +304,7 @@
 </div>
 
     @* detailed summary  *@
-<div class="modal fade"
-     id="downloadSummaryModal"
-     tabindex="-1">
+<div class="modal fade" id="downloadSummaryModal" tabindex="-1">
 
 <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
 
@@ -347,15 +345,14 @@
                 <table id="downloadSummaryTable" class="table table-bordered table-striped table-hover mb-0">
                         <thead class="table-dark sticky-top">
                             <tr>
-                                <th>S.No.</th>
                                 <th>Consumer Ref</th>
                                 <th>Meter No</th>
                                 <th>Department</th>
                                 <th>Division</th>
                                 <th>SAP Seq No</th>
-                                <th style="min-width:350px;">Address</th>
+                                <th style="min-width:280px;">Address</th>
                                 <th>Meter Type</th>
-                                <th style="width:32%;">HES Failed Reason</th>
+                                <th style="min-width:300px;">HES Failed Reason</th>
                                 <th>Entry Date</th>
                             </tr>
                         </thead>
@@ -589,7 +586,6 @@
             : "--";
 
         return [
-            index + 1,
             x.consRef ?? "",
             x.meterNumber ?? "",
             x.sapDepartment ?? "",
@@ -610,7 +606,6 @@
         data: rows,
 
         columns: [
-            { title: "S.No." },
             { title: "Consumer Ref" },
             { title: "Meter No" },
             { title: "Department" },
@@ -629,35 +624,73 @@
             [10, 25, 50, 100, "All"]
         ],
 
-        responsive: true,
+       responsive: false,
         autoWidth: false,
 
+        scrollX: true,
         scrollY: "65vh",
         scrollCollapse: true,
-        scrollX: false,
 
         order: [[0, "asc"]],
 
         dom: 'Bfrtip',
 
-        buttons: [
-            {
-                extend: 'excelHtml5',
-                text: 'Export Excel',
-                title: 'Meter Download Detailed Summary'
-            }
-        ],
+     columnDefs: [
 
-        columnDefs: [
+    {
+        targets: "_all",
+        className: "align-middle"
+    },
 
-            { targets: 0, className: "text-center fw-bold", width: "60px" },
-            { targets: 5, className: "text-center", width: "90px" },
-            { targets: 7, className: "text-center", width: "90px" },
-            { targets: 6, width: "28%" },
-            { targets: 8, width: "450px" },
-            { targets: [6, 8], orderable: false }
+    {
+        targets: [0,1,2,3,4,6,8],
+        className: "text-center"
+    },
+    {
+        targets:0,
+        width:"7%"
+    },
+    {
+        targets:1,
+        width:"8%",
+    },
+    {
+        targets:2,
+        width:"4%"
+    },
+    {
+        targets:3,
+        width:"6%"
+    },
+    {
+        targets:4,
+        width:"6%"
+    },
+    
+    {
+        targets: 5,
+        width: "20%"
+    },
+    {
+        targets: 6,
+        width:"6%"
+    },
+    
+    {
+        targets: 7,
+        width: "18%"
+    },
+    {
+        targets:8,
+        width:"10%"
+    },
 
-        ]
+    {
+        targets: [5],
+        orderable: false
+    }
+
+]
 
     });
 
