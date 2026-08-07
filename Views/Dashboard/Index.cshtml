@@ -1,49 +1,77 @@
-﻿
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
- <link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
+﻿<link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
 <style>
-    #downloadSummaryTable {
-        width: 100% !important;
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
     }
 
-        #downloadSummaryTable th {
-            white-space: nowrap;
-            text-align: center;
+        .custom-table th,
+        .custom-table td {
+            border: 1px solid #dee2e6;
+            padding: 8px;
             vertical-align: middle;
+            word-break: break-word;
         }
 
-        #downloadSummaryTable td {
-            vertical-align: middle;
+        .custom-table thead th {
+            background: #212529;
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 2;
         }
 
-    .address-cell {
-        white-space: normal;
-        word-break: break-word;
-        max-width: 350px;
-    }
+        /* Column Widths */
 
-    .reason-cell {
-        white-space: normal;
-        word-break: break-word;
-        max-width: 450px;
-    }
+        .custom-table th:nth-child(1),
+        .custom-table td:nth-child(1) {
+            width: 120px;
+        }
 
-    .reason-badge {
-        display: block;
-        white-space: normal;
-        line-height: 1.35;
-        text-align: left;
-        padding: .45rem .6rem;
-        font-size: .78rem;
-    }
+        .custom-table th:nth-child(2),
+        .custom-table td:nth-child(2) {
+            width: 120px;
+        }
 
-    .dataTables_wrapper .dt-buttons {
-        margin-bottom: 10px;
-    }
+        .custom-table th:nth-child(3),
+        .custom-table td:nth-child(3) {
+            width: 90px;
+        }
 
-    .dataTables_filter {
-        margin-bottom: 10px;
+        .custom-table th:nth-child(4),
+        .custom-table td:nth-child(4) {
+            width: 90px;
+        }
+
+        .custom-table th:nth-child(5),
+        .custom-table td:nth-child(5) {
+            width: 120px;
+        }
+
+        .custom-table th:nth-child(6),
+        .custom-table td:nth-child(6) {
+            width: 280px;
+        }
+
+        .custom-table th:nth-child(7),
+        .custom-table td:nth-child(7) {
+            width: 100px;
+        }
+
+        .custom-table th:nth-child(8),
+        .custom-table td:nth-child(8) {
+            width: 350px;
+        }
+
+        .custom-table th:nth-child(9),
+        .custom-table td:nth-child(9) {
+            width: 160px;
+        }
+
+    .table-responsive {
+        max-height: 70vh;
+        overflow: auto;
     }
 </style>
 <div id="dashboardSkeleton">
@@ -303,63 +331,85 @@
 
 </div>
 
-    @* detailed summary  *@
-<div class="modal fade" id="downloadSummaryModal" tabindex="-1">
+ <div class="modal fade"
+     id="downloadSummaryModal"
+     tabindex="-1">
 
-<div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+    <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
 
         <div class="modal-content">
 
             <div class="modal-header">
-
                 <h5 class="modal-title">
                     Meter Download Detailed Summary
                 </h5>
 
-                <button class="btn-close"
-                        data-bs-dismiss="modal"></button>
-
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
             </div>
 
             <div class="modal-body">
 
+                <!-- Filters -->
                 <div class="row mb-3">
 
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">Department</label>
-                        <select id="departmentFilter" class="form-select">
+                    <div class="col-lg-3 col-md-6 mb-2">
+                        <label class="form-label fw-bold">
+                            Department
+                        </label>
+
+                        <select id="departmentFilter"
+                                class="form-select">
                             <option value="">All Departments</option>
                         </select>
                     </div>
 
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">HES Failed Reason</label>
-                        <select id="reasonFilter" class="form-select">
+                    <div class="col-lg-3 col-md-6 mb-2">
+                        <label class="form-label fw-bold">
+                            HES Failed Reason
+                        </label>
+
+                        <select id="reasonFilter"
+                                class="form-select">
                             <option value="">All Reasons</option>
                         </select>
                     </div>
 
                 </div>
 
-            <div class="table-responsive" style="max-height:75vh;overflow:auto;">
-                <table id="downloadSummaryTable" class="table table-bordered table-striped table-hover mb-0">
-                        <thead class="table-dark sticky-top">
+                <!-- Table -->
+                <div class="table-responsive">
+
+                    <table class="table table-bordered table-hover table-striped align-middle custom-table"
+                           id="downloadSummaryTable">
+
+                        <thead class="table-dark">
+
                             <tr>
                                 <th>Consumer Ref</th>
                                 <th>Meter No</th>
                                 <th>Department</th>
                                 <th>Division</th>
                                 <th>SAP Seq No</th>
-                                <th style="min-width:280px;">Address</th>
+                                <th>Address</th>
                                 <th>Meter Type</th>
-                                <th style="min-width:300px;">HES Failed Reason</th>
+                                <th>HES Failed Reason</th>
                                 <th>Entry Date</th>
                             </tr>
+
                         </thead>
 
-                <tbody id="downloadSummaryBody"></tbody>
-                </table>
-            </div>
+                        <tbody id="downloadSummaryBody">
+
+                            <!-- Dynamic Rows -->
+
+                        </tbody>
+
+                    </table>
+
+                </div>
 
             </div>
 
@@ -382,6 +432,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
+
+
 <script>
     let allDownloadData = [];
     let filteredData = [];
@@ -394,6 +446,7 @@
     );
 
     modal.show();
+
     loadDownloadSummary();
     });
 
@@ -405,7 +458,7 @@
     $("#downloadSummaryBody").html(`
     <tr>
     <td colspan="10" class="text-center py-4">
-    <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+    <div class="spinner-border spinner-border-sm text-primary"></div>
     Loading...
     </td>
     </tr>
@@ -422,23 +475,23 @@
     filteredData = [...allDownloadData];
 
     loadDepartmentFilter();
+    loadReasonFilter();
+
     renderTable(filteredData);
 
     }
-    catch (e) {
+    catch (err) {
 
-    console.error(e);
+    console.error(err);
 
     $("#downloadSummaryBody").html(`
     <tr>
-    <td colspan="10" class="text-center text-danger py-4">
+    <td colspan="10" class="text-center text-danger">
     Failed to load data.
     </td>
     </tr>
     `);
-
     }
-
     }
 
     // Department Dropdown
@@ -448,7 +501,7 @@
 
     ddl.empty();
 
-    ddl.append('<option value="">All Departments</option>');
+    ddl.append(`<option value="">All Departments</option>`);
 
     const departments = [...new Set(
     allDownloadData
@@ -456,247 +509,156 @@
     .filter(x => x)
     )].sort();
 
-    departments.forEach(function (d) {
+    departments.forEach(d => {
 
-    ddl.append(`<option value="${d}">${d}</option>`);
+    ddl.append(`
+    <option value="${d}">
+    ${d}
+    </option>
+    `);
 
     });
 
     }
+
+    // Reason Dropdown
     function loadReasonFilter() {
 
     const ddl = $("#reasonFilter");
 
     ddl.empty();
 
-    ddl.append('<option value="">All Reasons</option>');
+    ddl.append(`<option value="">All Reasons</option>`);
 
-    const reasons = [
-        "SYSTEM TITLE MISMATCH",
-        "TCP CONNECTION FAILED",
-        "NO DATA FOUND ODR",
-        "OTHER"
-    ];
+    ddl.append(`<option value="SYSTEM TITLE">System Title Mismatch</option>`);
+    ddl.append(`<option value="TCP">TCP Connection Failed</option>`);
+    ddl.append(`<option value="NO DATA">No Data Found ODR</option>`);
+    ddl.append(`<option value="OTHER">Other</option>`);
+    }
 
-    reasons.forEach(r => {
-        ddl.append(`<option value="${r}">${r}</option>`);
-    });
-}
-    loadReasonFilter();
+    // Filter Events
+    $("#departmentFilter").on("change", applyFilters);
+    $("#reasonFilter").on("change", applyFilters);
 
-    // Department Change
-    $("#departmentFilter").on("change", function () {
-    applyFilters();
-    });
+    // Apply Filters
+    function applyFilters() {
 
-    $("#reasonFilter").on("change", function () {
-    applyFilters();
-        });
-    // Apply Filter
-   function applyFilters() {
+    const department = ($("#departmentFilter").val() || "").toUpperCase();
+    const reason = ($("#reasonFilter").val() || "").toUpperCase();
 
-    const dept = ($("#departmentFilter").val() || "").trim().toUpperCase();
-    const reason = ($("#reasonFilter").val() || "").trim().toUpperCase();
+    filteredData = allDownloadData.filter(item => {
 
-    filteredData = allDownloadData.filter(function (x) {
+    const deptMatch =
+    department === "" ||
+    (item.sapDepartment || "").toUpperCase() === department;
 
-        const departmentMatch =
-            dept === "" ||
-            (x.sapDepartment || "").toUpperCase() === dept;
+    let reasonMatch = true;
 
-        let reasonMatch = true;
+    const msg = (item.schedulerMessage || "").toUpperCase();
 
-        const msg = (x.schedulerMessage || "").toUpperCase();
+    if (reason !== "") {
 
-        if (reason !== "") {
+    if (reason === "OTHER") {
 
-            switch (reason) {
+    reasonMatch =
+    !msg.includes("SYSTEM TITLE") &&
+    !msg.includes("TCP") &&
+    !msg.includes("NO DATA") &&
+    !msg.includes("TIMEOUT");
 
-                case "SYSTEM TITLE MISMATCH":
-                    reasonMatch = msg.includes("SYSTEM TITLE");
-                    break;
+    }
+    else {
 
-                case "TCP CONNECTION FAILED":
-                    reasonMatch = msg.includes("TCP");
-                    break;
+    reasonMatch = msg.includes(reason);
 
-                case "NO DATA FOUND ODR":
-                    reasonMatch = msg.includes("NO DATA");
-                    break;
+    }
+    }
 
-                case "OTHER":
-                    reasonMatch =
-                        !msg.includes("SYSTEM TITLE") &&
-                        !msg.includes("TCP") &&
-                        !msg.includes("NO DATA") 
-                    break;
-            }
-        }
-
-        return departmentMatch && reasonMatch;
+    return deptMatch && reasonMatch;
 
     });
 
     renderTable(filteredData);
-}
+
+    }
+
+    // Render Table
     function renderTable(data) {
 
-    if ($.fn.DataTable.isDataTable("#downloadSummaryTable")) {
-        $("#downloadSummaryTable").DataTable().clear().destroy();
+    const tbody = $("#downloadSummaryBody");
+
+    tbody.empty();
+
+    if (data.length === 0) {
+
+    tbody.html(`
+    <tr>
+    <td colspan="10" class="text-center">
+    No Records Found
+    </td>
+    </tr>
+    `);
+
+    return;
     }
 
-    const rows = data.map((x, index) => {
+    data.forEach((x, index) => {
 
-        let bgColor = "#6C757D";
-        let textColor = "#FFFFFF";
+    let badgeColor = "#6c757d";
+    let textColor = "#fff";
 
-        const msg = (x.schedulerMessage || "").toUpperCase();
+    const msg = (x.schedulerMessage || "").toUpperCase();
 
-        if (msg.includes("SYSTEM TITLE")) {
-            bgColor = "#DC3545";
-        }
-        else if (msg.includes("TCP")) {
-            bgColor = "#FD7E14";
-        }
-        else if (msg.includes("NO DATA")) {
-            bgColor = "#FFC107";
-            textColor = "#000000";
-        }
-        else if (msg.includes("TIMEOUT")) {
-            bgColor = "#0D6EFD";
-        }
+    if (msg.includes("SYSTEM TITLE"))
+    badgeColor = "#dc3545";
 
-        const reasonBadge = `
-            <div style="
-                background:${bgColor};
-                color:${textColor};
-                padding:6px 10px;
-                border-radius:4px;
-                font-size:12px;
-                line-height:1.35;
-                white-space:normal;
-                word-break:break-word;
-                overflow-wrap:anywhere;">
-                ${x.schedulerMessage ?? "--"}
-            </div>
-        `;
+    else if (msg.includes("TCP"))
+    badgeColor = "#fd7e14";
 
-        const entryDate = x.entryDate
-            ? new Date(x.entryDate).toLocaleString("en-GB")
-            : "--";
-
-        return [
-            x.consRef ?? "",
-            x.meterNumber ?? "",
-            x.sapDepartment ?? "",
-            x.sapDivision ?? "",
-            x.sapSeqNo ?? "",
-            `<div style="white-space:normal;word-break:break-word;max-width:350px;">
-                ${x.address ?? "--"}
-            </div>`,
-            x.meterType ?? "",
-            reasonBadge,
-            entryDate
-        ];
-    });
-
-    $("#downloadSummaryTable").DataTable({
-
-        destroy: true,
-        data: rows,
-
-        columns: [
-            { title: "Consumer Ref" },
-            { title: "Meter No" },
-            { title: "Department" },
-            { title: "Division" },
-            { title: "SAP Seq No" },
-            { title: "Address" },
-            { title: "Meter Type" },
-            { title: "HES Failed Reason" },
-            { title: "Entry Date" }
-        ],
-
-        pageLength: 25,
-
-        lengthMenu: [
-            [10, 25, 50, 100, -1],
-            [10, 25, 50, 100, "All"]
-        ],
-
-       responsive: false,
-        autoWidth: false,
-
-        scrollX: true,
-        scrollY: "65vh",
-        scrollCollapse: true,
-
-        order: [[0, "asc"]],
-
-        dom: 'Bfrtip',
-
-     columnDefs: [
-
-    {
-        targets: "_all",
-        className: "align-middle"
-    },
-
-    {
-        targets: [0,1,2,3,4,6,8],
-        className: "text-center"
-    },
-    {
-        targets:0,
-        width:"7%"
-    },
-    {
-        targets:1,
-        width:"8%",
-    },
-    {
-        targets:2,
-        width:"4%"
-    },
-    {
-        targets:3,
-        width:"6%"
-    },
-    {
-        targets:4,
-        width:"6%"
-    },
-    
-    {
-        targets: 5,
-        width: "20%"
-    },
-    {
-        targets: 6,
-        width:"6%"
-    },
-    
-    {
-        targets: 7,
-        width: "18%"
-    },
-    {
-        targets:8,
-        width:"10%"
-    },
-
-    {
-        targets: [5],
-        orderable: false
+    else if (msg.includes("NO DATA")) {
+    badgeColor = "#ffc107";
+    textColor = "#000";
     }
 
-]
+    const entryDate = x.entryDate
+    ? new Date(x.entryDate).toLocaleString("en-GB")
+    : "--";
+
+    tbody.append(`
+    <tr>
+
+    <td>${x.consRef ?? ""}</td>
+
+    <td>${x.meterNumber ?? ""}</td>
+
+    <td>${x.sapDepartment ?? ""}</td>
+
+    <td>${x.sapDivision ?? ""}</td>
+
+    <td>${x.sapSeqNo ?? ""}</td>
+
+    <td>${x.address ?? "--"}</td>
+
+    <td>${x.meterType ?? ""}</td>
+
+    <td>
+    <span class="badge"
+    style="
+    background:${badgeColor};
+    color:${textColor};
+    white-space:normal;
+    font-size:12px;
+    padding:8px;">
+    ${x.schedulerMessage ?? "--"}
+    </span>
+    </td>
+
+    <td>${entryDate}</td>
+
+    </tr>
+    `);
 
     });
 
-}
-
-        
+    }
 </script>
-
-
