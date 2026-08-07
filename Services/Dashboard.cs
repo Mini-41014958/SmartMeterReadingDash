@@ -46,7 +46,7 @@ namespace SmartMeterReadingDash.Services
                              OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
                              OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
                           )
-                        AND BILLMONTH IN (
+                        AND READING_MONTH IN (
                             SELECT REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL)
                             FROM dual
                             CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
@@ -124,7 +124,7 @@ namespace SmartMeterReadingDash.Services
                              OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
                              OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
                         )
-                      AND BILLMONTH IN (
+                      AND READING_MONTH IN (
                         SELECT REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL)
                         FROM dual
                         CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
@@ -184,92 +184,96 @@ namespace SmartMeterReadingDash.Services
             {
                 con.Open();
                 string query = @"SELECT
-                        L.METERNO,
-                        L.CONS_REF,
-                        L.DISTRICT,
-                        NVL(L.SAP_DEPARTMENT, 'SLCC') AS SAP_DEPARTMENT,
-                        NVL(S.SAP_DIVISION, F.SAP_DIVISION) AS SAP_DIVISION,
+                            L.METERNO,
+                            L.CONS_REF,
+                            NVL(L.SAP_DEPARTMENT, 'SLCC') AS SAP_DEPARTMENT,
+                            NVL(S.SAP_DIVISION, F.SAP_DIVISION) AS SAP_DIVISION,
+                            NVL(S.SAP_SEQ_NO, F.SAP_SEQ_NO) AS SAP_SEQ_NO,
 
-                        RTRIM(
-                            NVL(S.ADD1, F.ADD1) || ', ' ||
-                            NVL(S.ADD2, F.ADD2) || ', ' ||
-                            NVL(S.ADD3, F.ADD3) || ', ' ||
-                            NVL(S.LAND_MARK, F.LAND_MARK) || ', ' ||
-                            NVL(S.FATHER_NAME, F.FATHER_NAME),
-                            ', '
-                        ) AS ADDRESS,
+                            RTRIM(
+                                NVL(S.ADD1, F.ADD1) || ', ' ||
+                                NVL(S.ADD2, F.ADD2) || ', ' ||
+                                NVL(S.ADD3, F.ADD3) || ', ' ||
+                                NVL(S.LAND_MARK, F.LAND_MARK) || ', ' ||
+                                NVL(S.FATHER_NAME, F.FATHER_NAME),
+                                ', '
+                            ) AS ADDRESS,
 
-                        CASE
-                            WHEN SUBSTR(L.METERNO,1,2) IN ('90','AL') THEN 'ALLIED'
-                            WHEN SUBSTR(L.METERNO,1,2) = '91' THEN 'KIMBAL'
-                        END AS METER_TYPE,
+                            CASE
+                                WHEN SUBSTR(L.METERNO,1,2) IN ('90','AL') THEN 'ALLIED'
+                                WHEN SUBSTR(L.METERNO,1,2) = '91' THEN 'KIMBAL'
+                            END AS METER_TYPE,
 
-                        'Failed' AS STATUS,
-                        L.MESSAGE AS SCHEDULER_MESSAGE,
-                        L.ENTRY_DATE
+                            L.MESSAGE AS SCHEDULER_MESSAGE,
+                            L.ENTRY_DATE
 
-                    FROM
-                    (
-                        SELECT
-                            METERNO,
-                            CONS_REF,
-                            DISTRICT,
+                        FROM
+                        (
+                            SELECT
+                                METERNO,
+                                CONS_REF,
+                                DISTRICT,
+                                SAP_DEPARTMENT,
+                                MESSAGE,
+                                ENTRY_DATE,
+                                ROW_NUMBER() OVER
+                                (
+                                    PARTITION BY METERNO
+                                    ORDER BY ENTRY_DATE DESC
+                                ) RN
+                            FROM RCMPA.SMART_METER_SCHEDULER_LOGS
+                            WHERE MESSAGE NOT LIKE 'Data%'
+                              AND READING_MONTH IN
+                              (
+                                  SELECT REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL)
+                                  FROM dual
+                                  CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
+                              )
+                              AND
+                              (
+                                    (SUBSTR(METERNO,1,2) = '91' AND LENGTH(METERNO) = 8)
+                                 OR (SUBSTR(METERNO,1,2) = '90' AND LENGTH(METERNO) = 8)
+                                 OR (SUBSTR(METERNO,1,2) = 'AL' AND LENGTH(METERNO) = 10)
+                              )
+                        ) L
+
+                        LEFT JOIN RCMPA.SAP_SLCC_FORMY S
+                            ON S.CONS_REF = L.CONS_REF
+                           AND S.READING_MONTH IN
+                           (
+                               SELECT REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL)
+                               FROM dual
+                               CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
+                           )
+
+                        LEFT JOIN RCMPA.SAP_FORMY F
+                            ON F.CONS_REF = L.CONS_REF
+                           AND F.READING_MONTH IN
+                           (
+                               SELECT REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL)
+                               FROM dual
+                               CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
+                           )
+
+                        WHERE L.RN = 1
+                          AND NOT EXISTS
+                        (
+                            SELECT 1
+                            FROM RCMPA.SMART_METER_BILLING_DATA B
+                            WHERE B.CONS_REF = L.CONS_REF
+                              AND B.READING_MONTH IN
+                              (
+                                  SELECT REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL)
+                                  FROM dual
+                                  CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
+                              )
+                        )
+
+                        ORDER BY
                             SAP_DEPARTMENT,
-                            MESSAGE,
-                            ENTRY_DATE,
-                            ROW_NUMBER() OVER
-                            (
-                                PARTITION BY METERNO
-                                ORDER BY ENTRY_DATE DESC
-                            ) RN
-                        FROM RCMPA.SMART_METER_SCHEDULER_LOGS
-                        WHERE MESSAGE NOT LIKE 'Data%'
-                        AND READING_MONTH IN (
-                        SELECT REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL)
-                        FROM dual
-                        CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
-                    )
-                          AND (
-                                 (SUBSTR(METERNO,1,2) = '91' AND LENGTH(METERNO) = 8)
-                              OR (SUBSTR(METERNO,1,2) = '90' AND LENGTH(METERNO) = 8)
-                              OR (SUBSTR(METERNO,1,2) = 'AL' AND LENGTH(METERNO) = 10)
-                          )
-                    ) L
-
-                    LEFT JOIN RCMPA.SAP_SLCC_FORMY S
-                           ON S.CONS_REF = L.CONS_REF
-                          AND S.READING_MONTH IN (
-                            SELECT REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL)
-                            FROM dual
-                            CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
-                        )
-
-                    LEFT JOIN RCMPA.SAP_FORMY F
-                           ON F.CONS_REF = L.CONS_REF
-                       AND F.READING_MONTH IN (
-                            SELECT REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL)
-                            FROM dual
-                            CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
-                        )
-
-                    WHERE L.RN = 1
-                      AND NOT EXISTS
-                    (
-                        SELECT 1
-                        FROM RCMPA.SMART_METER_BILLING_DATA B
-                        WHERE B.CONS_REF = L.CONS_REF
-                         AND BILLMONTH IN (
-                            SELECT REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL)
-                            FROM dual
-                            CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
-                        )
-                    )
-
-                    ORDER BY
-                        SAP_DEPARTMENT,
-                        SAP_DIVISION,
-                        DISTRICT,
-                        METERNO";
+                            SAP_DIVISION,
+                            SAP_SEQ_NO,
+                            METERNO";
 
                 using(OracleCommand cmd  = new OracleCommand(query,con))
                 {
@@ -286,9 +290,8 @@ namespace SmartMeterReadingDash.Services
                                 MeterType = dr["METER_TYPE"].ToString(),
                                 ConsRef = dr["CONS_REF"].ToString(),
                                 SapDivision = dr["SAP_DIVISION"].ToString(),
-                                District = dr["DISTRICT"].ToString(),
                                 Address = dr["ADDRESS"].ToString(),
-                                Status = dr["STATUS"].ToString(),
+                                SapSeqNo = dr["SAP_SEQ_NO"].ToString(),
                                 SchedulerMessage = dr["SCHEDULER_MESSAGE"] == DBNull.Value ? null : dr["SCHEDULER_MESSAGE"].ToString(),
                                 EntryDate = dr["ENTRY_DATE"] == DBNull.Value ? null : Convert.ToDateTime(dr["ENTRY_DATE"])
 
@@ -383,7 +386,7 @@ namespace SmartMeterReadingDash.Services
                              OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
                              OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
                               )
-                          AND BILLMONTH IN (
+                          AND READING_MONTH IN (
                                 SELECT REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL)
                                 FROM dual
                                 CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
@@ -472,10 +475,10 @@ namespace SmartMeterReadingDash.Services
                         (
                             SELECT
                                 CASE
-                                    WHEN UPPER(L.MESSAGE) LIKE '%SYSTEM TITLE%' THEN 'System Title'
-                                    WHEN UPPER(L.MESSAGE) LIKE '%TCP%' THEN 'TCP'
-                                    WHEN UPPER(L.MESSAGE) LIKE '%NO DATA%' THEN 'No Data'
-                                    ELSE 'Others'
+                                    WHEN UPPER(L.MESSAGE) LIKE '%SYSTEM TITLE%' THEN 'System Title Mismatch'
+                                    WHEN UPPER(L.MESSAGE) LIKE '%TCP%' THEN 'TCP Connection Failed'
+                                    WHEN UPPER(L.MESSAGE) LIKE '%NO DATA%' THEN 'No Data Found'
+                                    ELSE 'Others Failure Reason'
                                 END FAILURE_REASON
                             FROM
                             (

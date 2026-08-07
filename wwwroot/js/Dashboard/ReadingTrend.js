@@ -21,13 +21,13 @@ function loadFailureReasonChart(readingMonth) {
 
                 switch (label.toUpperCase()) {
 
-                    case "SYSTEM TITLE":
+                    case "SYSTEM TITLE MISMATCH":
                         return "#DC3545";      // Red (Critical)
 
-                    case "TCP":
+                    case "TCP CONNECTION FAILED":
                         return "#FD7E14";      // Orange
 
-                    case "NO DATA":
+                    case "NO DATA FOUND":
                         return "#FFC107";      // Yellow
 
 

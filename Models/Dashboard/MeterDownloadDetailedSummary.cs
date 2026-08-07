@@ -10,6 +10,7 @@
         public string District { get; set; }
         public string Address { get; set; } 
         public string Status { get; set; }
+        public string SapSeqNo { get; set; }
         public string SchedulerMessage { get; set; }
         public DateTime ? EntryDate { get; set; }
     }
