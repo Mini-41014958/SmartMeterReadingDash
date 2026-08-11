@@ -28,6 +28,7 @@ namespace SmartMeterReadingDash.Controllers.API
             }
            
         }
+        //BYPL
         [HttpGet("meter-type-wise-summary-bypl")]
         public IActionResult GetMeterSummaryBypl(string ReadingMonth)
         {
@@ -59,6 +60,21 @@ namespace SmartMeterReadingDash.Controllers.API
             }
 
         }
+        //BYPL
+        [HttpGet("meter-download-summary-bypl")]
+        public IActionResult GetMeterDownloadSummaryBypl(string ReadingMonth)
+        {
+            try
+            {
+                var summary = _dashboard.GetMeterReceivedSummaryBypl(ReadingMonth);
+                return Ok(summary);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
         [HttpGet("meter-download-detailed-summary")]
         public IActionResult GetMeterDownloadDetailedSummary(string ReadingMonth)
         {

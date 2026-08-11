@@ -196,7 +196,7 @@ namespace SmartMeterReadingDash.Services
             }
             return Summary;
         }
-
+        //BYPL
         public TotalMeterSummaryBypl GetByplTotalMeterSummary(string ReadingMonth)
         {
             TotalMeterSummaryBypl totalMeterSummary = new TotalMeterSummaryBypl();
@@ -432,6 +432,159 @@ namespace SmartMeterReadingDash.Services
             }
             return Summary;
         }
+        //BYPL
+        public List<MeterReceivedSummaryBypl> GetMeterReceivedSummaryBypl(string readingMonth)
+        {
+            List<MeterReceivedSummaryBypl> meterReceivedSummaryBypl = new List<MeterReceivedSummaryBypl>();
+            using(OracleConnection con = _db.GetConnection())
+            {
+                con.Open();
+                string query = @"WITH BASE_DATA AS
+                    (
+                        SELECT /*+ PARALLEL(8) */
+                               MTR_READ_MODE,
+                               READING_DATE,
+                               NEW_MTR_NO,
+                               MTR_CORR_STS,
+                               MTR_NO_CORR
+                        FROM RCMPA.SAP_SLCC_FORMY
+                        WHERE SAP_COMPANY = 'BYPL'
+                             AND READING_MONTH IN (
+                          SELECT REGEXP_SUBSTR(  :READING_MONTH, '[^,]+',  1, LEVEL )
+                           FROM DUAL CONNECT BY REGEXP_SUBSTR( :READING_MONTH, '[^,]+',  1, LEVEL ) IS NOT NULL
+                                        )
+                          AND SAP_MR_REASON_CODE = '01'
+                          AND CSTS_CD = 'R'
+                          AND METERNO NOT LIKE '%D%'
+                          AND (
+                                (
+                                    SUBSTR(METERNO,1,2) IN ('92','99','98','97')
+                                    AND LENGTH(METERNO) = 8
+                                )
+                                OR
+                                (
+                                    SUBSTR(METERNO,1,2) IN ('AL','KI')
+                                    AND LENGTH(METERNO) = 10
+                                )
+                              )
+                        UNION ALL
+                        SELECT /*+ PARALLEL(8) */
+                               MTR_READ_MODE,
+                               READING_DATE,
+                               NEW_MTR_NO,
+                               MTR_CORR_STS,
+                               MTR_NO_CORR
+                        FROM RCMPA.SAP_FORMY
+                        WHERE SAP_COMPANY = 'BYPL'
+                              AND READING_MONTH IN (
+                          SELECT REGEXP_SUBSTR(  :READING_MONTH, '[^,]+',  1, LEVEL )
+                           FROM DUAL CONNECT BY REGEXP_SUBSTR( :READING_MONTH, '[^,]+',  1, LEVEL ) IS NOT NULL
+                                        )
+                          AND SAP_MR_REASON_CODE = '01'
+                          AND CSTS_CD = 'R'
+                          AND METERNO NOT LIKE '%D%'
+                          AND (
+                                (
+                                    SUBSTR(METERNO,1,2) IN ('92','99','98','97')
+                                    AND LENGTH(METERNO) = 8
+                                )
+                                OR
+                                (
+                                    SUBSTR(METERNO,1,2) IN ('AL','KI')
+                                    AND LENGTH(METERNO) = 10
+                                )
+                              )
+                    ),
+                    SUMMARY AS
+                    (
+                        SELECT /*+ PARALLEL(8) */
+                               SUM(
+                                   CASE
+                                       WHEN MTR_READ_MODE = '1'
+                                       THEN 1
+                                       ELSE 0
+                                   END
+                               ) AS HES_DOWNLOAD,
+                               SUM(
+                                   CASE
+                                       WHEN MTR_READ_MODE = '0'
+                                         OR (
+                                               MTR_READ_MODE IS NULL
+                                               AND READING_DATE IS NOT NULL
+                                            )
+                                       THEN 1
+                                       ELSE 0
+                                   END
+                               ) AS MANUAL,
+                               SUM(
+                                   CASE
+                                       WHEN READING_DATE IS NULL
+                                       THEN 1
+                                       ELSE 0
+                                   END
+                               ) AS READING_PENDING,
+                               SUM(
+                                   CASE
+                                       WHEN MTR_READ_MODE = '1'
+                                        AND (
+                                               NEW_MTR_NO IS NOT NULL
+                                               OR MTR_CORR_STS IS NOT NULL
+                                               OR MTR_NO_CORR IS NOT NULL
+                                            )
+                                       THEN 1
+                                       ELSE 0
+                                   END
+                               ) AS MISMATCH
+                        FROM BASE_DATA
+                    ),
+                    FINAL_DATA AS
+                    (
+                        SELECT
+                            HES_DOWNLOAD,
+                            (
+                                MISMATCH
+                                + MANUAL
+                                + READING_PENDING
+                            ) AS HES_FAILED
+                        FROM SUMMARY
+                    )
+                    SELECT
+                        HES_DOWNLOAD,
+                        HES_FAILED,
+                        HES_DOWNLOAD + HES_FAILED AS TOTAL,
+                        ROUND(
+                            HES_DOWNLOAD * 100 /
+                            NULLIF(HES_DOWNLOAD + HES_FAILED, 0),
+                            2
+                        ) AS DOWNLOAD_PERCENTAGE,
+                        ROUND(
+                            HES_FAILED * 100 /
+                            NULLIF(HES_DOWNLOAD + HES_FAILED, 0),
+                            2
+                        ) AS FAILED_PERCENTAGE
+                    FROM FINAL_DATA";
+                using (OracleCommand cmd = new OracleCommand(query, con))
+                {
+                    cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = readingMonth;
+                    using (OracleDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            meterReceivedSummaryBypl.Add(new MeterReceivedSummaryBypl()
+                            {
+                                totalMetersCount = dr["TOTAL"] == DBNull.Value ? 0 : Convert.ToInt32(dr["TOTAL"]),
+                                hesDownloadCount = dr["HES_DOWNLOAD"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_DOWNLOAD"]),
+                                hesFailedCount = dr["HES_FAILED"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_FAILED"]),
+                                hesDownloadPercentage = dr["DOWNLOAD_PERCENTAGE"] == DBNull.Value ? 0 : Convert.ToDecimal(dr["DOWNLOAD_PERCENTAGE"]),
+                                hesFailedPercentage = dr["FAILED_PERCENTAGE"] == DBNull.Value ? 0 : Convert.ToDecimal(dr["FAILED_PERCENTAGE"])
+                            });
+                        }
+                    }
+                } return meterReceivedSummaryBypl;
+            }
+        }
+
+
 
         // Get Meter Download Detailed Summary Allied + Kimbal including all department for the current month till day - 1
         public List<MeterDownloadDetailedSummary> MeterDetailedSummary(string ReadingMonth)
