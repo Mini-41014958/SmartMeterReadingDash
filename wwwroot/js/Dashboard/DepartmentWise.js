@@ -6,10 +6,6 @@ async function loadDepartmentDistribution() {
 
     try {
 
-        // =========================================================
-        // LOAD BRPL + BYPL API DATA
-        // =========================================================
-
         const [brplResponse, byplResponse] = await Promise.all([
 
             fetch(
@@ -21,10 +17,6 @@ async function loadDepartmentDistribution() {
             )
 
         ]);
-
-        // =========================================================
-        // API VALIDATION
-        // =========================================================
 
         if (!brplResponse.ok) {
             throw new Error(
@@ -38,19 +30,11 @@ async function loadDepartmentDistribution() {
             );
         }
 
-        // =========================================================
-        // READ API RESPONSE
-        // =========================================================
-
         const brplData = await brplResponse.json();
         const byplData = await byplResponse.json();
 
         console.log("BRPL Department Data:", brplData);
         console.log("BYPL Department Data:", byplData);
-
-        // =========================================================
-        // GET UNIQUE DEPARTMENTS
-        // =========================================================
 
         const departments = [
             ...new Set([
@@ -58,11 +42,6 @@ async function loadDepartmentDistribution() {
                 ...byplData.map(x => x.department)
             ])
         ];
-
-        // =========================================================
-        // CREATE LOOKUP MAPS
-        // Avoid repeated .find()
-        // =========================================================
 
         const brplMap = Object.fromEntries(
             brplData.map(x => [
@@ -77,10 +56,6 @@ async function loadDepartmentDistribution() {
                 x
             ])
         );
-
-        // =========================================================
-        // BRPL DATA
-        // =========================================================
 
         const brplHes = departments.map(department => {
 
@@ -98,10 +73,6 @@ async function loadDepartmentDistribution() {
 
         });
 
-        // =========================================================
-        // BYPL DATA
-        // =========================================================
-
         const byplHes = departments.map(department => {
 
             return Number(
@@ -118,10 +89,6 @@ async function loadDepartmentDistribution() {
 
         });
 
-        // =========================================================
-        // GET CANVAS
-        // =========================================================
-
         const ctx = document.getElementById(
             "departmentChart"
         );
@@ -135,20 +102,12 @@ async function loadDepartmentDistribution() {
             return;
         }
 
-        // =========================================================
-        // DESTROY OLD CHART
-        // =========================================================
-
         if (departmentChart) {
 
             departmentChart.destroy();
 
             departmentChart = null;
         }
-
-        // =========================================================
-        // CREATE CHART
-        // =========================================================
 
         departmentChart = new Chart(ctx, {
 
@@ -159,10 +118,6 @@ async function loadDepartmentDistribution() {
                 labels: departments,
 
                 datasets: [
-
-                    // =================================================
-                    // BRPL HES DOWNLOAD
-                    // =================================================
 
                     {
                         label: "BRPL - HES Download",
@@ -182,9 +137,6 @@ async function loadDepartmentDistribution() {
                         categoryPercentage: 0.85
                     },
 
-                    // =================================================
-                    // BRPL DOWNLOAD FAILED
-                    // =================================================
 
                     {
                         label: "BRPL - Download Failed",
@@ -203,10 +155,6 @@ async function loadDepartmentDistribution() {
 
                         categoryPercentage: 0.85
                     },
-
-                    // =================================================
-                    // BYPL HES DOWNLOAD
-                    // =================================================
 
                     {
                         label: "BYPL - HES Download",
@@ -254,12 +202,11 @@ async function loadDepartmentDistribution() {
 
                 maintainAspectRatio: false,
 
-                // Horizontal bars
                 indexAxis: "y",
 
                 interaction: {
-                    mode: "index",
-                    intersect: false
+                    mode: "nearest",
+                    intersect: true
                 },
 
                 plugins: {
@@ -279,17 +226,37 @@ async function loadDepartmentDistribution() {
 
                         enabled: true,
 
+                        mode: "nearest",
+
+                        intersect: true,
+
+                        displayColors: true,
+
+                        backgroundColor: "rgba(33, 37, 41, 0.95)",
+
+                        titleColor: "#ffffff",
+
+                        bodyColor: "#ffffff",
+
+                        padding: 12,
+
+                        cornerRadius: 8,
+
                         callbacks: {
+
+                            title: function (tooltipItems) {
+
+                                return tooltipItems.length
+                                    ? `Department: ${tooltipItems[0].label}`
+                                    : "";
+                            },
 
                             label: function (context) {
 
                                 const value =
-                                    Number(
-                                        context.raw || 0
-                                    ).toLocaleString();
+                                    Number(context.raw || 0);
 
-                                return `${context.dataset.label}: ${value}`;
-
+                                return `${context.dataset.label}: ${value.toLocaleString()}`;
                             }
 
                         }
@@ -310,16 +277,11 @@ async function loadDepartmentDistribution() {
 
                             callback: function (value) {
 
-                                return Number(
-                                    value
-                                ).toLocaleString();
+                                return Number(value)
+                                    .toLocaleString();
 
                             }
 
-                        },
-
-                        grid: {
-                            display: true
                         }
 
                     },
@@ -328,10 +290,6 @@ async function loadDepartmentDistribution() {
 
                         stacked: false,
 
-                        grid: {
-                            display: false
-                        },
-
                         ticks: {
 
                             font: {
@@ -339,6 +297,10 @@ async function loadDepartmentDistribution() {
                                 weight: "600"
                             }
 
+                        },
+
+                        grid: {
+                            display: false
                         }
 
                     }
