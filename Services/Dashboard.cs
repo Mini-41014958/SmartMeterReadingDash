@@ -333,50 +333,20 @@ namespace SmartMeterReadingDash.Services
             using (OracleConnection con = _db.GetConnection())
             {
                 con.Open();
-                string query = @"SELECT
-                        L.METERNO,
-                        L.CONS_REF,
-
-                        NVL(L.SAP_DEPARTMENT, 'SLCC') AS SAP_DEPARTMENT,
-
-                        NVL(S.SAP_DIVISION, F.SAP_DIVISION) AS SAP_DIVISION,
-
-                        NVL(S.SAP_SEQ_NO, F.SAP_SEQ_NO) AS SAP_SEQ_NO,
-
-                        RTRIM(
-                            NVL(S.ADD1, F.ADD1) || ', ' ||
-                            NVL(S.ADD2, F.ADD2) || ', ' ||
-                            NVL(S.ADD3, F.ADD3) || ', ' ||
-                            NVL(S.LAND_MARK, F.LAND_MARK) || ', ' ||
-                            NVL(S.FATHER_NAME, F.FATHER_NAME),
-                            ', '
-                        ) AS ADDRESS,
-
-                        CASE
-                            WHEN SUBSTR(L.METERNO, 1, 2) IN ('90', 'AL')
-                                THEN 'ALLIED'
-
-                            WHEN SUBSTR(L.METERNO, 1, 2) = '91'
-                                THEN 'KIMBAL'
-                        END AS METER_TYPE,
-
-                        L.MESSAGE AS SCHEDULER_MESSAGE,
-                        L.ENTRY_DATE
-
-                    FROM
+                string query = @"WITH LATEST_FAILURE AS
                     (
                         SELECT
                             METERNO,
                             CONS_REF,
-                            DISTRICT,
-                            SAP_DEPARTMENT,
                             MESSAGE,
                             ENTRY_DATE,
                             READING_MONTH,
+                            SAP_DEPARTMENT,
+                            CYCLE,
 
                             ROW_NUMBER() OVER
                             (
-                                PARTITION BY METERNO
+                                PARTITION BY METERNO, READING_MONTH
                                 ORDER BY ENTRY_DATE DESC
                             ) AS RN
 
@@ -386,11 +356,13 @@ namespace SmartMeterReadingDash.Services
 
                           AND READING_MONTH IN
                           (
-                              SELECT REGEXP_SUBSTR(
-                                         :READING_MONTH,
-                                         '[^,]+',
-                                         1,
-                                         LEVEL
+                              SELECT TRIM(
+                                         REGEXP_SUBSTR(
+                                             :READING_MONTH,
+                                             '[^,]+',
+                                             1,
+                                             LEVEL
+                                         )
                                      )
                               FROM DUAL
                               CONNECT BY REGEXP_SUBSTR(
@@ -412,33 +384,108 @@ namespace SmartMeterReadingDash.Services
                              OR (SUBSTR(METERNO, 1, 2) = 'AL'
                                  AND LENGTH(METERNO) = 10)
                           )
+                    ),
 
-                    ) L
+                    FAILURE_DATA AS
+                    (
+                        SELECT DISTINCT
+                            L.METERNO,
+                            L.CONS_REF,
+                            L.MESSAGE,
+                            L.ENTRY_DATE,
+                            L.READING_MONTH,
+                            L.SAP_DEPARTMENT,
+                            L.CYCLE,
+
+                            CASE
+                                WHEN UPPER(L.MESSAGE) LIKE '%SYSTEM TITLE%'
+                                    THEN 'System Title Mismatch'
+
+                                WHEN UPPER(L.MESSAGE) LIKE '%TCP%'
+                                    THEN 'TCP Connection Failed'
+
+                                WHEN UPPER(L.MESSAGE) LIKE '%NO DATA%'
+                                    THEN 'No Data Found'
+
+                                ELSE 'Others Failure Reason'
+                            END AS FAILURE_REASON
+
+                        FROM LATEST_FAILURE L
+
+                        WHERE L.RN = 1
+
+                          AND NOT EXISTS
+                          (
+                              SELECT 1
+                              FROM RCMPA.SMART_METER_BILLING_DATA B
+                              WHERE B.CONS_REF = L.CONS_REF
+                                AND B.READING_MONTH = L.READING_MONTH
+                          )
+                    )
+
+                    SELECT DISTINCT
+                        F.METERNO,
+                        F.CONS_REF,
+
+                        CASE
+                            WHEN F.SAP_DEPARTMENT = 'MLCC'
+                                 AND F.CYCLE = '0N'
+                                THEN 'KCC'
+
+                            ELSE NVL(F.SAP_DEPARTMENT, 'SLCC')
+                        END AS SAP_DEPARTMENT,
+
+                        NVL(S.SAP_DIVISION, FM.SAP_DIVISION) AS SAP_DIVISION,
+
+                        NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO) AS SAP_SEQ_NO,
+
+                        RTRIM(
+                            NVL(S.ADD1, FM.ADD1) || ', ' ||
+                            NVL(S.ADD2, FM.ADD2) || ', ' ||
+                            NVL(S.ADD3, FM.ADD3) || ', ' ||
+                            NVL(S.LAND_MARK, FM.LAND_MARK) || ', ' ||
+                            NVL(S.FATHER_NAME, FM.FATHER_NAME),
+                            ', '
+                        ) AS ADDRESS,
+
+                        CASE
+                            WHEN SUBSTR(F.METERNO, 1, 2) IN ('90', 'AL')
+                                THEN 'ALLIED'
+
+                            WHEN SUBSTR(F.METERNO, 1, 2) = '91'
+                                THEN 'KIMBAL'
+                        END AS METER_TYPE,
+
+                        F.FAILURE_REASON,
+
+                        F.MESSAGE AS SCHEDULER_MESSAGE,
+
+                        F.ENTRY_DATE,
+
+                        F.READING_MONTH
+
+                    FROM FAILURE_DATA F
 
                     LEFT JOIN RCMPA.SAP_SLCC_FORMY S
-                        ON S.CONS_REF = L.CONS_REF
-                       AND S.READING_MONTH = L.READING_MONTH
+                        ON S.CONS_REF = F.CONS_REF
+                        AND S.READING_MONTH = F.READING_MONTH
 
-                    LEFT JOIN RCMPA.SAP_FORMY F
-                        ON F.CONS_REF = L.CONS_REF
-                       AND F.READING_MONTH = L.READING_MONTH
-
-                    WHERE L.RN = 1
-
-                      AND NOT EXISTS
-                      (
-                          SELECT 1
-                          FROM RCMPA.SMART_METER_BILLING_DATA B
-
-                          WHERE B.CONS_REF = L.CONS_REF
-                            AND B.READING_MONTH = L.READING_MONTH
-                      )
+                    LEFT JOIN RCMPA.SAP_FORMY FM
+                        ON FM.CONS_REF = F.CONS_REF
+                        AND FM.READING_MONTH = F.READING_MONTH
 
                     ORDER BY
-                        SAP_DEPARTMENT,
-                        SAP_DIVISION,
-                        SAP_SEQ_NO,
-                        METERNO";
+                        CASE
+                            WHEN F.SAP_DEPARTMENT = 'MLCC'
+                                 AND F.CYCLE = '0N'
+                                THEN 'KCC'
+
+                            ELSE NVL(F.SAP_DEPARTMENT, 'SLCC')
+                        END,
+
+                        NVL(S.SAP_DIVISION, FM.SAP_DIVISION),
+                        NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO),
+                        F.METERNO";
 
                 using(OracleCommand cmd  = new OracleCommand(query,con))
                 {
