@@ -269,6 +269,223 @@ canvas {
         width: 18%;
     }
 /* ================================
+   Doughnut Chart
+================================ */
+
+/* ================================
+       Two Meter Charts
+    ================================ */
+
+.meter-charts-wrapper {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+
+/* Individual chart */
+
+.meter-chart-item {
+    width: 50%;
+    text-align: center;
+}
+
+
+/* Chart title */
+
+.meter-chart-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #52606d;
+    margin-bottom: 2px;
+}
+
+
+/* Chart container */
+
+.meter-chart-wrapper {
+    width: 100%;
+    height: 190px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+    /* Canvas */
+
+    .meter-chart-wrapper canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+/* =========================================
+   Meter Received in MRO
+========================================= */
+
+.mro-company-row {
+    display: grid;
+    grid-template-columns: 55px 1fr 1fr 1fr 1fr 1fr 75px;
+    align-items: center;
+    min-height: 92px;
+    padding: 8px 6px;
+    border-bottom: 1px solid #e5e7eb;
+    column-gap: 8px;
+}
+
+
+    .mro-company-row:last-child {
+        border-bottom: none;
+    }
+
+
+/* Company */
+
+.mro-company {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.company-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    padding: 5px 7px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+.brpl-badge {
+    background: #e8f0ff;
+    color: #2563eb;
+}
+
+
+.bypl-badge {
+    background: #e9f8f0;
+    color: #059669;
+}
+
+
+/* Metric */
+
+.mro-metric {
+    text-align: center;
+    min-width: 0;
+}
+
+
+/* Metric label */
+
+.mro-label {
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+
+/* Metric value */
+
+.mro-value {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+
+/* Action */
+
+.mro-action {
+    display: flex;
+    justify-content: center;
+}
+
+
+    .mro-action .btn {
+        font-size: 11px;
+        padding: 5px 8px;
+        white-space: nowrap;
+    }
+
+
+/* =========================================
+   Responsive
+========================================= */
+
+@media (max-width: 1200px) {
+
+    .mro-company-row {
+        grid-template-columns: 50px repeat(5, 1fr) 65px;
+        column-gap: 4px;
+    }
+
+    .mro-value {
+        font-size: 19px;
+    }
+
+    .mro-label {
+        font-size: 9px;
+    }
+}
+
+
+@media (max-width: 768px) {
+
+    .mro-company-row {
+        grid-template-columns: 50px repeat(2, 1fr) 70px;
+        row-gap: 10px;
+        padding: 10px;
+    }
+
+    .mro-metric:nth-child(4),
+    .mro-metric:nth-child(5),
+    .mro-metric:nth-child(6) {
+        grid-column: span 1;
+    }
+}
+
+
+@media (max-width: 576px) {
+
+    .mro-company-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .mro-company {
+        justify-content: flex-start;
+    }
+
+    .mro-action {
+        justify-content: flex-end;
+    }
+}
+/* Mobile */
+
+@media (max-width: 991px) {
+
+    .meter-charts-wrapper {
+        gap: 20px;
+    }
+
+    .meter-chart-wrapper {
+        height: 200px;
+    }
+}
+/* ================================
    MAIN CONTAINER
 ================================ */
 

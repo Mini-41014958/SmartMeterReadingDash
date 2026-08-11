@@ -28,6 +28,21 @@ namespace SmartMeterReadingDash.Controllers.API
             }
            
         }
+        [HttpGet("meter-type-wise-summary-bypl")]
+        public IActionResult GetMeterSummaryBypl(string ReadingMonth)
+        {
+            try
+            {
+                var summary = _dashboard.GetByplTotalMeterSummary(ReadingMonth);
+                return Ok(summary);
+
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+
+        }
 
         [HttpGet("meter-download-summary")]
         public IActionResult GetMeterDownloadSummary(string ReadingMonth)

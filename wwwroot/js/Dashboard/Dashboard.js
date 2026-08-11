@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Default dashboard = previous + current month
     currentReadingMonth = previous + "," + current;
-
+    updateReadingMonthStrip();
     // Initial Load
     loadDashboard();
 
@@ -75,9 +75,50 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // After Apply -> only selected month
         currentReadingMonth = selected.replace("-", "");
-
+        updateReadingMonthStrip();
         loadDashboard();
 
     });
 
 });
+function updateReadingMonthStrip() {
+
+    const strip = $("#readingMonthStrip");
+
+    if (!currentReadingMonth) {
+        strip.html("");
+        return;
+    }
+
+    const months = currentReadingMonth
+        .split(",")
+        .filter(x => x);
+
+
+    const formattedMonths = months.map(month => {
+
+        if (month.length !== 6)
+            return month;
+
+        const year = Number(month.substring(0, 4));
+        const monthNumber = Number(month.substring(4, 6));
+
+        const date = new Date(
+            year,
+            monthNumber - 1,
+            1
+        );
+
+        return date.toLocaleString("en-US", {
+            month: "short",
+            year: "numeric"
+        });
+
+    });
+
+
+    strip.html(`
+        <i class="bi bi-bar-chart-line-fill"></i>
+        Data shown for: ${formattedMonths.join(" + ")}
+    `);
+}

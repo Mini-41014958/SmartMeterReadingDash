@@ -1,79 +1,189 @@
-﻿let meterTypeChart = null;
+﻿let brplMeterTypeChart = null;
+let byplMeterTypeChart = null;
+
 
 async function loadMeterSummary() {
+
     const month = getReadingMonth();
-    const response = await fetch(`api/DashboardApi/meter-type-wise-summary?readingMonth=${month}`);
 
-    if (!response.ok) {
-        throw new Error("Failed to load Meter Summary.");
+    try {
+
+        const [
+            brplResponse,
+            byplResponse
+        ] = await Promise.all([
+
+            fetch(
+                `api/DashboardApi/meter-type-wise-summary?readingMonth=${encodeURIComponent(month)}`
+            ),
+
+            fetch(
+                `api/DashboardApi/meter-type-wise-summary-bypl?readingMonth=${encodeURIComponent(month)}`
+            )
+
+        ]);
+
+
+        if (!brplResponse.ok) {
+            throw new Error("Failed to load BRPL Meter Summary.");
+        }
+
+        if (!byplResponse.ok) {
+            throw new Error("Failed to load BYPL Meter Summary.");
+        }
+
+
+        const brplData = await brplResponse.json();
+        const byplData = await byplResponse.json();
+
+
+        // IMPORTANT DEBUG
+        console.log("BRPL Meter Summary:", brplData);
+        console.log("BYPL Meter Summary:", byplData);
+
+
+        $("#brplAlliedCount").text(
+            Number(brplData.alliedCount || 0).toLocaleString()
+        );
+
+        $("#brplKimbalCount").text(
+            Number(brplData.kimbalCount || 0).toLocaleString()
+        );
+
+        $("#brplTotalMeter").text(
+            Number(brplData.totalMeter || 0).toLocaleString()
+        );
+
+
+        $("#byplAlliedCount").text(
+            Number(byplData.alliedCount || 0).toLocaleString()
+        );
+
+        $("#byplKimbalCount").text(
+            Number(byplData.kimbalCount || 0).toLocaleString()
+        );
+
+        $("#byplTotalMeter").text(
+            Number(byplData.totalMeter || 0).toLocaleString()
+        );
+
+        drawMeterTypeChart(
+            brplData,
+            "brplMeterTypeChart",
+            "BRPL"
+        );
+
+
+        drawMeterTypeChart(
+            byplData,
+            "byplMeterTypeChart",
+            "BYPL"
+        );
+
     }
+    catch (error) {
 
-    const data = await response.json();
+        console.error("Meter Summary Error:", error);
 
-    // Update Summary
-    document.getElementById("alliedCount").textContent =
-        data.alliedCount.toLocaleString();
+        throw error;
 
-    document.getElementById("kimbalCount").textContent =
-        data.kimbalCount.toLocaleString();
-
-    document.getElementById("totalMeter").textContent =
-        data.totalMeter.toLocaleString();
-
-    drawMeterTypeChart(data);
+    }
 }
+function drawMeterTypeChart(data, canvasId, company) {
 
-function drawMeterTypeChart(data) {
+    const canvas = document.getElementById(canvasId);
 
-    const ctx = document.getElementById("meterTypeChart");
-
-    if (meterTypeChart) {
-        meterTypeChart.destroy();
+    if (!canvas) {
+        console.error(`Canvas not found: ${canvasId}`);
+        return;
     }
 
-    meterTypeChart = new Chart(ctx, {
+
+    // Destroy existing chart
+    if (company === "BRPL" && brplMeterTypeChart) {
+
+        brplMeterTypeChart.destroy();
+        brplMeterTypeChart = null;
+
+    }
+
+    if (company === "BYPL" && byplMeterTypeChart) {
+
+        byplMeterTypeChart.destroy();
+        byplMeterTypeChart = null;
+
+    }
+
+
+    const allied = Number(data.alliedCount || 0);
+    const kimbal = Number(data.kimbalCount || 0);
+
+
+    const chart = new Chart(canvas, {
 
         type: "doughnut",
 
         data: {
 
-            labels: ["Allied", "Kimbal"],
+            labels: [
+                "Allied",
+                "Kimbal"
+            ],
 
             datasets: [{
+
                 data: [
-                    data.alliedCount,
-                    data.kimbalCount
+                    allied,
+                    kimbal
                 ],
+
                 backgroundColor: [
                     "#4F46E5",
                     "#10B981"
                 ],
+
                 borderColor: "#ffffff",
+
                 borderWidth: 2,
-                hoverOffset: 8
+
+                hoverOffset: 6
+
             }]
+
         },
+
 
         options: {
 
             responsive: true,
+
             maintainAspectRatio: false,
 
             cutout: "68%",
 
+
             plugins: {
 
                 legend: {
+
                     position: "bottom",
+
                     labels: {
+
                         usePointStyle: true,
+
                         pointStyle: "circle",
-                        padding: 20,
+
+                        padding: 8,
+
                         font: {
-                            size: 12
+                            size: 10
                         }
+
                     }
+
                 },
+
 
                 tooltip: {
 
@@ -81,11 +191,20 @@ function drawMeterTypeChart(data) {
 
                         label: function (context) {
 
-                            const value = context.raw;
+                            const value = Number(context.raw);
 
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const total =
+                                context.dataset.data.reduce(
+                                    (a, b) => a + Number(b),
+                                    0
+                                );
 
-                            const percentage = ((value / total) * 100).toFixed(1);
+
+                            const percentage =
+                                total > 0
+                                    ? ((value / total) * 100).toFixed(1)
+                                    : "0.0";
+
 
                             return `${context.label}: ${value.toLocaleString()} (${percentage}%)`;
 
@@ -100,5 +219,19 @@ function drawMeterTypeChart(data) {
         }
 
     });
+
+
+    // Store chart instance
+
+    if (company === "BRPL") {
+
+        brplMeterTypeChart = chart;
+
+    }
+    else if (company === "BYPL") {
+
+        byplMeterTypeChart = chart;
+
+    }
 
 }

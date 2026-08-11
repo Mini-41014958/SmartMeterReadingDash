@@ -159,8 +159,6 @@ namespace SmartMeterReadingDash.Services
                             FROM RCMPA.SMART_METER_BILLING_DATA B
                             WHERE B.CONS_REF = L.CONS_REF
 
-                              -- IMPORTANT:
-                              -- check billing for the SAME month
                               AND B.READING_MONTH = L.READING_MONTH
                         )
 
@@ -198,6 +196,115 @@ namespace SmartMeterReadingDash.Services
             }
             return Summary;
         }
+
+        public TotalMeterSummaryBypl GetByplTotalMeterSummary(string ReadingMonth)
+        {
+            TotalMeterSummaryBypl totalMeterSummary = new TotalMeterSummaryBypl();
+            using (OracleConnection con = _db.GetConnection())
+            {
+                con.Open();
+                string query = @"SELECT /*+ PARALLEL(8) */
+                        SUM(TOTAL_METERS) AS TOTAL_METERS,
+                        SUM(ALLIED_COUNT) AS ALLIED_COUNT,
+                        SUM(KIMBAL_COUNT) AS KIMBAL_COUNT,
+                        SUM(SLCC_COUNT) AS SLCC_COUNT,
+                        SUM(MLCC_COUNT) AS MLCC_COUNT,
+                        SUM(GCC_COUNT) AS GCC_COUNT,
+                        SUM(KCC_COUNT) AS KCC_COUNT
+                    FROM
+                    (
+                        -- SAP_SLCC_FORMY
+                        SELECT  /*+ PARALLEL(SF,8) */
+                            COUNT(*) AS TOTAL_METERS,
+                            SUM(CASE WHEN SUBSTR(METERNO,1,2) IN ('92','AL','99') THEN 1 ELSE 0 END) AS ALLIED_COUNT,
+                            SUM(CASE WHEN SUBSTR(METERNO,1,2) IN('KI','97','98') THEN 1 ELSE 0 END) AS KIMBAL_COUNT,
+                            SUM(CASE WHEN SAP_DEPARTMENT='SLCC' THEN 1 ELSE 0 END) AS SLCC_COUNT,
+                            0 AS MLCC_COUNT,
+                            0 AS GCC_COUNT,
+                            0 AS KCC_COUNT
+                        FROM RCMPA.SAP_SLCC_FORMY
+                      WHERE SAP_COMPANY = 'BYPL'
+                     AND READING_MONTH IN (
+                        SELECT REGEXP_SUBSTR(
+                            :READING_MONTH,
+                            '[^,]+',
+                            1,
+                            LEVEL
+                        )
+                        FROM DUAL
+                        CONNECT BY REGEXP_SUBSTR(
+                            :READING_MONTH,
+                            '[^,]+',
+                            1,
+                            LEVEL
+                        ) IS NOT NULL
+                    )
+                     AND SAP_MR_REASON_CODE = '01' 
+                      AND CSTS_CD = 'R'
+                      AND METERNO NOT LIKE '%D%'
+                      AND (
+                           (SUBSTR(METERNO,1,2) = '92' AND LENGTH(METERNO)=8)
+                        OR (SUBSTR(METERNO,1,2) = '99' AND LENGTH(METERNO)=8)
+                        OR (SUBSTR(METERNO,1,2) = '98' AND LENGTH(METERNO)=8)
+                        OR (SUBSTR(METERNO,1,2) = '97' AND LENGTH(METERNO)=8)
+                        OR (SUBSTR(METERNO,1,2) = 'AL' AND LENGTH(METERNO)=10)
+                         OR (SUBSTR(METERNO,1,2) = 'KI' AND LENGTH(METERNO)=10)
+                      )
+                        UNION ALL
+                        -- SAP_FORMY
+                        SELECT /*+ PARALLEL(F,8) */
+                            COUNT(*) AS TOTAL_METERS,
+                                SUM(CASE WHEN SUBSTR(METERNO,1,2) IN ('92','AL','99') THEN 1 ELSE 0 END) AS ALLIED_COUNT,
+                            SUM(CASE WHEN SUBSTR(METERNO,1,2) IN('KI','97','98') THEN 1 ELSE 0 END) AS KIMBAL_COUNT,
+                            SUM(CASE WHEN SAP_DEPARTMENT='SLCC' THEN 1 ELSE 0 END),
+                            SUM(CASE WHEN SAP_DEPARTMENT='MLCC' AND CYCLE<>'0N' THEN 1 ELSE 0 END),
+                            SUM(CASE WHEN SAP_DEPARTMENT='GCC' THEN 1 ELSE 0 END),
+                            SUM(CASE WHEN (SAP_DEPARTMENT = 'MLCC' AND CYCLE = '0N') OR CYCLE IN ('KA','KC','KG') THEN 1 ELSE 0 END) 
+                        FROM RCMPA.SAP_FORMY
+                    WHERE SAP_COMPANY = 'BYPL'
+                     AND READING_MONTH IN (
+                            SELECT REGEXP_SUBSTR(
+                                :READING_MONTH,
+                                '[^,]+',
+                                1,
+                                LEVEL
+                            )
+                            FROM DUAL
+                            CONNECT BY REGEXP_SUBSTR(
+                                :READING_MONTH,
+                                '[^,]+',
+                                1,
+                                LEVEL
+                            ) IS NOT NULL
+                        )
+                      AND SAP_MR_REASON_CODE = '01' 
+                      AND CSTS_CD = 'R'
+                      AND METERNO NOT LIKE '%D%'
+                      AND (
+                           (SUBSTR(METERNO,1,2) = '92' AND LENGTH(METERNO)=8)
+                        OR (SUBSTR(METERNO,1,2) = '99' AND LENGTH(METERNO)=8)
+                        OR (SUBSTR(METERNO,1,2) = '98' AND LENGTH(METERNO)=8)
+                        OR (SUBSTR(METERNO,1,2) = '97' AND LENGTH(METERNO)=8)
+                        OR (SUBSTR(METERNO,1,2) = 'AL' AND LENGTH(METERNO)=10)
+                         OR (SUBSTR(METERNO,1,2) = 'KI' AND LENGTH(METERNO)=10)
+                      ))";
+
+                using (OracleCommand cmd = new OracleCommand(query, con))
+                {
+                    cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = ReadingMonth;
+                    using (OracleDataReader dr = cmd.ExecuteReader())
+                    {
+                        if (dr.Read())
+                        {
+                            totalMeterSummary.TotalMeter = dr["TOTAL_METERS"] == DBNull.Value ? 0 : Convert.ToInt32(dr["TOTAL_METERS"]);
+                            totalMeterSummary.AlliedCount = dr["ALLIED_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["ALLIED_COUNT"]);
+                            totalMeterSummary.KimbalCount = dr["KIMBAL_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KIMBAL_COUNT"]);
+                        }
+                    }
+                }
+            } return totalMeterSummary;
+        }
+
 
         // Get Meter Download Summary Allied + Kimbal including all department for the current month till day - 1
         public MeterReceivedSummary GetMeterReceivedDownloadSummary(string ReadingMonth)
