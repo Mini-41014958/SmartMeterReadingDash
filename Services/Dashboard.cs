@@ -1019,6 +1019,203 @@ namespace SmartMeterReadingDash.Services
             return departmentWiseData;
         }
 
+        //BYPL
+        public List<DepartmentWiseSummaryBypl> GetDepartmentWiseSummaryBypl(string ReadingMonth)
+        {
+            List<DepartmentWiseSummaryBypl> departmentWiseSummarieBypl = new List<DepartmentWiseSummaryBypl>();
+            using(OracleConnection con = _db.GetConnection())
+            {
+                con.Open();
+                string query = @"WITH MONTHS AS
+                    (
+                        SELECT TRIM(
+                                   REGEXP_SUBSTR(
+                                       :READING_MONTH,
+                                       '[^,]+',
+                                       1,
+                                       LEVEL
+                                   )
+                               ) AS READING_MONTH
+                        FROM DUAL
+                        CONNECT BY REGEXP_SUBSTR(
+                                       :READING_MONTH,
+                                       '[^,]+',
+                                       1,
+                                       LEVEL
+                                   ) IS NOT NULL
+                    ),
+
+                    BASE_DATA AS
+                    (
+
+                        SELECT /*+ PARALLEL(8) */
+                               SAP_DEPARTMENT AS DEPARTMENT,
+                               MTR_READ_MODE,
+                               READING_DATE,
+                               NEW_MTR_NO,
+                               MTR_CORR_STS,
+                               MTR_NO_CORR
+                        FROM RCMPA.SAP_SLCC_FORMY SF
+                        WHERE SF.SAP_COMPANY = 'BYPL'
+                          AND SF.READING_MONTH IN
+                              (
+                                  SELECT READING_MONTH
+                                  FROM MONTHS
+                              )
+                          AND SF.SAP_MR_REASON_CODE = '01'
+                          AND SF.CSTS_CD = 'R'
+                          AND SF.METERNO NOT LIKE '%D%'
+                          AND
+                          (
+                              (SUBSTR(SF.METERNO,1,2) IN ('92','99','98','97')
+                                   AND LENGTH(SF.METERNO) = 8)
+                              OR
+                              (SUBSTR(SF.METERNO,1,2) IN ('AL','KI')
+                                   AND LENGTH(SF.METERNO) = 10)
+                          )
+
+                        UNION ALL
+                        SELECT /*+ PARALLEL(8) */
+                               CASE
+                                   WHEN SAP_DEPARTMENT = 'MLCC'
+                                        AND CYCLE = '0N'
+                                   THEN 'KCC'
+
+                                   WHEN SAP_DEPARTMENT = 'MLCC'
+                                   THEN 'MLCC'
+
+                                   ELSE SAP_DEPARTMENT
+                               END AS DEPARTMENT,
+                               MTR_READ_MODE,
+                               READING_DATE,
+                               NEW_MTR_NO,
+                               MTR_CORR_STS,
+                               MTR_NO_CORR
+                        FROM RCMPA.SAP_FORMY F
+                        WHERE F.SAP_COMPANY = 'BYPL'
+                          AND F.READING_MONTH IN
+                              (
+                                  SELECT READING_MONTH
+                                  FROM MONTHS
+                              )
+                          AND F.SAP_MR_REASON_CODE = '01'
+                          AND F.CSTS_CD = 'R'
+                          AND F.METERNO NOT LIKE '%D%'
+                          AND
+                          (
+                              (SUBSTR(F.METERNO,1,2) IN ('92','99','98','97')
+                                   AND LENGTH(F.METERNO) = 8)
+                              OR
+                              (SUBSTR(F.METERNO,1,2) IN ('AL','KI')
+                                   AND LENGTH(F.METERNO) = 10)
+                          )
+                    )
+
+                    SELECT /*+ PARALLEL(8) */
+                           DEPARTMENT,
+
+                           COUNT(*) AS TOTAL_METERS,
+
+                           SUM(
+                               CASE
+                                   WHEN MTR_READ_MODE = '1'
+                                   THEN 1
+                                   ELSE 0
+                               END
+                           ) AS HES_DOWNLOAD,
+
+                           SUM(
+                               CASE
+                                   WHEN MTR_READ_MODE = '0'
+                                        OR (
+                                            MTR_READ_MODE IS NULL
+                                            AND READING_DATE IS NOT NULL
+                                        )
+                                   THEN 1
+                                   ELSE 0
+                               END
+                           ) AS MANUAL,
+
+                           SUM(
+                               CASE
+                                   WHEN READING_DATE IS NULL
+                                   THEN 1
+                                   ELSE 0
+                               END
+                           ) AS PENDING,
+
+                           SUM(
+                               CASE
+                                   WHEN MTR_READ_MODE = '1'
+                                        AND (
+                                            NEW_MTR_NO IS NOT NULL
+                                            OR MTR_CORR_STS IS NOT NULL
+                                            OR MTR_NO_CORR IS NOT NULL
+                                        )
+                                   THEN 1
+                                   ELSE 0
+                               END
+                           ) AS MISMATCH,
+
+                           SUM(
+                               CASE
+                                   WHEN MTR_READ_MODE = '0'
+                                        OR (
+                                            MTR_READ_MODE IS NULL
+                                            AND READING_DATE IS NOT NULL
+                                        )
+                                   THEN 1
+                                   ELSE 0
+                               END
+                           )
+                           +
+                           SUM(
+                               CASE
+                                   WHEN READING_DATE IS NULL
+                                   THEN 1
+                                   ELSE 0
+                               END
+                           )
+                           +
+                           SUM(
+                               CASE
+                                   WHEN MTR_READ_MODE = '1'
+                                        AND (
+                                            NEW_MTR_NO IS NOT NULL
+                                            OR MTR_CORR_STS IS NOT NULL
+                                            OR MTR_NO_CORR IS NOT NULL
+                                        )
+                                   THEN 1
+                                   ELSE 0
+                               END
+                           ) AS DOWNLOAD_FAILED
+
+                    FROM BASE_DATA
+                    GROUP BY DEPARTMENT
+                    ORDER BY DEPARTMENT";
+
+                using(OracleCommand cmd = new OracleCommand(query,con))
+                {
+                    cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = ReadingMonth;
+                    using(OracleDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            departmentWiseSummarieBypl.Add(new DepartmentWiseSummaryBypl
+                            {
+                              Department = dr["DEPARTMENT"].ToString(),
+                                HesDownload = dr["HES_DOWNLOAD"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_DOWNLOAD"]),
+                                Failed = dr["DOWNLOAD_FAILED"] == DBNull.Value ? 0 : Convert.ToInt32(dr["DOWNLOAD_FAILED"]),
+
+                            });
+                        }
+                    }
+                }
+                return departmentWiseSummarieBypl;
+            }
+        }
+
+
         public List<FailureReasonCount> FailureReasonCounts(string ReadingMonth)
         {
             List<FailureReasonCount> failureReasonCounts = new List<FailureReasonCount>();

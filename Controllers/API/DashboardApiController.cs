@@ -116,6 +116,21 @@ namespace SmartMeterReadingDash.Controllers.API
             }
         }
 
+        //BYPL
+        [HttpGet("department-wise-data-bypl")]
+        public IActionResult GetDepartmentWiseSummaryBYPL(string ReadingMonth)
+        {
+            try
+            {
+                var summary = _dashboard.GetDepartmentWiseSummaryBypl(ReadingMonth);
+                return Ok(summary);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
         [HttpGet("failure-reason-count")]
         public IActionResult GetFailureReasonCount(string ReadingMonth)
         {

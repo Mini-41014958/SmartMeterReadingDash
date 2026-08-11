@@ -1,11 +1,10 @@
 ﻿async function loadMeterDownloadSummary() {
 
     const month = getReadingMonth();
+
     try {
-        const [
-            brplResponse,
-            byplResponse
-        ] = await Promise.all([
+
+        const [brplResponse, byplResponse] = await Promise.all([
 
             fetch(
                 `api/dashboardapi/meter-download-summary?readingMonth=${encodeURIComponent(month)}`
@@ -16,6 +15,7 @@
             )
 
         ]);
+
         if (!brplResponse.ok) {
             throw new Error("Failed to load BRPL Meter Summary.");
         }
@@ -24,11 +24,10 @@
             throw new Error("Failed to load BYPL Meter Summary.");
         }
 
-
         const brplData = await brplResponse.json();
+
         const byplResult = await byplResponse.json();
 
-        // BYPL API is returning an array
         const byplData = Array.isArray(byplResult)
             ? byplResult[0]
             : byplResult;
@@ -36,55 +35,95 @@
         console.log("BRPL Meter Summary:", brplData);
         console.log("BYPL Meter Summary:", byplData);
 
-        const failed =
-            (brplData.manualForwardinCount || 0) +
-            (brplData.pendingCount || 0) +
-            (brplData.mismatchCount || 0);
 
-        document.getElementById("totalMeters").textContent =
-            (brplData.totalMetersCount || 0).toLocaleString();
+        const brplFailed =
+            Number(brplData?.manualForwardinCount || 0) +
+            Number(brplData?.pendingCount || 0) +
+            Number(brplData?.mismatchCount || 0);
 
-        // BYPL
-        document.getElementById("byplTotalMeters").textContent =
-            (byplData?.totalMetersCount || 0).toLocaleString();
 
-        document.getElementById("hesDownload").textContent =
-            (brplData.hesDownloadCount || 0).toLocaleString();
+        function setValue(id, value) {
 
-        // BYPL
-        document.getElementById("byplHesDownload").textContent =
-            (byplData?.hesDownloadCount || 0).toLocaleString();
+            const element = document.getElementById(id);
 
-        document.getElementById("downloadFailed").textContent =
-            failed.toLocaleString();
+            if (!element) {
 
-        // BYPL
-        document.getElementById("byplDownloadFailed").textContent =
-            (byplData?.hesFailedCount || 0).toLocaleString();
+                console.error(
+                    `Missing HTML element: #${id}`
+                );
 
-        document.getElementById("downloadPercentage").textContent =
-            (brplData.hesDownloadPercentage || 0).toFixed(2) + "%";
+                return;
+            }
 
-        // BYPL
-        document.getElementById("byplDownloadPercentage").textContent =
-            (byplData?.hesDownloadPercentage || 0).toFixed(2) + "%";
+            element.textContent = value;
+        }
 
-        document.getElementById("failedPercentage").textContent =
-            (brplData.hesFailedPercentage || 0).toFixed(2) + "%";
+        setValue(
+            "totalMeters",
+            Number(brplData?.totalMetersCount || 0)
+                .toLocaleString()
+        );
 
-        // BYPL
-        document.getElementById("byplFailedPercentage").textContent =
-            (byplData?.hesFailedPercentage || 0).toFixed(2) + "%";
+        setValue(
+            "hesDownload",
+            Number(brplData?.hesDownloadCount || 0)
+                .toLocaleString()
+        );
 
-        document.getElementById("summaryDate").textContent =
-            new Date().toLocaleDateString("en-GB");
+        setValue(
+            "downloadFailed",
+            brplFailed.toLocaleString()
+        );
+
+        setValue(
+            "downloadPercentage",
+            Number(brplData?.hesDownloadPercentage || 0)
+                .toFixed(2) + "%"
+        );
+
+        setValue(
+            "failedPercentage",
+            Number(brplData?.hesFailedPercentage || 0)
+                .toFixed(2) + "%"
+        );
+
+        setValue(
+            "byplTotalMeters",
+            Number(byplData?.totalMetersCount || 0)
+                .toLocaleString()
+        );
+
+        setValue(
+            "byplHesDownload",
+            Number(byplData?.hesDownloadCount || 0)
+                .toLocaleString()
+        );
+
+        setValue(
+            "byplDownloadFailed",
+            Number(byplData?.hesFailedCount || 0)
+                .toLocaleString()
+        );
+
+        setValue(
+            "byplDownloadPercentage",
+            Number(byplData?.hesDownloadPercentage || 0)
+                .toFixed(2) + "%"
+        );
+
+        setValue(
+            "byplFailedPercentage",
+            Number(byplData?.hesFailedPercentage || 0)
+                .toFixed(2) + "%"
+        );
+
     }
     catch (error) {
 
-        console.error("Meter Summary Error:", error);
-
-        throw error;
+        console.error(
+            "Meter Summary Error:",
+            error
+        );
 
     }
-
 }

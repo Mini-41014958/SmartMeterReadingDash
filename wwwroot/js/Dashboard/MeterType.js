@@ -1,7 +1,6 @@
 ﻿let brplMeterTypeChart = null;
 let byplMeterTypeChart = null;
 
-
 async function loadMeterSummary() {
 
     const month = getReadingMonth();
@@ -23,7 +22,6 @@ async function loadMeterSummary() {
 
         ]);
 
-
         if (!brplResponse.ok) {
             throw new Error("Failed to load BRPL Meter Summary.");
         }
@@ -32,15 +30,15 @@ async function loadMeterSummary() {
             throw new Error("Failed to load BYPL Meter Summary.");
         }
 
-
         const brplData = await brplResponse.json();
         const byplData = await byplResponse.json();
 
-
-        // IMPORTANT DEBUG
         console.log("BRPL Meter Summary:", brplData);
         console.log("BYPL Meter Summary:", byplData);
 
+        // =====================================================
+        // BRPL COUNTS
+        // =====================================================
 
         $("#brplAlliedCount").text(
             Number(brplData.alliedCount || 0).toLocaleString()
@@ -54,6 +52,9 @@ async function loadMeterSummary() {
             Number(brplData.totalMeter || 0).toLocaleString()
         );
 
+        // =====================================================
+        // BYPL COUNTS
+        // =====================================================
 
         $("#byplAlliedCount").text(
             Number(byplData.alliedCount || 0).toLocaleString()
@@ -67,12 +68,15 @@ async function loadMeterSummary() {
             Number(byplData.totalMeter || 0).toLocaleString()
         );
 
+        // =====================================================
+        // DRAW CHARTS
+        // =====================================================
+
         drawMeterTypeChart(
             brplData,
             "brplMeterTypeChart",
             "BRPL"
         );
-
 
         drawMeterTypeChart(
             byplData,
@@ -83,45 +87,81 @@ async function loadMeterSummary() {
     }
     catch (error) {
 
-        console.error("Meter Summary Error:", error);
+        console.error(
+            "Meter Summary Error:",
+            error
+        );
 
         throw error;
-
     }
 }
+
+
 function drawMeterTypeChart(data, canvasId, company) {
 
     const canvas = document.getElementById(canvasId);
 
     if (!canvas) {
-        console.error(`Canvas not found: ${canvasId}`);
+
+        console.error(
+            `Canvas not found: ${canvasId}`
+        );
+
         return;
     }
 
+    // =====================================================
+    // DESTROY EXISTING CHART
+    // =====================================================
 
-    // Destroy existing chart
     if (company === "BRPL" && brplMeterTypeChart) {
 
         brplMeterTypeChart.destroy();
         brplMeterTypeChart = null;
-
     }
 
     if (company === "BYPL" && byplMeterTypeChart) {
 
         byplMeterTypeChart.destroy();
         byplMeterTypeChart = null;
-
     }
 
+    // =====================================================
+    // DATA
+    // =====================================================
 
-    const allied = Number(data.alliedCount || 0);
-    const kimbal = Number(data.kimbalCount || 0);
+    const allied = Number(
+        data.alliedCount || 0
+    );
 
+    const kimbal = Number(
+        data.kimbalCount || 0
+    );
+
+    const total = allied + kimbal;
+
+    // =====================================================
+    // DIFFERENT SHADES FOR BRPL / BYPL
+    // =====================================================
+
+    let alliedColor;
+    let kimbalColor;
+
+    if (company === "BRPL") {
+
+        alliedColor = "#4F46E5";
+        kimbalColor = "#10B981";
+
+    }
+    else {
+
+        alliedColor = "#6366F1";
+        kimbalColor = "#14B8A6";
+    }
 
     const chart = new Chart(canvas, {
 
-        type: "doughnut",
+        type: "pie",
 
         data: {
 
@@ -138,29 +178,33 @@ function drawMeterTypeChart(data, canvasId, company) {
                 ],
 
                 backgroundColor: [
-                    "#4F46E5",
-                    "#10B981"
+                    alliedColor,
+                    kimbalColor
                 ],
 
                 borderColor: "#ffffff",
 
-                borderWidth: 2,
+                borderWidth: 3,
 
-                hoverOffset: 6
+                hoverOffset: 10
 
             }]
 
         },
-
 
         options: {
 
             responsive: true,
 
             maintainAspectRatio: false,
+            animation: {
 
-            cutout: "68%",
+                animateRotate: true,
 
+                animateScale: true,
+
+                duration: 900
+            },
 
             plugins: {
 
@@ -174,54 +218,57 @@ function drawMeterTypeChart(data, canvasId, company) {
 
                         pointStyle: "circle",
 
-                        padding: 8,
+                        padding: 12,
+
+                        boxWidth: 10,
+
+                        boxHeight: 10,
 
                         font: {
-                            size: 10
+
+                            size: 11,
+
+                            weight: "600"
                         }
-
                     }
-
                 },
 
-
                 tooltip: {
+
+                    backgroundColor:
+                        "rgba(33, 37, 41, 0.95)",
+
+                    padding: 10,
+
+                    cornerRadius: 7,
 
                     callbacks: {
 
                         label: function (context) {
 
-                            const value = Number(context.raw);
-
-                            const total =
-                                context.dataset.data.reduce(
-                                    (a, b) => a + Number(b),
-                                    0
+                            const value =
+                                Number(
+                                    context.raw || 0
                                 );
-
 
                             const percentage =
                                 total > 0
-                                    ? ((value / total) * 100).toFixed(1)
+                                    ? (
+                                        (value / total) * 100
+                                    ).toFixed(1)
                                     : "0.0";
 
-
-                            return `${context.label}: ${value.toLocaleString()} (${percentage}%)`;
-
+                            return (
+                                `${context.label}: ` +
+                                `${value.toLocaleString()} ` +
+                                `(${percentage}%)`
+                            );
                         }
-
                     }
-
                 }
-
             }
-
         }
-
     });
-
-
-    // Store chart instance
 
     if (company === "BRPL") {
 
@@ -231,7 +278,5 @@ function drawMeterTypeChart(data, canvasId, company) {
     else if (company === "BYPL") {
 
         byplMeterTypeChart = chart;
-
     }
-
 }
