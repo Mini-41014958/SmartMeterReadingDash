@@ -72,7 +72,7 @@ namespace SmartMeterReadingDash.Services
 
                             SUM(
                                 CASE
-                                    WHEN SUBSTR(SM.METERNO, 1, 2) = '91'
+                                    WHEN SUBSTR(SM.METERNO, 1, 2) IN('91','KI')
                                     THEN 1
                                     ELSE 0
                                 END
@@ -91,6 +91,9 @@ namespace SmartMeterReadingDash.Services
                                  AND LENGTH(SM.METERNO) = 8)
 
                              OR (SUBSTR(SM.METERNO, 1, 2) = 'AL'
+                                 AND LENGTH(SM.METERNO) = 10)
+                                 
+                             OR (SUBSTR(SM.METERNO, 1, 2) = 'KI'
                                  AND LENGTH(SM.METERNO) = 10)
                           )
 
@@ -126,7 +129,7 @@ namespace SmartMeterReadingDash.Services
 
                             COUNT(
                                 DISTINCT CASE
-                                    WHEN SUBSTR(L.METERNO, 1, 2) = '91'
+                                    WHEN SUBSTR(L.METERNO, 1, 2) IN('91','KI')
                                     THEN L.METERNO
                                 END
                             ) AS KIMBAL_FAILED
@@ -142,6 +145,9 @@ namespace SmartMeterReadingDash.Services
                                  AND LENGTH(L.METERNO) = 8)
 
                              OR (SUBSTR(L.METERNO, 1, 2) = 'AL'
+                                 AND LENGTH(L.METERNO) = 10)
+                                 
+                             OR (SUBSTR(L.METERNO, 1, 2) = 'KI'
                                  AND LENGTH(L.METERNO) = 10)
                         )
 
@@ -314,104 +320,107 @@ namespace SmartMeterReadingDash.Services
             using(OracleConnection con  = _db.GetConnection())
             {
                 con.Open();
-                string query = @"
-                  WITH MONTHS AS
-                    (
-                        SELECT REGEXP_SUBSTR(
-                                   :READING_MONTH,
-                                   '[^,]+',
-                                   1,
-                                   LEVEL
-                               ) AS READING_MONTH
-                        FROM DUAL
-                        CONNECT BY REGEXP_SUBSTR(
-                                       :READING_MONTH,
-                                       '[^,]+',
-                                       1,
-                                       LEVEL
-                                   ) IS NOT NULL
-                    ),
+                string query = @"WITH MONTHS AS
+                      (
+                          SELECT REGEXP_SUBSTR(
+                                     :READING_MONTH,
+                                     '[^,]+',
+                                     1,
+                                     LEVEL
+                                 ) AS READING_MONTH
+                          FROM DUAL
+                          CONNECT BY REGEXP_SUBSTR(
+                                         :READING_MONTH,
+                                         '[^,]+',
+                                         1,
+                                         LEVEL
+                                     ) IS NOT NULL
+                      ),
 
-                    DOWNLOAD AS
-                    (
-                        SELECT /*+ PARALLEL(SM,8) */
-                               COUNT(*) AS HES_DOWNLOAD
-                        FROM RCMPA.SMART_METER_BILLING_DATA SM
-                        WHERE
-                        (
-                            (SUBSTR(SM.METERNO, 1, 2) = '91' AND LENGTH(SM.METERNO) = 8)
-                            OR
-                            (SUBSTR(SM.METERNO, 1, 2) = '90' AND LENGTH(SM.METERNO) = 8)
-                            OR
-                            (SUBSTR(SM.METERNO, 1, 2) = 'AL' AND LENGTH(SM.METERNO) = 10)
-                        )
-                        AND SM.READING_MONTH IN
-                        (
-                            SELECT READING_MONTH
-                            FROM MONTHS
-                        )
-                    ),
+                      DOWNLOAD AS
+                      (
+                          SELECT /*+ PARALLEL(SM,8) */
+                                 COUNT(*) AS HES_DOWNLOAD
+                          FROM RCMPA.SMART_METER_BILLING_DATA SM
+                          WHERE
+                          (
+                              (SUBSTR(SM.METERNO, 1, 2) = '91' AND LENGTH(SM.METERNO) = 8)
+                              OR
+                              (SUBSTR(SM.METERNO, 1, 2) = '90' AND LENGTH(SM.METERNO) = 8)
+                              OR
+                              (SUBSTR(SM.METERNO, 1, 2) = 'AL' AND LENGTH(SM.METERNO) = 10)
+                              OR
+                              (SUBSTR(SM.METERNO, 1, 2) = 'KI' AND LENGTH(SM.METERNO) = 10)
+                          )
+                          AND SM.READING_MONTH IN
+                          (
+                              SELECT READING_MONTH
+                              FROM MONTHS
+                          )
+                      ),
 
-                  FAILED AS
-                    (
-                        SELECT
-                            SUM(HES_FAILED) AS HES_FAILED
-                        FROM
-                        (
-                            SELECT
-                                L.READING_MONTH,
-                                COUNT(DISTINCT L.METERNO) AS HES_FAILED
-                            FROM RCMPA.SMART_METER_SCHEDULER_LOGS L
-                            WHERE
-                            (
-                                (SUBSTR(L.METERNO, 1, 2) = '91' AND LENGTH(L.METERNO) = 8)
-                                OR
-                                (SUBSTR(L.METERNO, 1, 2) = '90' AND LENGTH(L.METERNO) = 8)
-                                OR
-                                (SUBSTR(L.METERNO, 1, 2) = 'AL' AND LENGTH(L.METERNO) = 10)
-                            )
+                    FAILED AS
+                      (
+                          SELECT
+                              SUM(HES_FAILED) AS HES_FAILED
+                          FROM
+                          (
+                              SELECT
+                                  L.READING_MONTH,
+                                  COUNT(DISTINCT L.METERNO) AS HES_FAILED
+                              FROM RCMPA.SMART_METER_SCHEDULER_LOGS L
+                              WHERE
+                              (
+                                  (SUBSTR(L.METERNO, 1, 2) = '91' AND LENGTH(L.METERNO) = 8)
+                                  OR
+                                  (SUBSTR(L.METERNO, 1, 2) = '90' AND LENGTH(L.METERNO) = 8)
+                                  OR
+                                  (SUBSTR(L.METERNO, 1, 2) = 'AL' AND LENGTH(L.METERNO) = 10)
+                                  OR
+                                  (SUBSTR(L.METERNO, 1, 2) = 'KI' AND LENGTH(L.METERNO) = 10)
+                              )
 
-                            AND L.MESSAGE NOT LIKE 'Data%'
+                              AND L.MESSAGE NOT LIKE 'Data%'
 
-                            AND L.READING_MONTH IN
-                            (
-                                SELECT READING_MONTH
-                                FROM MONTHS
-                            )
+                              AND L.READING_MONTH IN
+                              (
+                                  SELECT READING_MONTH
+                                  FROM MONTHS
+                              )
 
-                            AND NOT EXISTS
-                            (
-                                SELECT 1
-                                FROM RCMPA.SMART_METER_BILLING_DATA B
-                                WHERE B.CONS_REF = L.CONS_REF
-                                AND B.READING_MONTH = L.READING_MONTH
-                            )
+                              AND NOT EXISTS
+                              (
+                                  SELECT 1
+                                  FROM RCMPA.SMART_METER_BILLING_DATA B
+                                  WHERE B.CONS_REF = L.CONS_REF
+                                  AND B.READING_MONTH = L.READING_MONTH
+                              )
 
-                            GROUP BY L.READING_MONTH
-                        )
-                    )
+                              GROUP BY L.READING_MONTH
+                          )
+                      )
 
-                    SELECT
-                        (D.HES_DOWNLOAD + F.HES_FAILED) AS TOTAL_METERS,
+                      SELECT
+                          (D.HES_DOWNLOAD + F.HES_FAILED) AS TOTAL_METERS,
 
-                        D.HES_DOWNLOAD,
+                          D.HES_DOWNLOAD,
 
-                        F.HES_FAILED,
+                          F.HES_FAILED,
 
-                        ROUND(
-                            D.HES_DOWNLOAD * 100 /
-                            NULLIF(D.HES_DOWNLOAD + F.HES_FAILED, 0),
-                            2
-                        ) AS HES_DOWNLOAD_PERCENTAGE,
+                          ROUND(
+                              D.HES_DOWNLOAD * 100 /
+                              NULLIF(D.HES_DOWNLOAD + F.HES_FAILED, 0),
+                              2
+                          ) AS HES_DOWNLOAD_PERCENTAGE,
 
-                        ROUND(
-                            F.HES_FAILED * 100 /
-                            NULLIF(D.HES_DOWNLOAD + F.HES_FAILED, 0),
-                            2
-                        ) AS HES_FAILED_PERCENTAGE
+                          ROUND(
+                              F.HES_FAILED * 100 /
+                              NULLIF(D.HES_DOWNLOAD + F.HES_FAILED, 0),
+                              2
+                          ) AS HES_FAILED_PERCENTAGE
 
-                    FROM DOWNLOAD D
-                    CROSS JOIN FAILED F ";
+                      FROM DOWNLOAD D
+                      CROSS JOIN FAILED F";
 
 
                 using(OracleCommand cmd =  new OracleCommand(query,con))
@@ -643,6 +652,8 @@ namespace SmartMeterReadingDash.Services
 
                              OR (SUBSTR(METERNO, 1, 2) = 'AL'
                                  AND LENGTH(METERNO) = 10)
+                             OR (SUBSTR(METERNO, 1, 2) = 'KI'
+                                 AND LENGTH(METERNO) = 10)
                           )
                     ),
 
@@ -712,7 +723,7 @@ namespace SmartMeterReadingDash.Services
                             WHEN SUBSTR(F.METERNO, 1, 2) IN ('90', 'AL')
                                 THEN 'ALLIED'
 
-                            WHEN SUBSTR(F.METERNO, 1, 2) = '91'
+                            WHEN SUBSTR(F.METERNO, 1, 2) IN('91','KI')
                                 THEN 'KIMBAL'
                         END AS METER_TYPE,
 
@@ -889,6 +900,9 @@ namespace SmartMeterReadingDash.Services
 
                                 OR (SUBSTR(METERNO, 1, 2) = 'AL'
                                     AND LENGTH(METERNO) = 10)
+                                    
+                                OR (SUBSTR(METERNO, 1, 2) = 'KI'
+                                    AND LENGTH(METERNO) = 10)
                             )
 
                             AND READING_MONTH IN
@@ -953,6 +967,9 @@ namespace SmartMeterReadingDash.Services
                                         AND LENGTH(L.METERNO) = 8)
 
                                     OR (SUBSTR(L.METERNO, 1, 2) = 'AL'
+                                        AND LENGTH(L.METERNO) = 10)
+                                        
+                                    OR (SUBSTR(L.METERNO, 1, 2) = 'KI'
                                         AND LENGTH(L.METERNO) = 10)
                                 )
 
