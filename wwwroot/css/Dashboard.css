@@ -867,3 +867,299 @@ canvas {
 .skeleton-table {
     height: 180px;
 }
+/* =========================================================
+   COMPACT DASHBOARD - FIT TO VIEWPORT
+========================================================= */
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+body {
+    background: #eef2f7;
+    font-size: 13px;
+}
+
+/* Main dashboard container */
+#dashboardContent {
+    width: 100%;
+    height: calc(100vh - 10px);
+    overflow: hidden;
+}
+
+    #dashboardContent > .container-fluid {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        padding: 6px 10px !important;
+        margin: 0;
+    }
+
+/* =========================================================
+   FILTER BAR
+========================================================= */
+
+.filter-toolbar {
+    margin-bottom: 6px !important;
+    border-radius: 8px;
+}
+
+    .filter-toolbar .card-body {
+        padding: 5px 10px !important;
+    }
+
+    .filter-toolbar .d-flex {
+        gap: 8px !important;
+    }
+
+    .filter-toolbar .fw-semibold {
+        font-size: 12px;
+    }
+
+    .filter-toolbar .form-control {
+        height: 28px;
+        width: 145px !important;
+        font-size: 12px;
+        padding: 3px 7px;
+        border-radius: 6px;
+    }
+
+    .filter-toolbar .btn {
+        height: 28px;
+        min-width: 70px;
+        padding: 3px 10px;
+        font-size: 12px;
+        border-radius: 6px;
+    }
+
+.reading-month-strip {
+    padding: 3px 8px;
+    font-size: 11px;
+    border-radius: 5px;
+}
+
+/* =========================================================
+   DASHBOARD ROWS
+========================================================= */
+
+#dashboardContent .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+    #dashboardContent .row.g-3 {
+        --bs-gutter-x: 8px;
+        --bs-gutter-y: 8px;
+    }
+
+    #dashboardContent .row.g-2 {
+        --bs-gutter-x: 8px;
+        --bs-gutter-y: 8px;
+    }
+
+/* Top cards */
+#dashboardContent > .container-fluid > .row:first-of-type {
+    height: 245px;
+}
+
+/* Bottom charts */
+#dashboardContent > .container-fluid > .row:last-of-type {
+    height: calc(100vh - 325px);
+    min-height: 220px;
+}
+
+/* =========================================================
+   DASHBOARD CARDS
+========================================================= */
+
+.dashboard-card {
+    height: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+}
+
+    .dashboard-card .card-header {
+        height: 34px;
+        padding: 7px 10px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .dashboard-card .card-body {
+        padding: 6px 8px;
+    }
+
+/* =========================================================
+   METER SUMMARY
+========================================================= */
+
+.meter-summary-card .card-body {
+    padding: 5px 7px;
+}
+
+.meter-summary-table thead th {
+    font-size: 9px;
+    padding: 4px 5px;
+}
+
+.meter-summary-table tbody td {
+    font-size: 12px;
+    padding: 4px 5px;
+}
+
+/* Doughnut charts */
+.meter-charts-wrapper {
+    gap: 5px;
+}
+
+.meter-chart-title {
+    font-size: 10px;
+    margin-bottom: 0;
+}
+
+.meter-chart-wrapper {
+    height: 155px;
+}
+
+    .meter-chart-wrapper canvas {
+        max-height: 155px;
+    }
+
+/* =========================================================
+   MRO CARD
+========================================================= */
+
+.mro-company-row {
+    grid-template-columns: 45px repeat(5, 1fr) 65px;
+    min-height: 78px;
+    padding: 5px 3px;
+    column-gap: 5px;
+}
+
+.company-badge {
+    min-width: 42px;
+    padding: 4px 5px;
+    font-size: 12px;
+}
+
+.mro-label {
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.mro-value {
+    font-size: 17px;
+}
+
+.mro-action .btn {
+    font-size: 12px;
+    padding: 4px 6px;
+}
+
+/* =========================================================
+   CHARTS
+========================================================= */
+
+#departmentChart,
+#readingTrendChart {
+    width: 100% !important;
+    height: 80% !important;
+}
+
+#dashboardContent .row:last-of-type .card-body {
+    height: calc(80% - 34px);
+    padding: 5px 8px;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-height: 800px) {
+
+    #dashboardContent > .container-fluid > .row:first-of-type {
+        height: 220px;
+    }
+
+    #dashboardContent > .container-fluid > .row:last-of-type {
+        height: calc(100vh - 300px);
+    }
+
+    .meter-chart-wrapper {
+        height: 135px;
+    }
+
+    .mro-company-row {
+        min-height: 68px;
+    }
+
+    .mro-value {
+        font-size: 15px;
+    }
+}
+
+@media (max-height: 700px) {
+
+    #dashboardContent > .container-fluid > .row:first-of-type {
+        height: 200px;
+    }
+
+    #dashboardContent > .container-fluid > .row:last-of-type {
+        height: calc(100vh - 275px);
+    }
+
+    .meter-chart-wrapper {
+        height: 120px;
+    }
+
+    .mro-company-row {
+        min-height: 60px;
+    }
+
+    .mro-value {
+        font-size: 14px;
+    }
+
+    .meter-summary-table tbody td {
+        font-size: 11px;
+        padding: 3px 4px;
+    }
+}
+
+
+#dashboardContent,
+#dashboardContent > .container-fluid {
+    overflow: hidden;
+}
+    #dashboardContent > .container-fluid > .row:last-of-type {
+        height: 470px !important;
+        min-height: 0 !important;
+        margin-top: 8px !important;
+    }
+
+        #dashboardContent > .container-fluid > .row:last-of-type .dashboard-card {
+            height: 440px !important;
+            min-height: 0 !important;
+        }
+        #dashboardContent > .container-fluid > .row:last-of-type .card-header {
+            height: 32px;
+            padding: 7px 10px;
+            font-size: 12px;
+        }
+
+        #dashboardContent > .container-fluid > .row:last-of-type .card-body {
+            height: 408px !important;
+            padding: 3px 7px !important;
+            margin: 0 !important;
+        }
+
+#departmentChart,
+#readingTrendChart {
+    width: 100% !important;
+    height: 400px !important;
+    max-height: 400px !important;
+    margin: 0 !important;
+}
