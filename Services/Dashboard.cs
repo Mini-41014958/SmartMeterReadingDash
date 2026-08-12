@@ -72,7 +72,7 @@ namespace SmartMeterReadingDash.Services
 
                             SUM(
                                 CASE
-                                    WHEN SUBSTR(SM.METERNO, 1, 2) = '91'
+                                    WHEN SUBSTR(SM.METERNO, 1, 2) IN('91','KI')
                                     THEN 1
                                     ELSE 0
                                 END
@@ -91,6 +91,9 @@ namespace SmartMeterReadingDash.Services
                                  AND LENGTH(SM.METERNO) = 8)
 
                              OR (SUBSTR(SM.METERNO, 1, 2) = 'AL'
+                                 AND LENGTH(SM.METERNO) = 10)
+                                 
+                             OR (SUBSTR(SM.METERNO, 1, 2) = 'KI'
                                  AND LENGTH(SM.METERNO) = 10)
                           )
 
@@ -126,7 +129,7 @@ namespace SmartMeterReadingDash.Services
 
                             COUNT(
                                 DISTINCT CASE
-                                    WHEN SUBSTR(L.METERNO, 1, 2) = '91'
+                                    WHEN SUBSTR(L.METERNO, 1, 2) IN('91','KI')
                                     THEN L.METERNO
                                 END
                             ) AS KIMBAL_FAILED
@@ -142,6 +145,9 @@ namespace SmartMeterReadingDash.Services
                                  AND LENGTH(L.METERNO) = 8)
 
                              OR (SUBSTR(L.METERNO, 1, 2) = 'AL'
+                                 AND LENGTH(L.METERNO) = 10)
+                                 
+                             OR (SUBSTR(L.METERNO, 1, 2) = 'KI'
                                  AND LENGTH(L.METERNO) = 10)
                         )
 
@@ -159,8 +165,6 @@ namespace SmartMeterReadingDash.Services
                             FROM RCMPA.SMART_METER_BILLING_DATA B
                             WHERE B.CONS_REF = L.CONS_REF
 
-                              -- IMPORTANT:
-                              -- check billing for the SAME month
                               AND B.READING_MONTH = L.READING_MONTH
                         )
 
