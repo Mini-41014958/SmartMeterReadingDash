@@ -27,12 +27,8 @@ namespace SmartMeterReadingDash.Controllers.API
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(
-            [FromBody] LoginRequest request)
+         [FromBody] Models.Dashboard.LoginRequest request)
         {
-            // -----------------------------------------------------
-            // Validate request
-            // -----------------------------------------------------
-
             if (request == null ||
                 string.IsNullOrWhiteSpace(request.Username) ||
                 string.IsNullOrWhiteSpace(request.Password))
@@ -40,90 +36,64 @@ namespace SmartMeterReadingDash.Controllers.API
                 return BadRequest(new
                 {
                     success = false,
-                    message =
-                        "Username and password are required."
+                    message = "Username and password are required."
                 });
             }
-
-
-            // -----------------------------------------------------
-            // Find user
-            // -----------------------------------------------------
 
             var user =
                 await _authRepository.GetUserByUsernameAsync(
                     request.Username
                 );
 
-
-            // -----------------------------------------------------
-            // User not found
-            // -----------------------------------------------------
-
             if (user == null)
             {
                 return Unauthorized(new
                 {
                     success = false,
-                    message =
-                        "Invalid username or password."
+                    message = "Invalid username or password."
                 });
             }
-
-
-            // -----------------------------------------------------
-            // Check active
-            // -----------------------------------------------------
 
             if (user.IsActive != 1)
             {
                 return Unauthorized(new
                 {
                     success = false,
-                    message =
-                        "User account is inactive."
+                    message = "User account is inactive."
                 });
             }
 
-
-            // -----------------------------------------------------
-            // Password validation
-            // -----------------------------------------------------
-            // NOTE:
-            // Password is currently stored directly in Oracle.
-            // -----------------------------------------------------
+            // =====================================================
+            // PASSWORD CHECK
+            // =====================================================
 
             if (request.Password != user.Password)
             {
                 return Unauthorized(new
                 {
                     success = false,
-                    message =
-                        "Invalid username or password."
+                    message = "Invalid username or password."
                 });
             }
 
-
-            // -----------------------------------------------------
-            // Update last login
-            // -----------------------------------------------------
+            // =====================================================
+            // UPDATE LAST LOGIN
+            // =====================================================
 
             await _authRepository.UpdateLastLoginAsync(
                 user.UserId
             );
 
-
-            // -----------------------------------------------------
-            // Generate JWT
-            // -----------------------------------------------------
+            // =====================================================
+            // GENERATE JWT
+            // =====================================================
 
             var token =
-       _jwtService.GenerateToken(user);
+                _jwtService.GenerateToken(user);
 
-
-            // =========================================================
-            // STORE JWT IN HTTP-ONLY COOKIE
-            // =========================================================
+            // =====================================================
+            // STORE JWT IN HTTP ONLY COOKIE
+            // =====================================================
 
             Response.Cookies.Append(
                 "SmartMeterAuth",
@@ -131,31 +101,25 @@ namespace SmartMeterReadingDash.Controllers.API
                 new CookieOptions
                 {
                     HttpOnly = true,
-
                     Secure = true,
-
-                    SameSite = SameSiteMode.Strict,
-
-                    Expires =
-                        DateTimeOffset.UtcNow.AddMinutes(60),
-
-                    IsEssential = true
+                    SameSite = SameSiteMode.Lax,
+                    Expires = DateTimeOffset.UtcNow.AddMinutes(60),
+                    Path = "/"
                 }
             );
 
+            // =====================================================
+            // RESPONSE
+            // =====================================================
 
-            return Ok(new
+            return Ok(new LoginResponse
             {
-                success = true,
-
-                username = user.Username,
-
-                fullName =
-                    user.FullName ?? "",
-
-                role = user.Role,
-
-                expiresIn = 60
+                Success = true,
+                Token = "", // Don't expose JWT to JavaScript
+                ExpiresIn = 60,
+                Username = user.Username,
+                FullName = user.FullName ?? "",
+                Role = user.Role
             });
         }
         [HttpPost("logout")]
