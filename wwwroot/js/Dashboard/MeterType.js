@@ -18,11 +18,11 @@ async function loadMeterSummary() {
         ] = await Promise.all([
 
             fetch(
-                `api/DashboardApi/meter-type-wise-summary?readingMonth=${encodeURIComponent(month)}`
+                `/api/DashboardApi/meter-type-wise-summary?readingMonth=${encodeURIComponent(month)}`
             ),
 
             fetch(
-                `api/DashboardApi/meter-type-wise-summary-bypl?readingMonth=${encodeURIComponent(month)}`
+                `/api/DashboardApi/meter-type-wise-summary-bypl?readingMonth=${encodeURIComponent(month)}`
             )
 
         ]);

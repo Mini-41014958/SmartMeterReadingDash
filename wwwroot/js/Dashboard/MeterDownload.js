@@ -7,11 +7,11 @@
         const [brplResponse, byplResponse] = await Promise.all([
 
             fetch(
-                `api/dashboardapi/meter-download-summary?readingMonth=${encodeURIComponent(month)}`
+                `/api/dashboardapi/meter-download-summary?readingMonth=${encodeURIComponent(month)}`
             ),
 
             fetch(
-                `api/dashboardapi/meter-download-summary-bypl?readingMonth=${encodeURIComponent(month)}`
+                `/api/dashboardapi/meter-download-summary-bypl?readingMonth=${encodeURIComponent(month)}`
             )
 
         ]);

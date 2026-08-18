@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartMeterReadingDash.Models;
 using SmartMeterReadingDash.Services;
@@ -5,6 +6,7 @@ using System.Diagnostics;
 
 namespace SmartMeterReadingDash.Controllers
 {
+    [Authorize]
     public class DashboardController : Controller
     {
         private readonly ILogger<DashboardController> _logger;
@@ -22,7 +24,6 @@ namespace SmartMeterReadingDash.Controllers
             return View();
         }
 
-        //get total metter Allied + Kimbal including all department for the current month till day - 1
         public IActionResult MeterSummary()
         {
             return View ();

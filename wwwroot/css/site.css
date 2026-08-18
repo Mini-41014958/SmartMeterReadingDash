@@ -66,3 +66,329 @@ body {
 .page-content {
     padding: 20px;
 }
+/* =========================================================
+   DASHBOARD HEADER
+   ========================================================= */
+
+.dashboard-header {
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    background: #ffffff;
+    border-bottom: 1px solid #dce3eb;
+    box-sizing: border-box;
+}
+
+
+/* =========================================================
+   LEFT SIDE
+   ========================================================= */
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+
+.logo {
+    width: 40px;
+    height: 32px;
+    object-fit: contain;
+}
+
+
+.title {
+    margin: 0;
+    color: #172033;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 18px;
+}
+
+
+.month {
+    margin-top: 1px;
+    color: #64748b;
+    font-size: 11px;
+    line-height: 14px;
+}
+
+
+/* =========================================================
+   RIGHT SIDE
+   ========================================================= */
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+
+/* =========================================================
+   GENERATED
+   ========================================================= */
+
+.generated {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.2;
+}
+
+
+    .generated small {
+        color: #94a3b8;
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+
+    .generated strong {
+        margin-top: 2px;
+        color: #173b70;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+
+/* =========================================================
+   USER MENU
+   ========================================================= */
+
+.user-menu {
+    position: relative;
+}
+
+
+.user-menu-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 3px 8px 3px 4px;
+    border: 1px solid #e1e7ef;
+    border-radius: 6px;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all .15s ease;
+}
+
+
+    .user-menu-button:hover {
+        background: #f7f9fc;
+        border-color: #cbd5e1;
+    }
+
+
+/* =========================================================
+   AVATAR
+   ========================================================= */
+
+.user-avatar {
+    width: 29px;
+    height: 29px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #eaf2ff;
+    color: #1769e8;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   USER INFORMATION
+   ========================================================= */
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 65px;
+}
+
+
+    .user-info strong {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #172033;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+
+    .user-info small {
+        margin-top: 1px;
+        color: #64748b;
+        font-size: 9px;
+        text-transform: uppercase;
+    }
+
+
+.user-arrow {
+    color: #64748b;
+    font-size: 12px;
+    margin-left: 2px;
+}
+
+
+/* =========================================================
+   DROPDOWN
+   ========================================================= */
+
+.user-dropdown {
+    position: absolute;
+    top: calc(100% + 7px);
+    right: 0;
+    width: 210px;
+    padding: 6px;
+    background: #ffffff;
+    border: 1px solid #e1e7ef;
+    border-radius: 7px;
+    box-shadow: 0 8px 25px rgba(15, 23, 42, .12);
+    z-index: 1000;
+    display: none;
+}
+
+
+    .user-dropdown.show {
+        display: block;
+    }
+
+
+/* =========================================================
+   DROPDOWN USER INFO
+   ========================================================= */
+
+.dropdown-user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px;
+}
+
+
+.dropdown-avatar {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #eaf2ff;
+    color: #1769e8;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+.dropdown-user-info div:last-child {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+
+.dropdown-user-info strong {
+    color: #172033;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+.dropdown-user-info span {
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   DIVIDER
+   ========================================================= */
+
+.dropdown-divider {
+    height: 1px;
+    margin: 4px 0;
+    background: #edf1f5;
+}
+
+
+/* =========================================================
+   DROPDOWN ITEM
+   ========================================================= */
+
+.dropdown-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 5px;
+    background: transparent;
+    color: #334155;
+    font-family: inherit;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+
+    .dropdown-item:hover {
+        background: #f1f5f9;
+        color: #1769e8;
+    }
+
+
+.logout-button {
+    color: #dc2626;
+}
+
+
+    .logout-button:hover {
+        background: #fff1f2;
+        color: #b91c1c;
+    }
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
+
+    .generated {
+        display: none;
+    }
+
+    .title {
+        font-size: 13px;
+    }
+
+    .header-right {
+        gap: 5px;
+    }
+
+    .user-info {
+        display: none;
+    }
+
+    .user-menu-button {
+        padding-right: 5px;
+    }
+}

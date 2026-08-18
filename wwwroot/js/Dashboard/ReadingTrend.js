@@ -4,7 +4,7 @@ function loadFailureReasonChart(readingMonth) {
     const month = getReadingMonth();
     $.ajax({
 
-        url: "api/dashboardApi/failure-reason-count",
+        url: "/api/dashboardApi/failure-reason-count",
 
         type: "GET",
 

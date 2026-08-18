@@ -9,11 +9,11 @@ async function loadDepartmentDistribution() {
         const [brplResponse, byplResponse] = await Promise.all([
 
             fetch(
-                `api/DashboardApi/department-wise-data?readingMonth=${encodeURIComponent(month)}`
+                `/api/DashboardApi/department-wise-data?readingMonth=${encodeURIComponent(month)}`
             ),
 
             fetch(
-                `api/DashboardApi/department-wise-data-bypl?readingMonth=${encodeURIComponent(month)}`
+                `/api/DashboardApi/department-wise-data-bypl?readingMonth=${encodeURIComponent(month)}`
             )
 
         ]);

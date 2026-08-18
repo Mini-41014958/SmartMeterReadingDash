@@ -3,78 +3,206 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>@ViewData["Title"] - RCM Dashboard</title>
 
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet"
+          href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
     <link rel="stylesheet"
           href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
 
     <link rel="stylesheet"
           href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/SmartMeterReadingDash.styles.css" asp-append-version="true" />
 
+    <link rel="stylesheet"
+          href="~/css/site.css"
+          asp-append-version="true" />
+
+    <link rel="stylesheet"
+          href="~/SmartMeterReadingDash.styles.css"
+          asp-append-version="true" />
 </head>
 
 <body>
 
     <header class="dashboard-header">
 
+        <!-- =====================================================
+             LEFT SIDE
+             ===================================================== -->
+
         <div class="header-left">
 
-            <!-- Replace with your logo -->
-            <img src="~/images/bses-logo.png" class="logo" />
+            <img src="~/images/bses-logo.png"
+                 class="logo"
+                 alt="BSES Logo" />
 
             <div>
+
                 <h4 class="title">
                     RCM - Smart Meter Reading Dashboard
                 </h4>
 
                 <div class="month">
-                  <strong>  @DateTime.Now.ToString("MMMM yyyy")</strong>
+                    <strong>
+                        @DateTime.Now.ToString("MMMM yyyy")
+                    </strong>
                 </div>
 
             </div>
 
         </div>
 
-        <div class="generated">
 
-            <small>Generated</small>
+        <!-- =====================================================
+             RIGHT SIDE
+             ===================================================== -->
 
-            <strong>
-                @DateTime.Now.ToString("dd-MMM-yyyy HH:mm")
-            </strong>
+        <div class="header-right">
+
+
+            <!-- GENERATED -->
+
+            <div class="generated">
+
+                <small>
+                    Generated
+                </small>
+
+                <strong>
+                    @DateTime.Now.ToString(
+                        "dd-MMM-yyyy HH:mm"
+                    )
+                </strong>
+
+            </div>
+
+
+            <!-- USER -->
+
+            <div class="user-menu">
+
+                <button type="button"
+                        class="user-menu-button"
+                        id="userMenuButton">
+
+                    <span class="user-avatar">
+                        @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
+                    </span>
+
+                    <span class="user-info">
+
+                        <strong>
+                            @(User.Identity?.Name ?? "User")
+                        </strong>
+
+                        <small>
+                            @(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "USER")
+                        </small>
+
+                    </span>
+
+                    <span class="user-arrow">
+                        ▾
+                    </span>
+
+                </button>
+
+
+                <!-- DROPDOWN -->
+
+                <div class="user-dropdown"
+                     id="userDropdown">
+
+                    <div class="dropdown-user-info">
+
+                        <div class="dropdown-avatar">
+                            @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                @(User.Identity?.Name ?? "User")
+                            </strong>
+
+                            <span>
+                                @(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "USER")
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="dropdown-divider"></div>
+
+
+                    <button type="button"
+                            class="dropdown-item logout-button"
+                            onclick="logout()">
+
+                        <span>
+                            ⇥
+                        </span>
+
+                        Logout
+
+                    </button>
+
+                </div>
+
+            </div>
 
         </div>
 
     </header>
 
+
+    <!-- =========================================================
+         PAGE CONTENT
+         ========================================================= -->
+
     <main class="page-content">
+
         @RenderBody()
+
     </main>
 
 
-    <!-- 1. jQuery FIRST (must be before everything else) -->
+    <!-- =========================================================
+         SCRIPTS
+         ========================================================= -->
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <!-- 2. Bootstrap AFTER jQuery -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- 3. DataTables AFTER jQuery -->
     <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 
-    <!-- 4. Chart.js (doesn't need jQuery) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- 5. YOUR CUSTOM SCRIPTS LAST (after jQuery is loaded) -->
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/Dashboard/MeterType.js"></script>
-    <script src="~/js/Dashboard/MeterDownload.js"></script>
-    <script src="~/js/Dashboard/Departmentwise.js"></script>
-    <script src="~/js/Dashboard/ReadingTrend.js"></script>
-    <script src="~/js/dashboard/Helper.js"></script>
-    <script src="~/js/Dashboard/Dashboard.js"></script>
+    <script src="~/js/site.js"
+            asp-append-version="true"></script>
+
+    <script src="~/js/Dashboard/MeterType.js"
+            asp-append-version="true"></script>
+
+    <script src="~/js/Dashboard/MeterDownload.js"
+            asp-append-version="true"></script>
+
+    <script src="~/js/Dashboard/Departmentwise.js"
+            asp-append-version="true"></script>
+
+    <script src="~/js/Dashboard/ReadingTrend.js"
+            asp-append-version="true"></script>
+
+    <script src="~/js/dashboard/Helper.js"
+            asp-append-version="true"></script>
+
+    <script src="~/js/Dashboard/Dashboard.js"
+            asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

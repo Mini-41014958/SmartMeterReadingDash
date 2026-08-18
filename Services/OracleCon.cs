@@ -15,5 +15,6 @@ namespace SmartMeterReadingDash.Services
         {
             return new OracleConnection(_configuration.GetConnectionString("DefaultConnection"));
         }  
+
     }
 }
