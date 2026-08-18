@@ -19,12 +19,6 @@ namespace SmartMeterReadingDash.Controllers.API
             _jwtService = jwtService;
         }
 
-
-        // =========================================================
-        // LOGIN
-        // POST: /api/AuthApi/login
-        // =========================================================
-
         [HttpPost("login")]
         public async Task<IActionResult> Login(
          [FromBody] Models.Dashboard.LoginRequest request)
@@ -63,10 +57,6 @@ namespace SmartMeterReadingDash.Controllers.API
                 });
             }
 
-            // =====================================================
-            // PASSWORD CHECK
-            // =====================================================
-
             if (request.Password != user.Password)
             {
                 return Unauthorized(new
@@ -76,24 +66,12 @@ namespace SmartMeterReadingDash.Controllers.API
                 });
             }
 
-            // =====================================================
-            // UPDATE LAST LOGIN
-            // =====================================================
-
             await _authRepository.UpdateLastLoginAsync(
                 user.UserId
             );
 
-            // =====================================================
-            // GENERATE JWT
-            // =====================================================
-
             var token =
                 _jwtService.GenerateToken(user);
-
-            // =====================================================
-            // STORE JWT IN HTTP ONLY COOKIE
-            // =====================================================
 
             Response.Cookies.Append(
                 "SmartMeterAuth",
@@ -107,10 +85,6 @@ namespace SmartMeterReadingDash.Controllers.API
                     Path = "/"
                 }
             );
-
-            // =====================================================
-            // RESPONSE
-            // =====================================================
 
             return Ok(new LoginResponse
             {
@@ -146,9 +120,6 @@ namespace SmartMeterReadingDash.Controllers.API
         public async Task<IActionResult> Register(
             [FromBody] RegisterRequest request)
         {
-            // -----------------------------------------------------
-            // Validate request
-            // -----------------------------------------------------
 
             if (request == null ||
                 string.IsNullOrWhiteSpace(request.Username) ||
@@ -162,11 +133,6 @@ namespace SmartMeterReadingDash.Controllers.API
                 });
             }
 
-
-            // -----------------------------------------------------
-            // Password length
-            // -----------------------------------------------------
-
             if (request.Password.Length < 8)
             {
                 return BadRequest(new
@@ -178,17 +144,8 @@ namespace SmartMeterReadingDash.Controllers.API
             }
 
 
-            // -----------------------------------------------------
-            // Check existing users
-            // -----------------------------------------------------
-
             var userCount =
                 await _authRepository.GetUserCountAsync();
-
-
-            // -----------------------------------------------------
-            // FIRST USER ONLY
-            // -----------------------------------------------------
 
             if (userCount > 0)
             {
