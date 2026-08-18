@@ -48,42 +48,93 @@ namespace SmartMeterReadingDash.Services
                                    LEVEL
                                ) IS NOT NULL
                 ),
-
                 DOWNLOAD AS
                 (
                     SELECT
                         SUM(DOWNLOAD_COUNT)  AS DOWNLOAD_COUNT,
                         SUM(ALLIED_DOWNLOAD) AS ALLIED_DOWNLOAD,
-                        SUM(KIMBAL_DOWNLOAD) AS KIMBAL_DOWNLOAD
+                        SUM(KIMBAL_DOWNLOAD) AS KIMBAL_DOWNLOAD,
+                        SUM(PHASE_1PH)       AS PHASE_1PH,
+                        SUM(PHASE_3PH)       AS PHASE_3PH,
+                        SUM(ALLIED_1PH)     AS ALLIED_1PH,
+                        SUM(ALLIED_3PH)     AS ALLIED_3PH,
+                        SUM(KIMBAL_1PH)     AS KIMBAL_1PH,
+                        SUM(KIMBAL_3PH)     AS KIMBAL_3PH
                     FROM
                     (
                         SELECT
                             SM.READING_MONTH,
-
                             COUNT(*) AS DOWNLOAD_COUNT,
-
                             SUM(
                                 CASE
-                                    WHEN SM.METERNO LIKE '90%'
-                                      OR SM.METERNO LIKE 'AL%'
+                                    WHEN (SM.METERNO LIKE '90%'
+                                      OR SM.METERNO LIKE 'AL%')
+                                      AND SM.METERNO NOT LIKE '9026%'
                                     THEN 1
                                     ELSE 0
                                 END
                             ) AS ALLIED_DOWNLOAD,
-
                             SUM(
                                 CASE
                                     WHEN SM.METERNO LIKE '91%'
                                       OR SM.METERNO LIKE 'KI%'
+                                      OR SM.METERNO LIKE '9026%'
                                     THEN 1
                                     ELSE 0
                                 END
-                            ) AS KIMBAL_DOWNLOAD
-
+                            ) AS KIMBAL_DOWNLOAD,
+                            SUM(
+                                CASE
+                                    WHEN SM.METERNO LIKE 'AL91%'
+                                      OR SM.METERNO LIKE 'KI91%'
+                                      OR SM.METERNO LIKE '9150%'
+                                    THEN 1
+                                    ELSE 0
+                                END
+                            ) AS PHASE_1PH,
+                            SUM(
+                                CASE
+                                    WHEN SM.METERNO LIKE '9026%'
+                                      OR SM.METERNO LIKE 'KI90%'
+                                      OR SM.METERNO LIKE 'AL90%'
+                                    THEN 1
+                                    ELSE 0
+                                END
+                            ) AS PHASE_3PH,
+                            SUM(
+                                CASE
+                                    WHEN SM.METERNO LIKE 'AL91%'
+                                    OR SM.METERNO LIKE '9008%'
+                                    OR SM.METERNO LIKE '9027%'
+                                    THEN 1
+                                    ELSE 0
+                                END
+                            ) AS ALLIED_1PH,
+                            SUM(
+                                CASE
+                                    WHEN SM.METERNO LIKE 'AL90%'
+                                    THEN 1
+                                    ELSE 0
+                                END
+                            ) AS ALLIED_3PH,
+                            SUM(
+                                CASE
+                                    WHEN SM.METERNO LIKE 'KI91%'
+                                      OR SM.METERNO LIKE '9150%'
+                                    THEN 1
+                                    ELSE 0
+                                END
+                            ) AS KIMBAL_1PH,
+                            SUM(
+                                CASE
+                                    WHEN SM.METERNO LIKE 'KI90%'
+                                      OR SM.METERNO LIKE '9026%'
+                                    THEN 1
+                                    ELSE 0
+                                END
+                            ) AS KIMBAL_3PH
                         FROM RCMPA.SMART_METER_BILLING_DATA SM
-
                         WHERE SM.METERNO NOT LIKE '%D%'
-
                           AND
                           (
                                 SM.METERNO LIKE '91______'
@@ -91,48 +142,93 @@ namespace SmartMeterReadingDash.Services
                              OR SM.METERNO LIKE 'AL________'
                              OR SM.METERNO LIKE 'KI________'
                           )
-
                           AND SM.READING_MONTH IN
                           (
                               SELECT M.READING_MONTH
                               FROM MONTHS M
                           )
-
                         GROUP BY SM.READING_MONTH
                     )
                 ),
-
                 FAILED AS
                 (
                     SELECT
                         SUM(FAILED_COUNT)  AS FAILED_COUNT,
                         SUM(ALLIED_FAILED) AS ALLIED_FAILED,
-                        SUM(KIMBAL_FAILED) AS KIMBAL_FAILED
+                        SUM(KIMBAL_FAILED) AS KIMBAL_FAILED,
+                        SUM(PHASE_1PH)     AS PHASE_1PH,
+                        SUM(PHASE_3PH)     AS PHASE_3PH,
+                        SUM(ALLIED_1PH)   AS ALLIED_1PH,
+                        SUM(ALLIED_3PH)   AS ALLIED_3PH,
+                        SUM(KIMBAL_1PH)   AS KIMBAL_1PH,
+                        SUM(KIMBAL_3PH)   AS KIMBAL_3PH
                     FROM
                     (
                         SELECT
                             L.READING_MONTH,
-
                             COUNT(DISTINCT L.METERNO) AS FAILED_COUNT,
-
                             COUNT(
                                 DISTINCT CASE
-                                    WHEN L.METERNO LIKE '90%'
-                                      OR L.METERNO LIKE 'AL%'
+                                    WHEN
+                                    ( L.METERNO LIKE '90%'
+                                      OR L.METERNO LIKE 'AL%')
+                                      AND L.METERNO NOT LIKE '9026%'
                                     THEN L.METERNO
                                 END
                             ) AS ALLIED_FAILED,
-
                             COUNT(
                                 DISTINCT CASE
                                     WHEN L.METERNO LIKE '91%'
                                       OR L.METERNO LIKE 'KI%'
+                                      OR L.METERNO LIKE '9026%'
                                     THEN L.METERNO
                                 END
-                            ) AS KIMBAL_FAILED
-
+                            ) AS KIMBAL_FAILED,
+                            COUNT(
+                                DISTINCT CASE
+                                    WHEN L.METERNO LIKE 'AL91%'
+                                      OR L.METERNO LIKE 'KI91%'
+                                      OR L.METERNO LIKE '9150%'
+                                    THEN L.METERNO
+                                END
+                            ) AS PHASE_1PH,
+                            COUNT(
+                                DISTINCT CASE
+                                    WHEN L.METERNO LIKE '9026%'
+                                      OR L.METERNO LIKE 'KI90%'
+                                      OR L.METERNO LIKE 'AL90%'
+                                    THEN L.METERNO
+                                END
+                            ) AS PHASE_3PH,
+                            COUNT(
+                                DISTINCT CASE
+                                    WHEN L.METERNO LIKE 'AL91%'
+                                    OR L.METERNO LIKE '9008%'
+                                    OR L.METERNO LIKE '9027%'
+                                    THEN L.METERNO
+                                END
+                            ) AS ALLIED_1PH,
+                            COUNT(
+                                DISTINCT CASE
+                                    WHEN L.METERNO LIKE 'AL90%'
+                                    THEN L.METERNO
+                                END
+                            ) AS ALLIED_3PH,
+                            COUNT(
+                                DISTINCT CASE
+                                    WHEN L.METERNO LIKE 'KI91%'
+                                      OR L.METERNO LIKE '9150%'
+                                    THEN L.METERNO
+                                END
+                            ) AS KIMBAL_1PH,
+                            COUNT(
+                                DISTINCT CASE
+                                    WHEN L.METERNO LIKE 'KI90%'
+                                      OR L.METERNO LIKE '9026%'
+                                    THEN L.METERNO
+                                END
+                            ) AS KIMBAL_3PH
                         FROM RCMPA.SMART_METER_SCHEDULER_LOGS L
-
                         WHERE
                           (
                                 L.METERNO LIKE '91______'
@@ -140,15 +236,12 @@ namespace SmartMeterReadingDash.Services
                              OR L.METERNO LIKE 'AL________'
                              OR L.METERNO LIKE 'KI________'
                           )
-
                           AND L.MESSAGE NOT LIKE 'Data%'
-
                           AND L.READING_MONTH IN
                           (
                               SELECT M.READING_MONTH
                               FROM MONTHS M
                           )
-
                           AND NOT EXISTS
                           (
                               SELECT /*+ INDEX(B IDX_SM_BILLING_CONSREF_MONTH) */
@@ -157,18 +250,19 @@ namespace SmartMeterReadingDash.Services
                               WHERE B.CONS_REF = L.CONS_REF
                                 AND B.READING_MONTH = L.READING_MONTH
                           )
-
                         GROUP BY L.READING_MONTH
                     )
                 )
-
                 SELECT
                     D.DOWNLOAD_COUNT + F.FAILED_COUNT AS TOTALMETERS,
-
                     D.ALLIED_DOWNLOAD + F.ALLIED_FAILED AS ALLIEDCOUNT,
-
-                    D.KIMBAL_DOWNLOAD + F.KIMBAL_FAILED AS KIMBALCOUNT
-
+                    D.KIMBAL_DOWNLOAD + F.KIMBAL_FAILED AS KIMBALCOUNT,
+                    D.PHASE_1PH + F.PHASE_1PH AS PHASE_1PH,
+                    D.PHASE_3PH + F.PHASE_3PH AS PHASE_3PH,
+                    D.ALLIED_1PH + F.ALLIED_1PH AS ALLIED_1PH,
+                    D.ALLIED_3PH + F.ALLIED_3PH AS ALLIED_3PH,
+                    D.KIMBAL_1PH + F.KIMBAL_1PH AS KIMBAL_1PH,
+                    D.KIMBAL_3PH + F.KIMBAL_3PH AS KIMBAL_3PH
                 FROM DOWNLOAD D
                 CROSS JOIN FAILED F";
               
@@ -185,6 +279,12 @@ namespace SmartMeterReadingDash.Services
                             Summary.TotalMeter = dr["TOTALMETERS"] == DBNull.Value ? 0 : Convert.ToInt32(dr["TOTALMETERS"]);
                             Summary.AlliedCount = dr["ALLIEDCOUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["ALLIEDCOUNT"]);
                             Summary.KimbalCount = dr["KIMBALCOUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KIMBALCOUNT"]);
+                            Summary.Allied_1PhCount = dr["ALLIED_1PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["ALLIED_1PH"]);
+                            Summary.Allied_3PhCount = dr["ALLIED_3PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["ALLIED_3PH"]);
+                            Summary.Kimbal_1PhCount = dr["KIMBAL_1PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KIMBAL_1PH"]);
+                            Summary.kimbal_3PhCount = dr["KIMBAL_3PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KIMBAL_3PH"]);
+                            Summary.total_1PhCount = dr["PHASE_1PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["PHASE_1PH"]);
+                            Summary.total_3PhCount = dr["PHASE_3PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["PHASE_3PH"]);
                         }
                     }
                 }
@@ -199,183 +299,117 @@ namespace SmartMeterReadingDash.Services
             {
                 con.Open();
                 string query = @"WITH MONTHS (READING_MONTH) AS
-                        (
-                            SELECT REGEXP_SUBSTR(
+                    (
+                        SELECT TRIM(
+                                   REGEXP_SUBSTR(
                                        :READING_MONTH,
                                        '[^,]+',
                                        1,
                                        LEVEL
                                    )
-                            FROM DUAL
-                            CONNECT BY REGEXP_SUBSTR(
-                                           :READING_MONTH,
-                                           '[^,]+',
-                                           1,
-                                           LEVEL
-                                       ) IS NOT NULL
-                        ),
-                        SAP_SLCC_DATA AS
+                               )
+                        FROM DUAL
+                        CONNECT BY REGEXP_SUBSTR(
+                                       :READING_MONTH,
+                                       '[^,]+',
+                                       1,
+                                       LEVEL
+                                   ) IS NOT NULL
+                    ),
+                    ALL_LOG_DATA AS
+                    (
+                        SELECT /*+ PARALLEL(8) */
+                               TRIM(S.METERNO) AS METERNO,
+                               TRIM(S.BILL_MONTH) AS BILL_MONTH
+                        FROM RCMPA.SAP_SLCC_SMARTMETER_LOG S
+                        WHERE S.BILL_MONTH IN
                         (
-                            SELECT /*+ PARALLEL(SF,8) */
-
-                                COUNT(*) AS TOTAL_METERS,
-
-                                SUM(
-                                    CASE
-                                        WHEN SF.METERNO LIKE '92%'
-                                          OR SF.METERNO LIKE 'AL%'
-                                          OR SF.METERNO LIKE '99%'
-                                        THEN 1
-                                        ELSE 0
-                                    END
-                                ) AS ALLIED_COUNT,
-
-                                SUM(
-                                    CASE
-                                        WHEN SF.METERNO LIKE 'KI%'
-                                          OR SF.METERNO LIKE '97%'
-                                          OR SF.METERNO LIKE '98%'
-                                        THEN 1
-                                        ELSE 0
-                                    END
-                                ) AS KIMBAL_COUNT,
-
-                                SUM(
-                                    CASE
-                                        WHEN SF.SAP_DEPARTMENT = 'SLCC'
-                                        THEN 1
-                                        ELSE 0
-                                    END
-                                ) AS SLCC_COUNT,
-                                0 AS MLCC_COUNT,
-                                0 AS GCC_COUNT,
-                                0 AS KCC_COUNT
-                            FROM RCMPA.SAP_SLCC_FORMY SF
-                            WHERE SF.SAP_COMPANY = 'BYPL'
-                              AND SF.READING_MONTH IN
-                              (
-                                  SELECT M.READING_MONTH
-                                  FROM MONTHS M
-                              )
-                              AND SF.SAP_MR_REASON_CODE = '01'
-                              AND SF.CSTS_CD = 'R'
-                              AND SF.METERNO NOT LIKE '%D%'
-                              AND
-                              (
-                                    SF.METERNO LIKE '92______'
-                                 OR SF.METERNO LIKE '99______'
-                                 OR SF.METERNO LIKE '98______'
-                                 OR SF.METERNO LIKE '97______'
-                                 OR SF.METERNO LIKE 'AL________'
-                                 OR SF.METERNO LIKE 'KI________'
-                              )
-                        ),
-                        SAP_FORMY_DATA AS
-                        (
-                            SELECT /*+ PARALLEL(F,8) */
-                                COUNT(*) AS TOTAL_METERS,
-                                SUM(
-                                    CASE
-                                        WHEN F.METERNO LIKE '92%'
-                                          OR F.METERNO LIKE 'AL%'
-                                          OR F.METERNO LIKE '99%'
-                                        THEN 1
-                                        ELSE 0
-                                    END
-                                ) AS ALLIED_COUNT,
-                                SUM(
-                                    CASE
-                                        WHEN F.METERNO LIKE 'KI%'
-                                          OR F.METERNO LIKE '97%'
-                                          OR F.METERNO LIKE '98%'
-                                        THEN 1
-                                        ELSE 0
-                                    END
-                                ) AS KIMBAL_COUNT,
-                                SUM(
-                                    CASE
-                                        WHEN F.SAP_DEPARTMENT = 'SLCC'
-                                        THEN 1
-                                        ELSE 0
-                                    END
-                                ) AS SLCC_COUNT,
-                                SUM(
-                                    CASE
-                                        WHEN F.SAP_DEPARTMENT = 'MLCC'
-                                         AND F.CYCLE <> '0N'
-                                        THEN 1
-                                        ELSE 0
-                                    END
-                                ) AS MLCC_COUNT,
-                                SUM(
-                                    CASE
-                                        WHEN F.SAP_DEPARTMENT = 'GCC'
-                                        THEN 1
-                                        ELSE 0
-                                    END
-                                ) AS GCC_COUNT,
-                                SUM(
-                                    CASE
-                                        WHEN (
-                                                F.SAP_DEPARTMENT = 'MLCC'
-                                                AND F.CYCLE = '0N'
-                                             )
-                                          OR F.CYCLE IN ('KA','KC','KG')
-                                        THEN 1
-                                        ELSE 0
-                                    END
-                                ) AS KCC_COUNT
-                            FROM RCMPA.SAP_FORMY F
-                            WHERE F.SAP_COMPANY = 'BYPL'
-                              AND F.READING_MONTH IN
-                              (
-                                  SELECT M.READING_MONTH
-                                  FROM MONTHS M
-                              )
-                              AND F.SAP_MR_REASON_CODE = '01'
-                              AND F.CSTS_CD = 'R'
-                              AND F.METERNO NOT LIKE '%D%'
-                              AND
-                              (
-                                    F.METERNO LIKE '92______'
-                                 OR F.METERNO LIKE '99______'
-                                 OR F.METERNO LIKE '98______'
-                                 OR F.METERNO LIKE '97______'
-                                 OR F.METERNO LIKE 'AL________'
-                                 OR F.METERNO LIKE 'KI________'
-                              )
+                            SELECT READING_MONTH
+                            FROM MONTHS
                         )
+                        AND S.IS_FAILED = 0
+
+                        UNION
 
                         SELECT /*+ PARALLEL(8) */
-                            SUM(TOTAL_METERS) AS TOTAL_METERS,
-                            SUM(ALLIED_COUNT) AS ALLIED_COUNT,
-                            SUM(KIMBAL_COUNT) AS KIMBAL_COUNT,
-                            SUM(SLCC_COUNT) AS SLCC_COUNT,
-                            SUM(MLCC_COUNT) AS MLCC_COUNT,
-                            SUM(GCC_COUNT) AS GCC_COUNT,
-                            SUM(KCC_COUNT) AS KCC_COUNT
-                        FROM
+                               TRIM(K.METERNO) AS METERNO,
+                               TRIM(K.BILL_MONTH) AS BILL_MONTH
+                        FROM RCMPA.SAP_KCC_GCC_SMARTMETER_LOG K
+                        WHERE K.BILL_MONTH IN
                         (
-                            SELECT
-                                TOTAL_METERS,
-                                ALLIED_COUNT,
-                                KIMBAL_COUNT,
-                                SLCC_COUNT,
-                                MLCC_COUNT,
-                                GCC_COUNT,
-                                KCC_COUNT
-                            FROM SAP_SLCC_DATA
-                            UNION ALL
-                            SELECT
-                                TOTAL_METERS,
-                                ALLIED_COUNT,
-                                KIMBAL_COUNT,
-                                SLCC_COUNT,
-                                MLCC_COUNT,
-                                GCC_COUNT,
-                                KCC_COUNT
-                            FROM SAP_FORMY_DATA
-                        )";
+                            SELECT READING_MONTH
+                            FROM MONTHS
+                        )
+                        AND K.IS_FAILED = 0
+                    ),
+                    METER_DATA AS
+                    (
+                        SELECT DISTINCT
+                               METERNO,
+                               BILL_MONTH
+                        FROM ALL_LOG_DATA
+                        WHERE METERNO IS NOT NULL
+                    )
+
+                    SELECT
+                        COUNT(*) AS TOTAL_METERS,
+                        SUM(
+                            CASE
+                                WHEN METERNO LIKE '92%'
+                                  OR METERNO LIKE 'AL%'
+                                  OR METERNO LIKE '99%'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ) AS ALLIED_COUNT,
+                        /* Allied 1PH */
+                        SUM(
+                            CASE
+                                WHEN METERNO LIKE '92%'
+                                  OR METERNO LIKE '99%'
+                                  OR METERNO LIKE 'AL92%'
+                                  OR METERNO LIKE 'AL99%'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ) AS ALLIED_1PH,
+                        /* Allied 3PH */
+                        SUM(
+                            CASE
+                                WHEN METERNO LIKE 'AL97%'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ) AS ALLIED_3PH,
+                        /* ================= KIMBAL ================= */
+                        SUM(
+                            CASE
+                                WHEN METERNO LIKE 'KI%'
+                                  OR METERNO LIKE '97%'
+                                  OR METERNO LIKE '98%'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ) AS KIMBAL_COUNT,
+                        /* Kimbal 1PH */
+                        SUM(
+                            CASE
+                                WHEN METERNO LIKE '98%'
+                                  OR METERNO LIKE 'KI98%'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ) AS KIMBAL_1PH,
+                        /* Kimbal 3PH */
+                        SUM(
+                            CASE
+                                WHEN METERNO LIKE '97%'
+                                  OR METERNO LIKE 'KI97%'
+                                THEN 1
+                                ELSE 0
+                            END
+                        ) AS KIMBAL_3PH
+                    FROM METER_DATA";
 
                 using (OracleCommand cmd = new OracleCommand(query, con))
                 {
@@ -386,7 +420,11 @@ namespace SmartMeterReadingDash.Services
                         {
                             totalMeterSummary.TotalMeter = dr["TOTAL_METERS"] == DBNull.Value ? 0 : Convert.ToInt32(dr["TOTAL_METERS"]);
                             totalMeterSummary.AlliedCount = dr["ALLIED_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["ALLIED_COUNT"]);
+                            totalMeterSummary.Allied_1PhCount = dr["ALLIED_1PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["ALLIED_1PH"]);
+                            totalMeterSummary.Allied_3PhCount = dr["ALLIED_3PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["ALLIED_3PH"]);
                             totalMeterSummary.KimbalCount = dr["KIMBAL_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KIMBAL_COUNT"]);
+                            totalMeterSummary.Kimbal_1PhCount = dr["KIMBAL_1PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KIMBAL_1PH"]);
+                            totalMeterSummary.Kimbal_3PhCount = dr["KIMBAL_3PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KIMBAL_3PH"]);
                         }
                     }
                 }
@@ -544,11 +582,13 @@ namespace SmartMeterReadingDash.Services
                 con.Open();
                 string query = @"WITH MONTHS (READING_MONTH) AS
                     (
-                        SELECT REGEXP_SUBSTR(
-                                   :READING_MONTH,
-                                   '[^,]+',
-                                   1,
-                                   LEVEL
+                        SELECT TRIM(
+                                   REGEXP_SUBSTR(
+                                       :READING_MONTH,
+                                       '[^,]+',
+                                       1,
+                                       LEVEL
+                                   )
                                )
                         FROM DUAL
                         CONNECT BY REGEXP_SUBSTR(
@@ -558,173 +598,104 @@ namespace SmartMeterReadingDash.Services
                                        LEVEL
                                    ) IS NOT NULL
                     ),
-
+                    SLCC_DATA AS
+                    (
+                        SELECT /*+ PARALLEL(S,8) */
+                               TRIM(S.METERNO) AS METERNO,
+                               TRIM(S.BILL_MONTH) AS BILL_MONTH,
+                               S.IS_FAILED
+                        FROM RCMPA.SAP_SLCC_SMARTMETER_LOG S
+                        WHERE S.BILL_MONTH IN
+                        (
+                            SELECT M.READING_MONTH
+                            FROM MONTHS M
+                        )
+                    ),
+                    KCC_GCC_DATA AS
+                    (
+                        SELECT /*+ PARALLEL(K,8) */
+                               TRIM(K.METERNO) AS METERNO,
+                               TRIM(K.BILL_MONTH) AS BILL_MONTH,
+                               K.IS_FAILED
+                        FROM RCMPA.SAP_KCC_GCC_SMARTMETER_LOG K
+                        WHERE K.BILL_MONTH IN
+                        (
+                            SELECT M.READING_MONTH
+                            FROM MONTHS M
+                        )
+                    ),
                     BASE_DATA AS
                     (
-                        SELECT /*+ PARALLEL(SF,8) */
+                        SELECT
+                               METERNO,
+                               BILL_MONTH,
+                               IS_FAILED
+                        FROM SLCC_DATA
 
-                               SF.MTR_READ_MODE,
-                               SF.READING_DATE,
-                               SF.NEW_MTR_NO,
-                               SF.MTR_CORR_STS,
-                               SF.MTR_NO_CORR
+                        UNION
 
-                        FROM RCMPA.SAP_SLCC_FORMY SF
-
-                        WHERE SF.SAP_COMPANY = 'BYPL'
-
-                          AND SF.READING_MONTH IN
-                          (
-                              SELECT M.READING_MONTH
-                              FROM MONTHS M
-                          )
-
-                          AND SF.SAP_MR_REASON_CODE = '01'
-
-                          AND SF.CSTS_CD = 'R'
-
-                          AND SF.METERNO NOT LIKE '%D%'
-
-                          AND
-                          (
-                                SF.METERNO LIKE '92______'
-                             OR SF.METERNO LIKE '99______'
-                             OR SF.METERNO LIKE '98______'
-                             OR SF.METERNO LIKE '97______'
-                             OR SF.METERNO LIKE 'AL________'
-                             OR SF.METERNO LIKE 'KI________'
-                          )
-
-                        UNION ALL
-
-                        SELECT /*+ PARALLEL(F,8) */
-
-                               F.MTR_READ_MODE,
-                               F.READING_DATE,
-                               F.NEW_MTR_NO,
-                               F.MTR_CORR_STS,
-                               F.MTR_NO_CORR
-
-                        FROM RCMPA.SAP_FORMY F
-
-                        WHERE F.SAP_COMPANY = 'BYPL'
-
-                          AND F.READING_MONTH IN
-                          (
-                              SELECT M.READING_MONTH
-                              FROM MONTHS M
-                          )
-
-                          AND F.SAP_MR_REASON_CODE = '01'
-
-                          AND F.CSTS_CD = 'R'
-
-                          AND F.METERNO NOT LIKE '%D%'
-
-                          AND
-                          (
-                                F.METERNO LIKE '92______'
-                             OR F.METERNO LIKE '99______'
-                             OR F.METERNO LIKE '98______'
-                             OR F.METERNO LIKE '97______'
-                             OR F.METERNO LIKE 'AL________'
-                             OR F.METERNO LIKE 'KI________'
-                          )
+                        SELECT
+                               METERNO,
+                               BILL_MONTH,
+                               IS_FAILED
+                        FROM KCC_GCC_DATA
                     ),
-
+                    DISTINCT_DATA AS
+                    (
+                        SELECT DISTINCT
+                               METERNO,
+                               BILL_MONTH,
+                               IS_FAILED
+                        FROM BASE_DATA
+                        WHERE METERNO IS NOT NULL
+                    ),
                     SUMMARY AS
                     (
                         SELECT /*+ PARALLEL(8) */
 
-                            SUM(
-                                CASE
-                                    WHEN MTR_READ_MODE = '1'
-                                    THEN 1
-                                    ELSE 0
-                                END
-                            ) AS HES_DOWNLOAD,
+                               /* Downloaded */
+                               COUNT(
+                                   DISTINCT
+                                   CASE
+                                       WHEN IS_FAILED = 0
+                                       THEN METERNO
+                                   END
+                               ) AS HES_DOWNLOAD,
 
-                            SUM(
-                                CASE
-                                    WHEN MTR_READ_MODE = '0'
-                                      OR (
-                                            MTR_READ_MODE IS NULL
-                                            AND READING_DATE IS NOT NULL
-                                         )
-                                    THEN 1
-                                    ELSE 0
-                                END
-                            ) AS MANUAL,
+                               /* Failed */
+                               COUNT(
+                                   DISTINCT
+                                   CASE
+                                       WHEN IS_FAILED = 1
+                                       THEN METERNO
+                                   END
+                               ) AS HES_FAILED
 
-                            SUM(
-                                CASE
-                                    WHEN READING_DATE IS NULL
-                                    THEN 1
-                                    ELSE 0
-                                END
-                            ) AS READING_PENDING,
-
-                            SUM(
-                                CASE
-                                    WHEN MTR_READ_MODE = '1'
-                                     AND (
-                                            NEW_MTR_NO IS NOT NULL
-                                         OR MTR_CORR_STS IS NOT NULL
-                                         OR MTR_NO_CORR IS NOT NULL
-                                     )
-                                    THEN 1
-                                    ELSE 0
-                                END
-                            ) AS MISMATCH
-
-                        FROM BASE_DATA
+                        FROM DISTINCT_DATA
                     )
-
                     SELECT
-
                         HES_DOWNLOAD,
-
-                        (
-                            MISMATCH
-                            + MANUAL
-                            + READING_PENDING
-                        ) AS HES_FAILED,
-
+                        HES_FAILED,
                         (
                             HES_DOWNLOAD
-                            + MISMATCH
-                            + MANUAL
-                            + READING_PENDING
+                            + HES_FAILED
                         ) AS TOTAL,
-
                         ROUND(
                             HES_DOWNLOAD * 100 /
                             NULLIF(
-                                HES_DOWNLOAD
-                                + MISMATCH
-                                + MANUAL
-                                + READING_PENDING,
+                                HES_DOWNLOAD + HES_FAILED,
                                 0
                             ),
                             2
                         ) AS DOWNLOAD_PERCENTAGE,
-
                         ROUND(
-                            (
-                                MISMATCH
-                                + MANUAL
-                                + READING_PENDING
-                            ) * 100 /
+                            HES_FAILED * 100 /
                             NULLIF(
-                                HES_DOWNLOAD
-                                + MISMATCH
-                                + MANUAL
-                                + READING_PENDING,
+                                HES_DOWNLOAD + HES_FAILED,
                                 0
                             ),
                             2
                         ) AS FAILED_PERCENTAGE
-
                     FROM SUMMARY";
                 using (OracleCommand cmd = new OracleCommand(query, con))
                 {
@@ -848,69 +819,77 @@ namespace SmartMeterReadingDash.Services
                           )
                     )
 
-                    SELECT DISTINCT
-                        F.METERNO,
-                        F.CONS_REF,
+                   SELECT DISTINCT
+                    F.METERNO,
+                    F.CONS_REF,
 
-                        CASE
-                            WHEN F.SAP_DEPARTMENT = 'MLCC'
-                                 AND F.CYCLE = '0N'
-                                THEN 'KCC'
+                    CASE
+                        WHEN F.SAP_DEPARTMENT = 'MLCC'
+                             AND F.CYCLE = '0N'
+                            THEN 'KCC'
+                        ELSE NVL(F.SAP_DEPARTMENT, 'SLCC')
+                    END AS SAP_DEPARTMENT,
 
-                            ELSE NVL(F.SAP_DEPARTMENT, 'SLCC')
-                        END AS SAP_DEPARTMENT,
+                    NVL(S.SAP_DIVISION, FM.SAP_DIVISION) AS SAP_DIVISION,
 
-                        NVL(S.SAP_DIVISION, FM.SAP_DIVISION) AS SAP_DIVISION,
+                    NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO) AS SAP_SEQ_NO,
 
-                        NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO) AS SAP_SEQ_NO,
+                    RTRIM(
+                        NVL(S.ADD1, FM.ADD1) || ', ' ||
+                        NVL(S.ADD2, FM.ADD2) || ', ' ||
+                        NVL(S.ADD3, FM.ADD3) || ', ' ||
+                        NVL(S.LAND_MARK, FM.LAND_MARK) || ', ' ||
+                        NVL(S.FATHER_NAME, FM.FATHER_NAME),
+                        ', '
+                    ) AS ADDRESS,
+                    CASE
+                        WHEN SUBSTR(F.METERNO, 1, 2) IN ('90', 'AL')
+                            THEN 'ALLIED'
 
-                        RTRIM(
-                            NVL(S.ADD1, FM.ADD1) || ', ' ||
-                            NVL(S.ADD2, FM.ADD2) || ', ' ||
-                            NVL(S.ADD3, FM.ADD3) || ', ' ||
-                            NVL(S.LAND_MARK, FM.LAND_MARK) || ', ' ||
-                            NVL(S.FATHER_NAME, FM.FATHER_NAME),
-                            ', '
-                        ) AS ADDRESS,
+                        WHEN SUBSTR(F.METERNO, 1, 2) IN ('91', 'KI')
+                            THEN 'KIMBAL'
+                    END AS METER_TYPE,
+                    CASE
+                    WHEN SUBSTR(F.METERNO, 1, 4) = 'AL91'
+                        THEN '1PH'
+                    WHEN SUBSTR(F.METERNO, 1, 4) = 'AL90'
+                        THEN '3PH'
+                    WHEN SUBSTR(F.METERNO, 1, 4) = 'KI91'
+                        THEN '1PH'
+                    WHEN SUBSTR(F.METERNO, 1, 4) = '9150'
+                        THEN '1PH'    
+                    WHEN SUBSTR(F.METERNO, 1, 4) = '9008'
+                        THEN '1PH'       
+                    WHEN SUBSTR(F.METERNO, 1, 4) = '9027'
+                        THEN '1PH'
+                    WHEN SUBSTR(F.METERNO, 1, 4) = 'KI90'
+                        THEN '3PH'
+                    WHEN SUBSTR(F.METERNO, 1, 4) = '9026'
+                        THEN '3PH'
+                    ELSE 'UNKNOWN'
+                END AS PHASE_TYPE,
+                    F.FAILURE_REASON,
+                    F.MESSAGE AS SCHEDULER_MESSAGE,
+                    F.ENTRY_DATE,
+                    F.READING_MONTH
+                FROM FAILURE_DATA F
+                LEFT JOIN RCMPA.SAP_SLCC_FORMY S
+                    ON S.CONS_REF = F.CONS_REF
+                    AND S.READING_MONTH = F.READING_MONTH
+                LEFT JOIN RCMPA.SAP_FORMY FM
+                    ON FM.CONS_REF = F.CONS_REF
+                    AND FM.READING_MONTH = F.READING_MONTH
+                ORDER BY
+                    CASE
+                        WHEN F.SAP_DEPARTMENT = 'MLCC'
+                             AND F.CYCLE = '0N'
+                            THEN 'KCC'
+                        ELSE NVL(F.SAP_DEPARTMENT, 'SLCC')
+                    END,
 
-                        CASE
-                            WHEN SUBSTR(F.METERNO, 1, 2) IN ('90', 'AL')
-                                THEN 'ALLIED'
-
-                            WHEN SUBSTR(F.METERNO, 1, 2) IN('91','KI')
-                                THEN 'KIMBAL'
-                        END AS METER_TYPE,
-
-                        F.FAILURE_REASON,
-
-                        F.MESSAGE AS SCHEDULER_MESSAGE,
-
-                        F.ENTRY_DATE,
-
-                        F.READING_MONTH
-
-                    FROM FAILURE_DATA F
-
-                    LEFT JOIN RCMPA.SAP_SLCC_FORMY S
-                        ON S.CONS_REF = F.CONS_REF
-                        AND S.READING_MONTH = F.READING_MONTH
-
-                    LEFT JOIN RCMPA.SAP_FORMY FM
-                        ON FM.CONS_REF = F.CONS_REF
-                        AND FM.READING_MONTH = F.READING_MONTH
-
-                    ORDER BY
-                        CASE
-                            WHEN F.SAP_DEPARTMENT = 'MLCC'
-                                 AND F.CYCLE = '0N'
-                                THEN 'KCC'
-
-                            ELSE NVL(F.SAP_DEPARTMENT, 'SLCC')
-                        END,
-
-                        NVL(S.SAP_DIVISION, FM.SAP_DIVISION),
-                        NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO),
-                        F.METERNO";
+                    NVL(S.SAP_DIVISION, FM.SAP_DIVISION),
+                    NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO),
+                    F.METERNO";
 
                 using(OracleCommand cmd  = new OracleCommand(query,con))
                 {
@@ -925,6 +904,7 @@ namespace SmartMeterReadingDash.Services
                                 MeterNumber = dr["METERNO"].ToString(),
                                 SapDepartment = dr["SAP_DEPARTMENT"].ToString(),
                                 MeterType = dr["METER_TYPE"].ToString(),
+                                Phase = dr["PHASE_TYPE"].ToString(),
                                 ConsRef = dr["CONS_REF"].ToString(),
                                 SapDivision = dr["SAP_DIVISION"].ToString(),
                                 Address = dr["ADDRESS"].ToString(),
@@ -940,6 +920,286 @@ namespace SmartMeterReadingDash.Services
             }
         
         }
+
+        public List<MeterDownloadDetailedSummaryBypl> GetMeterDownloadDetailedSummaryBypl(string readingMonth)
+        {
+            List<MeterDownloadDetailedSummaryBypl> summaryList = new List<MeterDownloadDetailedSummaryBypl>();
+            using (OracleConnection con = _db.GetConnection())
+            {
+                con.Open();
+                string query = @"WITH
+                /* ============================================================
+                   1. MONTH FILTER
+                   ============================================================ */
+                MONTHS AS
+                (
+                    SELECT TRIM(
+                               REGEXP_SUBSTR(
+                                   :READING_MONTH,
+                                   '[^,]+',
+                                   1,
+                                   LEVEL
+                               )
+                           ) AS READING_MONTH
+                    FROM DUAL
+                    CONNECT BY REGEXP_SUBSTR(
+                                   :READING_MONTH,
+                                   '[^,]+',
+                                   1,
+                                   LEVEL
+                               ) IS NOT NULL
+                ),
+
+                /* ============================================================
+                   2. GET LATEST FAILED RECORD DIRECTLY
+                      Avoid unnecessary MATERIALIZE/PARALLEL hints
+                   ============================================================ */
+                FAILED_METERS AS
+                (
+                    SELECT
+                        METERNO,
+                        READING_MONTH,
+                        INSERTED_DATE,
+                        REMARKS
+                    FROM
+                    (
+                        SELECT
+                            S.METERNO,
+                            S.BILL_MONTH AS READING_MONTH,
+                            S.INSERTED_DATE,
+                            S.REMARKS,
+
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY
+                                    S.METERNO,
+                                    S.BILL_MONTH
+                                ORDER BY
+                                    S.INSERTED_DATE DESC NULLS LAST
+                            ) AS RN
+
+                        FROM RCMPA.SAP_SLCC_SMARTMETER_LOG S
+
+                        JOIN MONTHS M
+                          ON M.READING_MONTH = S.BILL_MONTH
+
+                        WHERE S.IS_FAILED = '1'
+                          AND S.METERNO IS NOT NULL
+
+                        UNION ALL
+
+                        SELECT
+                            K.METERNO,
+                            K.BILL_MONTH AS READING_MONTH,
+                            K.INSERTED_DATE,
+                            K.REMARKS,
+
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY
+                                    K.METERNO,
+                                    K.BILL_MONTH
+                                ORDER BY
+                                    K.INSERTED_DATE DESC NULLS LAST
+                            ) AS RN
+
+                        FROM RCMPA.SAP_KCC_GCC_SMARTMETER_LOG K
+
+                        JOIN MONTHS M
+                          ON M.READING_MONTH = K.BILL_MONTH
+
+                        WHERE K.IS_FAILED = '1'
+                          AND K.METERNO IS NOT NULL
+                    )
+                    WHERE RN = 1
+                ),
+
+                /* ============================================================
+                   3. SLCC FORM-Y
+                      Only retrieve records for failed meters
+                   ============================================================ */
+                SLCC_FORMY AS
+                (
+                    SELECT
+                        D.METERNO,
+                        D.READING_MONTH,
+
+                        S.CONS_REF,
+                        S.SAP_DEPARTMENT,
+                        S.SAP_DIVISION,
+                        S.SAP_SEQ_NO,
+
+                        S.ADD1,
+                        S.ADD2,
+                        S.ADD3,
+                        S.LAND_MARK,
+                        S.FATHER_NAME
+
+                    FROM FAILED_METERS D
+
+                    JOIN RCMPA.SAP_SLCC_FORMY S
+                      ON S.METERNO = D.METERNO
+                     AND S.READING_MONTH = D.READING_MONTH
+                ),
+
+                /* ============================================================
+                   4. FALLBACK ONLY FOR METERS NOT FOUND IN SLCC_FORMY
+                   ============================================================ */
+                FORMY_DATA AS
+                (
+                    /* SLCC FIRST */
+                    SELECT
+                        METERNO,
+                        READING_MONTH,
+                        CONS_REF,
+                        SAP_DEPARTMENT,
+                        SAP_DIVISION,
+                        SAP_SEQ_NO,
+                        ADD1,
+                        ADD2,
+                        ADD3,
+                        LAND_MARK,
+                        FATHER_NAME
+
+                    FROM SLCC_FORMY
+
+                    UNION ALL
+
+                    /* SAP_FORMY FALLBACK */
+                    SELECT
+                        D.METERNO,
+                        D.READING_MONTH,
+
+                        F.CONS_REF,
+                        F.SAP_DEPARTMENT,
+                        F.SAP_DIVISION,
+                        F.SAP_SEQ_NO,
+
+                        F.ADD1,
+                        F.ADD2,
+                        F.ADD3,
+                        F.LAND_MARK,
+                        F.FATHER_NAME
+
+                    FROM FAILED_METERS D
+
+                    JOIN RCMPA.SAP_FORMY F
+                      ON F.METERNO = D.METERNO
+                     AND F.READING_MONTH = D.READING_MONTH
+
+                    WHERE NOT EXISTS
+                    (
+                        SELECT 1
+                        FROM SLCC_FORMY S
+                        WHERE S.METERNO = D.METERNO
+                          AND S.READING_MONTH = D.READING_MONTH
+                    )
+                )
+
+                /* ============================================================
+                   5. FINAL RESULT
+                   ============================================================ */
+                SELECT
+
+                    D.METERNO,
+
+                    F.CONS_REF,
+
+                    CASE
+                        WHEN D.METERNO LIKE '92%'
+                          OR D.METERNO LIKE '99%'
+                          OR D.METERNO LIKE 'AL92%'
+                          OR D.METERNO LIKE 'AL99%'
+                            THEN '1PH'
+
+                        WHEN D.METERNO LIKE 'AL97%'
+                            THEN '3PH'
+
+                        WHEN D.METERNO LIKE '98%'
+                          OR D.METERNO LIKE 'KI98%'
+                            THEN '1PH'
+
+                        WHEN D.METERNO LIKE '97%'
+                          OR D.METERNO LIKE 'KI97%'
+                            THEN '3PH'
+
+                        ELSE 'UNKNOWN'
+                    END AS PHASE_TYPE,
+
+                    F.SAP_DEPARTMENT,
+
+                    F.SAP_DIVISION,
+
+                    F.SAP_SEQ_NO,
+
+                    RTRIM(
+                        F.ADD1 || ', ' ||
+                        F.ADD2 || ', ' ||
+                        F.ADD3 || ', ' ||
+                        F.LAND_MARK || ', ' ||
+                        F.FATHER_NAME,
+                        ', '
+                    ) AS ADDRESS,
+
+                    CASE
+                        WHEN D.METERNO LIKE '92%'
+                          OR D.METERNO LIKE '99%'
+                          OR D.METERNO LIKE 'AL%'
+                            THEN 'ALLIED'
+
+                        WHEN D.METERNO LIKE 'KI%'
+                          OR D.METERNO LIKE '97%'
+                          OR D.METERNO LIKE '98%'
+                            THEN 'KIMBAL'
+
+                        ELSE 'UNKNOWN'
+                    END AS METER_TYPE,
+
+                    'HES Download Failed' AS FAILURE_STATUS,
+
+                    D.REMARKS AS FAILURE_REASON,
+
+                    D.INSERTED_DATE
+
+                FROM FAILED_METERS D
+
+                LEFT JOIN FORMY_DATA F
+                  ON F.METERNO = D.METERNO
+                 AND F.READING_MONTH = D.READING_MONTH
+
+                ORDER BY
+                    D.INSERTED_DATE DESC NULLS LAST,
+                    D.METERNO";
+
+                using(OracleCommand cmd = new OracleCommand(query,con))
+                {
+                    cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = readingMonth;
+
+                    using(OracleDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            summaryList.Add(new MeterDownloadDetailedSummaryBypl
+                            {
+                                MeterNumber = dr["METERNO"].ToString(),
+                                SapDepartment = dr["SAP_DEPARTMENT"].ToString(),
+                                MeterType = dr["METER_TYPE"].ToString(),
+                                Phase = dr["PHASE_TYPE"].ToString(),
+                                ConsRef = dr["CONS_REF"].ToString(),
+                                SapDivision = dr["SAP_DIVISION"].ToString(),
+                                Address = dr["ADDRESS"].ToString(),
+                                SapSeqNo = dr["SAP_SEQ_NO"].ToString(),
+                                SchedulerMessage = dr["FAILURE_REASON"] == DBNull.Value ? null : dr["FAILURE_REASON"].ToString(),
+                                EntryDate = dr["INSERTED_DATE"] == DBNull.Value ? null : Convert.ToDateTime(dr["INSERTED_DATE"])
+                            });
+                        }
+                    }
+                    return summaryList;
+                }
+            }
+        }
+
+
         // get reading trend date wise for the current month till day - 1
         public List<ReadingTrendDateWise> GetReadingTrend(string ReadingMonth)
         {

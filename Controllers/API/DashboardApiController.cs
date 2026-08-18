@@ -88,6 +88,22 @@ namespace SmartMeterReadingDash.Controllers.API
                 return StatusCode(500, "Internal Server Error");
             }
         }
+
+        //BYPL
+        [HttpGet("meter-download-detailed-summary-bypl")]
+        public IActionResult GetMeterDownloadDetailedSummaryBypl(string ReadingMonth)
+        {
+            try
+            {
+                var summaryList = _dashboard.GetMeterDownloadDetailedSummaryBypl(ReadingMonth);
+                return Ok(summaryList);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
         [HttpGet("reading_trend_date_wise")]
         public IActionResult GetReadingTrend(string ReadingMonth)
         {

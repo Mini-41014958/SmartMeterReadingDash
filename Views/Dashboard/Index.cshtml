@@ -66,6 +66,116 @@
         font-weight: 600;
         white-space: nowrap;
     }
+    /* =========================================
+   Download Detailed Summary Table
+========================================= */
+
+#downloadSummaryTable {
+    width: 100%;
+    table-layout: fixed;
+    min-width: 1250px;
+}
+
+/* Compact columns */
+#downloadSummaryTable th:nth-child(1),
+#downloadSummaryTable td:nth-child(1) {
+    width: 55px;
+}
+
+#downloadSummaryTable th:nth-child(2),
+#downloadSummaryTable td:nth-child(2) {
+    width: 105px;
+}
+
+#downloadSummaryTable th:nth-child(3),
+#downloadSummaryTable td:nth-child(3) {
+    width: 125px;
+}
+
+#downloadSummaryTable th:nth-child(4),
+#downloadSummaryTable td:nth-child(4) {
+    width: 65px;
+    text-align: center;
+}
+
+#downloadSummaryTable th:nth-child(5),
+#downloadSummaryTable td:nth-child(5) {
+    width: 95px;
+}
+
+#downloadSummaryTable th:nth-child(6),
+#downloadSummaryTable td:nth-child(6) {
+    width: 100px;
+}
+
+#downloadSummaryTable th:nth-child(7),
+#downloadSummaryTable td:nth-child(7) {
+    width: 75px;
+}
+
+#downloadSummaryTable th:nth-child(8),
+#downloadSummaryTable td:nth-child(8) {
+    width: auto;
+}
+
+#downloadSummaryTable th:nth-child(9),
+#downloadSummaryTable td:nth-child(9) {
+    width: 95px;
+}
+
+#downloadSummaryTable th:nth-child(10),
+#downloadSummaryTable td:nth-child(10) {
+    width: auto;
+}
+
+#downloadSummaryTable th:nth-child(11),
+#downloadSummaryTable td:nth-child(11) {
+    width: 145px;
+}
+
+/* Header */
+#downloadSummaryTable thead th {
+    white-space: nowrap;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 8px 7px;
+    vertical-align: middle;
+}
+
+/* Body */
+#downloadSummaryTable tbody td {
+    font-size: 13px;
+    padding: 7px;
+    vertical-align: middle;
+}
+
+/* Address - allow wrapping */
+#downloadSummaryTable td:nth-child(8) {
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.35;
+}
+
+/* Status - use available space */
+#downloadSummaryTable td:nth-child(10) {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Status badge should not force table wider */
+#downloadSummaryTable td:nth-child(10) .badge {
+    display: inline-block;
+    max-width: 100%;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.35;
+    text-align: left;
+}
+
+/* Keep table scrollable on smaller screens */
+.table-responsive {
+    overflow-x: auto;
+}
 
 </style>
 
@@ -154,100 +264,179 @@
 <div class="row g-3">
 
 
-    <div class="col-lg-6">
+            <div class="col-lg-6">
 
-        <div class="card dashboard-card meter-summary-card h-100">
+                <div class="card dashboard-card meter-summary-card h-100">
 
-            <div class="card-header">
-                <i class="bi bi-speedometer2"></i>
-                Meter Summary
-            </div>
-
-            <div class="card-body">
-
-                <div class="row g-2 align-items-center">
-
-                    <!-- Summary Table -->
-                    <div class="col-md-7">
-
-                        <div class="meter-summary-table">
-
-                            <table class="table table-sm mb-0">
-
-                                <thead>
-                                    <tr>
-                                        <th>COMPANY</th>
-                                        <th class="text-end">ALLIED</th>
-                                        <th class="text-end">KIMBAL</th>
-                                        <th class="text-end">TOTAL</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-
-                                    <!-- BRPL -->
-                                    <tr>
-
-                                        <td class="fw-semibold">
-                                            BRPL
-                                        </td>
-
-                                        <td class="text-end"
-                                              id="brplAlliedCount">
-                                            0
-                                        </td>
-
-                                        <td class="text-end"
-                                            id="brplKimbalCount">
-                                            0
-                                        </td>
-
-                                        <td class="text-end fw-bold"
-                                                    id="brplTotalMeter">
-                                            0
-                                        </td>
-
-                                    </tr>
-
-                                    <!-- BYPL -->
-                                    <tr>
-
-                                        <td class="fw-semibold">
-                                            BYPL
-                                        </td>
-
-                                        <td class="text-end"
-                                            id="byplAlliedCount">
-                                            0
-                                        </td>
-
-                                        <td class="text-end"
-                                            id="byplKimbalCount">
-                                            0
-                                        </td>
-
-                                        <td class="text-end fw-bold"
-                                            id="byplTotalMeter">
-                                            0
-                                        </td>
-
-                                    </tr>
-
-                                </tbody>
-
-                            </table>
-
-                        </div>
-
+                    <div class="card-header">
+                        <i class="bi bi-speedometer2"></i>
+                        Meter Summary
                     </div>
 
+                    <div class="card-body">
 
-                    <!-- Doughnut Chart -->
+                        <div class="row g-2 align-items-center">
+
+                            <!-- ========================= -->
+                            <!-- SUMMARY TABLE -->
+                            <!-- ========================= -->
+
+                            <div class="col-md-7">
+
+                                <div class="meter-summary-table">
+
+                                    <table class="table table-sm mb-0">
+
+                                        <thead>
+
+                                            <!-- Main Header -->
+                                            <tr>
+
+                                                <th rowspan="2">
+                                                    COMPANY
+                                                </th>
+
+                                                <th colspan="2"
+                                                    class="text-center">
+                                                    ALLIED
+                                                </th>
+
+                                                <th colspan="2"
+                                                    class="text-center">
+                                                    KIMBAL
+                                                </th>
+
+                                                <th rowspan="2"
+                                                    class="text-end">
+                                                    TOTAL
+                                                </th>
+
+                                            </tr>
+
+                                            <!-- Sub Header -->
+                                            <tr>
+
+                                                <th class="text-end">
+                                                    1PH
+                                                </th>
+
+                                                <th class="text-end">
+                                                    3PH
+                                                </th>
+
+                                                <th class="text-end">
+                                                    1PH
+                                                </th>
+
+                                                <th class="text-end">
+                                                    3PH
+                                                </th>
+
+                                            </tr>
+
+                                        </thead>
+
+                                        <tbody>
+
+                                            <!-- ========================= -->
+                                            <!-- BRPL -->
+                                            <!-- ========================= -->
+
+                                            <tr>
+
+                                                <td class="fw-semibold">
+                                                    BRPL
+                                                </td>
+
+                                                <!-- Allied -->
+                                                <td class="text-end"
+                                                    id="brplAllied1Ph">
+                                                    0
+                                                </td>
+
+                                                <td class="text-end"
+                                                    id="brplAllied3Ph">
+                                                    0
+                                                </td>
+
+                                                <!-- Kimbal -->
+                                                <td class="text-end"
+                                                    id="brplKimbal1Ph">
+                                                    0
+                                                </td>
+
+                                                <td class="text-end"
+                                                    id="brplKimbal3Ph">
+                                                    0
+                                                </td>
+
+                                                <!-- Total -->
+                                                <td class="text-end fw-bold"
+                                                    id="brplTotalMeter">
+                                                    0
+                                                </td>
+
+                                            </tr>
+
+
+                                            <!-- ========================= -->
+                                            <!-- BYPL -->
+                                            <!-- ========================= -->
+
+                                            <tr>
+
+                                                <td class="fw-semibold">
+                                                    BYPL
+                                                </td>
+
+                                                <!-- Allied -->
+                                                <td class="text-end"
+                                                    id="byplAllied1Ph">
+                                                    0
+                                                </td>
+
+                                                <td class="text-end"
+                                                    id="byplAllied3Ph">
+                                                    0
+                                                </td>
+
+                                                <!-- Kimbal -->
+                                                <td class="text-end"
+                                                    id="byplKimbal1Ph">
+                                                    0
+                                                </td>
+
+                                                <td class="text-end"
+                                                    id="byplKimbal3Ph">
+                                                    0
+                                                </td>
+
+                                                <!-- Total -->
+                                                <td class="text-end fw-bold"
+                                                    id="byplTotalMeter">
+                                                    0
+                                                </td>
+
+                                            </tr>
+
+                                        </tbody>
+
+                                    </table>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ========================= -->
+                            <!-- PIE CHARTS -->
+                            <!-- ========================= -->
+
                             <div class="col-md-5">
 
                                 <div class="meter-charts-wrapper">
 
-                                    <!-- BRPL Chart -->
+                                    <!-- BRPL -->
                                     <div class="meter-chart-item">
 
                                         <div class="meter-chart-title">
@@ -261,7 +450,7 @@
                                     </div>
 
 
-                                    <!-- BYPL Chart -->
+                                    <!-- BYPL -->
                                     <div class="meter-chart-item">
 
                                         <div class="meter-chart-title">
@@ -278,13 +467,13 @@
 
                             </div>
 
+                        </div>
+
+                    </div>
+
                 </div>
 
             </div>
-
-        </div>
-
-    </div>
 
             <div class="col-lg-6">
 
@@ -488,7 +677,7 @@
                             <div class="mro-action">
 
                                 <button class="btn btn-sm btn-primary"
-                                        id="btnViewByplDownloadDetails">
+                                        id="btnViewHesFailedDetails">
 
                                     <i class="bi bi-table"></i>
                                     Details
@@ -606,11 +795,12 @@
                                 <th>S.No.</th>
                                 <th>Cons Ref</th>
                                 <th>Meter Number</th>
+                                <th>Phase</th>
                                 <th>Department</th>
                                 <th>Division</th>
                                 <th>Seq No</th>
                                 <th>Address</th>
-                                <th>Meter Type</th>
+                                <th>Meter Make</th>
                                 <th>Status</th>
                                 <th>Entry Date</th>
                             </tr>
@@ -618,6 +808,103 @@
                             <tbody id="downloadSummaryBody">
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* BYPL TABLE *@
+        <div class="modal fade" id="downloadSummaryModalBYPL" tabindex="-1" role="dialog" aria-labelledby="downloadSummaryModalLabelBYPL" aria-hidden="true">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="downloadSummaryModalLabelBYPL">Meter Download Detailed Summary</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Filter Section -->
+                    <div class="filter-section">
+                        <div class="row align-items-end">
+                            <div class="col-lg-3">
+                                <label class="form-label fw-bold">Department</label>
+                              <select id="departmentFilterBYPL"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Departments
+                                </option>
+
+                            </select>
+                            </div>
+
+                            <div class="col-lg-3">
+                                <label class="form-label fw-bold">Failed Reason</label>
+                               <select id="reasonFilterBYPL"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Reasons
+                                </option>
+
+                            </select>
+                            </div>
+
+                            <div class="col-lg-6 text-end">
+                                <div class="export-buttons">
+                             <button type="button"
+                                    class="btn btn-success"
+                                    onclick="exportTableToExcelBYPL()">
+                                <i class="bi bi-file-earmark-excel"></i>
+                                Excel
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-primary"
+                                    onclick="exportTableToCSVBYPL()">
+                                <i class="bi bi-filetype-csv"></i>
+                                CSV
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-secondary"
+                                    onclick="window.print()">
+                                <i class="bi bi-printer"></i>
+                                Print
+                            </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="table-responsive">
+                   <table id="downloadSummaryTableBYPL" class="table table-bordered table-hover align-middle">
+                  <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Cons Ref</th>
+                        <th>Meter Number</th>
+                        <th>Phase</th>
+                        <th>Department</th>
+                        <th>Division</th>
+                        <th>Seq No</th>
+                        <th>Address</th>
+                        <th>Meter Make</th>
+                        <th>Status</th>
+                        <th>Entry Date</th>
+                    </tr>
+                   </thead>
+
+                    <tbody id="downloadSummaryBodyBYPL">
+                      </tbody>
+
+                     </table>
                     </div>
                 </div>
 
@@ -766,7 +1053,7 @@
     if (data.length === 0) {
     tbody.html(`
     <tr>
-    <td colspan="9" class="text-center">
+    <td colspan="11" class="text-center">
     No Records Found
     </td>
     </tr>
@@ -811,6 +1098,8 @@ data.forEach((x, index) => {
 
             <td>${x.meterNumber ?? ""}</td>
 
+            <td>${x.phase ?? ""}</td>
+
             <td>${x.sapDepartment ?? ""}</td>
 
             <td>${x.sapDivision ?? ""}</td>
@@ -850,21 +1139,22 @@ data.forEach((x, index) => {
 
     // Column Width
 ws["!cols"] = [
-    { wch: 7 },   // S.No
-    { wch: 15 },  // Cons Ref
-    { wch: 18 },  // Meter Number
-    { wch: 15 },  // Department
-    { wch: 15 },  // Division
-    { wch: 10 },  // Seq No
-    { wch: 30 },  // Address
-    { wch: 14 },  // Meter Type
-    { wch: 28 },  // Status
-    { wch: 20 },  // Entry Date
+    { wch: 7 },    // S.No
+    { wch: 15 },   // Cons Ref
+    { wch: 18 },   // Meter Number
+    { wch: 10 },   // Phase
+    { wch: 15 },   // Department
+    { wch: 15 },   // Division
+    { wch: 10 },   // Seq No
+    { wch: 45 },   // Address
+    { wch: 15 },   // Meter Make
+    { wch: 40 },   // Status
+    { wch: 20 }    // Entry Date
 ];
 
     // Auto Filter
   ws["!autofilter"] = {
-    ref: "A1:J1",
+    ref: "A1:K1",
 };
 
     // Freeze Header
@@ -903,4 +1193,637 @@ ws["!cols"] = [
     link.download = "Meter_Download_Summary_" + new Date().toISOString().split('T')[0] + ".csv";
     link.click();
     }
+    
+
+    //BYPL
+    // ============================================================
+// BYPL - HES FAILED DETAILED SUMMARY
+// ============================================================
+
+let allDownloadDataBypl = [];
+let filteredDataBypl = [];
+
+
+// ============================================================
+// OPEN MODAL
+// ============================================================
+
+$("#btnViewHesFailedDetails").on("click", function () {
+
+    const modal = new bootstrap.Modal(
+        document.getElementById("downloadSummaryModalBYPL")
+    );
+
+    modal.show();
+
+    loadDownloadSummaryBYPL();
+});
+
+
+// ============================================================
+// LOAD DATA FROM API
+// ============================================================
+
+async function loadDownloadSummaryBYPL() {
+
+    try {
+
+        $("#downloadSummaryBodyBYPL").html(`
+            <tr>
+                <td colspan="11" class="text-center py-4">
+
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+
+                    Loading...
+
+                </td>
+            </tr>
+        `);
+
+
+        const response = await fetch(
+            "/api/dashboardapi/meter-download-detailed-summary-bypl?readingMonth="
+            + encodeURIComponent(getReadingMonth())
+        );
+
+
+        if (!response.ok) {
+            throw new Error("Unable to load data");
+        }
+
+
+        allDownloadDataBypl = await response.json();
+
+        filteredDataBypl = [...allDownloadDataBypl];
+
+
+        loadDepartmentFilterBYPL();
+
+        loadReasonFilterBYPL();
+
+        renderTableBYPL(filteredDataBypl);
+
+
+    }
+    catch (err) {
+
+        console.error(err);
+
+
+        $("#downloadSummaryBodyBYPL").html(`
+            <tr>
+                <td colspan="11"
+                    class="text-center text-danger py-4">
+
+                    Failed to load data.
+                    Error: ${err.message}
+
+                </td>
+            </tr>
+        `);
+    }
+}
+
+
+// ============================================================
+// GET READING MONTH
+// ============================================================
+
+function getReadingMonth() {
+
+    const now = new Date();
+
+    return now.getFullYear()
+        + "-"
+        + String(now.getMonth() + 1).padStart(2, "0");
+}
+
+
+// ============================================================
+// DEPARTMENT FILTER
+// ============================================================
+
+function loadDepartmentFilterBYPL() {
+
+    const ddl = $("#departmentFilterBYPL");
+
+    ddl.empty();
+
+    ddl.append(`
+        <option value="">
+            All Departments
+        </option>
+    `);
+
+
+    const departments = [
+        ...new Set(
+            allDownloadDataBypl
+                .map(x => x.sapDepartment)
+                .filter(x => x)
+        )
+    ].sort();
+
+
+    departments.forEach(department => {
+
+        ddl.append(`
+            <option value="${escapeHtml(department)}">
+                ${escapeHtml(department)}
+            </option>
+        `);
+
+    });
+}
+
+
+// ============================================================
+// FAILED REASON FILTER
+// ============================================================
+
+function loadReasonFilterBYPL() {
+
+    const ddl = $("#reasonFilterBYPL");
+
+    ddl.empty();
+
+    ddl.append(`
+        <option value="">
+            All Reasons
+        </option>
+    `);
+
+    ddl.append(`
+        <option value="SYSTEM TITLE">
+            System Title Mismatch
+        </option>
+    `);
+
+    ddl.append(`
+        <option value="TCP">
+            TCP Connection Failed
+        </option>
+    `);
+
+    ddl.append(`
+        <option value="NO DATA">
+            No Data Found ODR
+        </option>
+    `);
+
+    ddl.append(`
+        <option value="TIMEOUT">
+            Timeout
+        </option>
+    `);
+
+    ddl.append(`
+        <option value="OTHER">
+            Other
+        </option>
+    `);
+}
+
+
+// ============================================================
+// FILTER EVENTS
+// ============================================================
+
+$("#departmentFilterBYPL").on(
+    "change",
+    applyFiltersBYPL
+);
+
+
+$("#reasonFilterBYPL").on(
+    "change",
+    applyFiltersBYPL
+);
+
+
+// ============================================================
+// APPLY FILTERS
+// ============================================================
+
+function applyFiltersBYPL() {
+
+    const department =
+        ($("#departmentFilterBYPL").val() || "")
+            .toUpperCase();
+
+
+    const reason =
+        ($("#reasonFilterBYPL").val() || "")
+            .toUpperCase();
+
+
+    filteredDataBypl = allDownloadDataBypl.filter(item => {
+
+
+        // ----------------------------------------
+        // Department
+        // ----------------------------------------
+
+        const itemDepartment =
+            (item.sapDepartment || "")
+                .toUpperCase();
+
+
+        const departmentMatch =
+            department === ""
+            || itemDepartment === department;
+
+
+        // ----------------------------------------
+        // Failure Reason
+        // ----------------------------------------
+
+        const message =
+            (item.schedulerMessage || "")
+                .toUpperCase();
+
+
+        let reasonMatch = true;
+
+
+        if (reason !== "") {
+
+            if (reason === "OTHER") {
+
+                reasonMatch =
+                    !message.includes("SYSTEM TITLE")
+                    && !message.includes("TCP")
+                    && !message.includes("NO DATA")
+                    && !message.includes("TIMEOUT");
+
+            }
+            else {
+
+                reasonMatch =
+                    message.includes(reason);
+
+            }
+        }
+
+
+        return departmentMatch && reasonMatch;
+
+    });
+
+
+    renderTableBYPL(filteredDataBypl);
+}
+
+
+// ============================================================
+// RENDER TABLE
+// ============================================================
+
+function renderTableBYPL(data) {
+
+    const tbody =
+        $("#downloadSummaryBodyBYPL");
+
+
+    tbody.empty();
+
+
+    // ----------------------------------------
+    // NO RECORDS
+    // ----------------------------------------
+
+    if (!data || data.length === 0) {
+
+        tbody.html(`
+            <tr>
+
+                <td colspan="11"
+                    class="text-center py-4">
+
+                    No Records Found
+
+                </td>
+
+            </tr>
+        `);
+
+        return;
+    }
+
+
+    // ----------------------------------------
+    // DATA
+    // ----------------------------------------
+
+    data.forEach((x, index) => {
+
+
+        // ----------------------------------------
+        // STATUS BADGE
+        // ----------------------------------------
+
+        let badgeColor = "#6c757d";
+        let textColor = "#fff";
+
+
+        const message =
+            (x.schedulerMessage || "")
+                .toUpperCase();
+
+
+        if (message.includes("SYSTEM TITLE")) {
+
+            badgeColor = "#dc3545";
+
+        }
+        else if (message.includes("TCP")) {
+
+            badgeColor = "#fd7e14";
+
+        }
+        else if (message.includes("NO DATA")) {
+
+            badgeColor = "#ffc107";
+            textColor = "#000";
+
+        }
+        else if (message.includes("TIMEOUT")) {
+
+            badgeColor = "#6c757d";
+
+        }
+
+
+        // ----------------------------------------
+        // ENTRY DATE
+        // ----------------------------------------
+
+        const entryDate = x.entryDate
+            ? new Date(x.entryDate)
+                .toLocaleString("en-GB", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit"
+                })
+            : "--";
+
+
+        // ----------------------------------------
+        // ROW
+        // ----------------------------------------
+
+        tbody.append(`
+
+            <tr>
+
+                <!-- 1. S.NO -->
+                <td class="text-center">
+                    ${index + 1}
+                </td>
+
+
+                <!-- 2. CONS REF -->
+                <td>
+                    ${escapeHtml(x.consRef)}
+                </td>
+
+
+                <!-- 3. METER NUMBER -->
+                <td>
+                    ${escapeHtml(x.meterNumber)}
+                </td>
+
+
+                <!-- 4. PHASE -->
+                <td class="text-center">
+                    ${escapeHtml(x.phase)}
+                </td>
+
+
+                <!-- 5. DEPARTMENT -->
+                <td>
+                    ${escapeHtml(x.sapDepartment)}
+                </td>
+
+
+                <!-- 6. DIVISION -->
+                <td>
+                    ${escapeHtml(x.sapDivision)}
+                </td>
+
+
+                <!-- 7. SEQ NO -->
+                <td>
+                    ${escapeHtml(x.sapSeqNo)}
+                </td>
+
+
+                <!-- 8. ADDRESS -->
+                <td class="address-cell">
+                    ${escapeHtml(x.address || "--")}
+                </td>
+
+
+                <!-- 9. METER MAKE -->
+                <td class="text-center">
+                    ${escapeHtml(x.meterType)}
+                </td>
+
+
+                <!-- 10. STATUS -->
+                <td class="status-cell">
+
+                    <span class="badge"
+                          style="
+                              background:${badgeColor};
+                              color:${textColor};
+                              white-space:normal;
+                              display:inline-block;
+                              line-height:1.2;
+                          ">
+
+                        ${escapeHtml(
+                            x.schedulerMessage || "--"
+                        )}
+
+                    </span>
+
+                </td>
+
+
+                <!-- 11. ENTRY DATE -->
+                <td class="text-center">
+                    ${entryDate}
+                </td>
+
+            </tr>
+
+        `);
+
+    });
+}
+
+
+// ============================================================
+// HTML ENCODE
+// Prevent HTML breaking because address/reason may contain
+// special characters.
+// ============================================================
+
+function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+// ============================================================
+// EXPORT EXCEL
+// ============================================================
+
+function exportTableToExcelBYPL() {
+
+    const table =
+        document.getElementById(
+            "downloadSummaryTableBYPL"
+        );
+
+
+    const wb = XLSX.utils.book_new();
+
+
+    const ws =
+        XLSX.utils.table_to_sheet(table);
+
+
+    // ----------------------------------------
+    // COLUMN WIDTHS
+    // ----------------------------------------
+
+    ws["!cols"] = [
+
+        { wch: 7 },     // S.No
+        { wch: 15 },    // Cons Ref
+        { wch: 18 },    // Meter Number
+        { wch: 10 },    // Phase
+        { wch: 15 },    // Department
+        { wch: 15 },    // Division
+        { wch: 18 },    // Seq No
+        { wch: 50 },    // Address
+        { wch: 15 },    // Meter Make
+        { wch: 45 },    // Status
+        { wch: 22 }     // Entry Date
+
+    ];
+
+
+    XLSX.utils.book_append_sheet(
+        wb,
+        ws,
+        "Meter Download"
+    );
+
+
+    XLSX.writeFile(
+        wb,
+        "Meter_Download_Summary_BYPL_"
+        + new Date()
+            .toISOString()
+            .split("T")[0]
+        + ".xlsx"
+    );
+}
+
+
+// ============================================================
+// EXPORT CSV
+// ============================================================
+
+function exportTableToCSVBYPL() {
+
+    const table =
+        document.getElementById(
+            "downloadSummaryTableBYPL"
+        );
+
+
+    const rows =
+        table.querySelectorAll("tr");
+
+
+    const csv = [];
+
+
+    rows.forEach(row => {
+
+        if (row.style.display === "none") {
+            return;
+        }
+
+
+        const columns =
+            row.querySelectorAll("th, td");
+
+
+        const data = [];
+
+
+        columns.forEach(column => {
+
+            data.push(
+                '"'
+                + column.innerText
+                    .replace(/"/g, '""')
+                + '"'
+            );
+
+        });
+
+
+        csv.push(data.join(","));
+
+    });
+
+
+    const blob = new Blob(
+        [csv.join("\n")],
+        {
+            type: "text/csv;charset=utf-8;"
+        }
+    );
+
+
+    const link =
+        document.createElement("a");
+
+
+    link.href =
+        URL.createObjectURL(blob);
+
+
+    link.download =
+        "Meter_Download_Summary_BYPL_"
+        + new Date()
+            .toISOString()
+            .split("T")[0]
+        + ".csv";
+
+
+    link.click();
+
+
+    URL.revokeObjectURL(link.href);
+}
 </script>

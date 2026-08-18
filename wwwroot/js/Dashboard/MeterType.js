@@ -1,11 +1,16 @@
 ﻿let brplMeterTypeChart = null;
 let byplMeterTypeChart = null;
 
+
 async function loadMeterSummary() {
 
     const month = getReadingMonth();
 
     try {
+
+        // =====================================================
+        // LOAD BRPL + BYPL
+        // =====================================================
 
         const [
             brplResponse,
@@ -22,54 +27,138 @@ async function loadMeterSummary() {
 
         ]);
 
+
         if (!brplResponse.ok) {
-            throw new Error("Failed to load BRPL Meter Summary.");
+            throw new Error(
+                "Failed to load BRPL Meter Summary."
+            );
         }
 
         if (!byplResponse.ok) {
-            throw new Error("Failed to load BYPL Meter Summary.");
+            throw new Error(
+                "Failed to load BYPL Meter Summary."
+            );
         }
 
-        const brplData = await brplResponse.json();
-        const byplData = await byplResponse.json();
 
-        console.log("BRPL Meter Summary:", brplData);
-        console.log("BYPL Meter Summary:", byplData);
+        const brplData =
+            await brplResponse.json();
+
+        const byplData =
+            await byplResponse.json();
+
+
+        console.log(
+            "BRPL Meter Summary:",
+            brplData
+        );
+
+        console.log(
+            "BYPL Meter Summary:",
+            byplData
+        );
+
 
         // =====================================================
-        // BRPL COUNTS
+        // BRPL TABLE
         // =====================================================
 
         $("#brplAlliedCount").text(
-            Number(brplData.alliedCount || 0).toLocaleString()
+            Number(
+                brplData.alliedCount || 0
+            ).toLocaleString()
         );
+
+        $("#brplAllied1Ph").text(
+            Number(
+                brplData.allied_1PhCount || 0
+            ).toLocaleString()
+        );
+
+        $("#brplAllied3Ph").text(
+            Number(
+                brplData.allied_3PhCount || 0
+            ).toLocaleString()
+        );
+
 
         $("#brplKimbalCount").text(
-            Number(brplData.kimbalCount || 0).toLocaleString()
+            Number(
+                brplData.kimbalCount || 0
+            ).toLocaleString()
         );
+
+        $("#brplKimbal1Ph").text(
+            Number(
+                brplData.kimbal_1PhCount || 0
+            ).toLocaleString()
+        );
+
+        $("#brplKimbal3Ph").text(
+            Number(
+                brplData.kimbal_3PhCount || 0
+            ).toLocaleString()
+        );
+
 
         $("#brplTotalMeter").text(
-            Number(brplData.totalMeter || 0).toLocaleString()
+            Number(
+                brplData.totalMeter || 0
+            ).toLocaleString()
         );
 
+
         // =====================================================
-        // BYPL COUNTS
+        // BYPL TABLE
         // =====================================================
 
         $("#byplAlliedCount").text(
-            Number(byplData.alliedCount || 0).toLocaleString()
+            Number(
+                byplData.alliedCount || 0
+            ).toLocaleString()
         );
+
+        $("#byplAllied1Ph").text(
+            Number(
+                byplData.allied_1PhCount || 0
+            ).toLocaleString()
+        );
+
+        $("#byplAllied3Ph").text(
+            Number(
+                byplData.allied_3PhCount || 0
+            ).toLocaleString()
+        );
+
 
         $("#byplKimbalCount").text(
-            Number(byplData.kimbalCount || 0).toLocaleString()
+            Number(
+                byplData.kimbalCount || 0
+            ).toLocaleString()
         );
+
+        $("#byplKimbal1Ph").text(
+            Number(
+                byplData.kimbal_1PhCount || 0
+            ).toLocaleString()
+        );
+
+        $("#byplKimbal3Ph").text(
+            Number(
+                byplData.kimbal_3PhCount || 0
+            ).toLocaleString()
+        );
+
 
         $("#byplTotalMeter").text(
-            Number(byplData.totalMeter || 0).toLocaleString()
+            Number(
+                byplData.totalMeter || 0
+            ).toLocaleString()
         );
 
+
         // =====================================================
-        // DRAW CHARTS
+        // DRAW BRPL PIE CHART
         // =====================================================
 
         drawMeterTypeChart(
@@ -77,6 +166,11 @@ async function loadMeterSummary() {
             "brplMeterTypeChart",
             "BRPL"
         );
+
+
+        // =====================================================
+        // DRAW BYPL PIE CHART
+        // =====================================================
 
         drawMeterTypeChart(
             byplData,
@@ -92,14 +186,23 @@ async function loadMeterSummary() {
             error
         );
 
-        throw error;
     }
 }
 
 
-function drawMeterTypeChart(data, canvasId, company) {
+// =============================================================
+// METER TYPE PIE CHART
+// =============================================================
 
-    const canvas = document.getElementById(canvasId);
+function drawMeterTypeChart(
+    data,
+    canvasId,
+    company
+) {
+
+    const canvas =
+        document.getElementById(canvasId);
+
 
     if (!canvas) {
 
@@ -110,42 +213,60 @@ function drawMeterTypeChart(data, canvasId, company) {
         return;
     }
 
+
     // =====================================================
     // DESTROY EXISTING CHART
     // =====================================================
 
-    if (company === "BRPL" && brplMeterTypeChart) {
+    if (
+        company === "BRPL" &&
+        brplMeterTypeChart
+    ) {
 
         brplMeterTypeChart.destroy();
+
         brplMeterTypeChart = null;
     }
 
-    if (company === "BYPL" && byplMeterTypeChart) {
+
+    if (
+        company === "BYPL" &&
+        byplMeterTypeChart
+    ) {
 
         byplMeterTypeChart.destroy();
+
         byplMeterTypeChart = null;
     }
+
 
     // =====================================================
     // DATA
     // =====================================================
 
-    const allied = Number(
-        data.alliedCount || 0
-    );
+    const allied =
+        Number(
+            data.alliedCount || 0
+        );
 
-    const kimbal = Number(
-        data.kimbalCount || 0
-    );
 
-    const total = allied + kimbal;
+    const kimbal =
+        Number(
+            data.kimbalCount || 0
+        );
+
+
+    const total =
+        allied + kimbal;
+
 
     // =====================================================
-    // DIFFERENT SHADES FOR BRPL / BYPL
+    // COLORS
     // =====================================================
 
     let alliedColor;
     let kimbalColor;
+
 
     if (company === "BRPL") {
 
@@ -157,118 +278,158 @@ function drawMeterTypeChart(data, canvasId, company) {
 
         alliedColor = "#6366F1";
         kimbalColor = "#14B8A6";
+
     }
 
-    const chart = new Chart(canvas, {
 
-        type: "pie",
+    // =====================================================
+    // CREATE PIE CHART
+    // =====================================================
 
-        data: {
+    const chart =
+        new Chart(canvas, {
 
-            labels: [
-                "Allied",
-                "Kimbal"
-            ],
+            type: "pie",
 
-            datasets: [{
+            data: {
 
-                data: [
-                    allied,
-                    kimbal
+                labels: [
+                    "Allied",
+                    "Kimbal"
                 ],
 
-                backgroundColor: [
-                    alliedColor,
-                    kimbalColor
-                ],
+                datasets: [{
 
-                borderColor: "#ffffff",
+                    data: [
+                        allied,
+                        kimbal
+                    ],
 
-                borderWidth: 3,
+                    backgroundColor: [
+                        alliedColor,
+                        kimbalColor
+                    ],
 
-                hoverOffset: 10
+                    borderColor: "#ffffff",
 
-            }]
+                    borderWidth: 2,
 
-        },
+                    hoverOffset: 6
 
-        options: {
+                }]
 
-            responsive: true,
-
-            maintainAspectRatio: false,
-            animation: {
-
-                animateRotate: true,
-
-                animateScale: true,
-
-                duration: 900
             },
 
-            plugins: {
 
-                legend: {
+            options: {
 
-                    position: "bottom",
+                responsive: true,
 
-                    labels: {
+                maintainAspectRatio: false,
 
-                        usePointStyle: true,
 
-                        pointStyle: "circle",
+                animation: {
 
-                        padding: 12,
+                    animateRotate: true,
 
-                        boxWidth: 10,
+                    animateScale: true,
 
-                        boxHeight: 10,
+                    duration: 700
 
-                        font: {
-
-                            size: 11,
-
-                            weight: "600"
-                        }
-                    }
                 },
 
-                tooltip: {
 
-                    backgroundColor:
-                        "rgba(33, 37, 41, 0.95)",
+                plugins: {
 
-                    padding: 10,
+                    // =========================================
+                    // LEGEND
+                    // =========================================
 
-                    cornerRadius: 7,
+                    legend: {
 
-                    callbacks: {
+                        position: "bottom",
 
-                        label: function (context) {
+                        labels: {
 
-                            const value =
-                                Number(
-                                    context.raw || 0
+                            usePointStyle: true,
+
+                            pointStyle: "circle",
+
+                            padding: 6,
+
+                            boxWidth: 8,
+
+                            boxHeight: 8,
+
+                            font: {
+
+                                size: 9,
+
+                                weight: "600"
+
+                            }
+
+                        }
+
+                    },
+
+
+                    // =========================================
+                    // TOOLTIP
+                    // =========================================
+
+                    tooltip: {
+
+                        backgroundColor:
+                            "rgba(33, 37, 41, 0.95)",
+
+                        padding: 8,
+
+                        cornerRadius: 6,
+
+
+                        callbacks: {
+
+                            label: function (context) {
+
+                                const value =
+                                    Number(
+                                        context.raw || 0
+                                    );
+
+
+                                const percentage =
+                                    total > 0
+
+                                        ? (
+                                            (value / total) * 100
+                                        ).toFixed(1)
+
+                                        : "0.0";
+
+
+                                return (
+                                    `${context.label}: ` +
+                                    `${value.toLocaleString()} ` +
+                                    `(${percentage}%)`
                                 );
 
-                            const percentage =
-                                total > 0
-                                    ? (
-                                        (value / total) * 100
-                                    ).toFixed(1)
-                                    : "0.0";
+                            }
 
-                            return (
-                                `${context.label}: ` +
-                                `${value.toLocaleString()} ` +
-                                `(${percentage}%)`
-                            );
                         }
+
                     }
+
                 }
+
             }
-        }
-    });
+
+        });
+
+
+    // =====================================================
+    // SAVE CHART INSTANCE
+    // =====================================================
 
     if (company === "BRPL") {
 
@@ -278,5 +439,7 @@ function drawMeterTypeChart(data, canvasId, company) {
     else if (company === "BYPL") {
 
         byplMeterTypeChart = chart;
+
     }
+
 }
