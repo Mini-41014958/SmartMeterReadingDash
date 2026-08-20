@@ -1066,188 +1066,333 @@ namespace SmartMeterReadingDash.Services
             {
                 con.Open();
                 string query = @"WITH
-                    MONTHS AS
-                    ( 
-                       SELECT /*+ MATERIALIZE */ TRIM( REGEXP_SUBSTR( :READING_MONTH, '[^,]+',  1,  LEVEL )
-                    )  AS READING_MONTH
-                        FROM DUAL CONNECT BY REGEXP_SUBSTR( :READING_MONTH, '[^,]+', 1, LEVEL ) IS NOT NULL
-                    ),
-                    SLCC_FAILED AS
-                    (
-                        SELECT METERNO, READING_MONTH, INSERTED_DATE, REMARKS, NVL(DEPARTMENT, 'SLCC') AS DEPARTMENT
-                        FROM
-                        (
-                            SELECT /*+ LEADING(M S) USE_NL(S) INDEX(S IDX_SLCC_SM_LOG_FAIL) */
-                                   S.METERNO,
-                                   S.BILL_MONTH AS READING_MONTH,
-                                   S.INSERTED_DATE,
-                                   S.REMARKS,
-                                   S.DEPARTMENT,
-                                   ROW_NUMBER() OVER
-                                   (
-                                       PARTITION BY S.METERNO, S.BILL_MONTH
-                                       ORDER BY S.INSERTED_DATE DESC NULLS LAST
-                                   ) RN
-                            FROM MONTHS M
-                            JOIN RCMPA.SAP_SLCC_SMARTMETER_LOG S
-                            ON S.BILL_MONTH = M.READING_MONTH
-                            WHERE S.IS_FAILED = '1'
-                            AND S.METERNO IS NOT NULL
-                        )
-                        WHERE RN = 1
-                    ),
-                    KCC_FAILED AS
-                    (
-                        SELECT
-                            METERNO,
-                            READING_MONTH,
-                            INSERTED_DATE,
-                            REMARKS,
-                            DEPARTMENT
-                        FROM
-                        (
-                            SELECT /*+ LEADING(M K) USE_NL(K) INDEX(K IDX_KCC_SM_LOG_FAIL) */
-                                   K.METERNO,
-                                   K.BILL_MONTH AS READING_MONTH,
-                                   K.INSERTED_DATE,
-                                   K.REMARKS,
-                                   K.DEPARTMENT,
-                                   ROW_NUMBER() OVER
-                                   (
-                                       PARTITION BY K.METERNO, K.BILL_MONTH
-                                       ORDER BY K.INSERTED_DATE DESC NULLS LAST
-                                   ) RN
-                            FROM MONTHS M
-                            JOIN RCMPA.SAP_KCC_GCC_SMARTMETER_LOG K
-                            ON K.BILL_MONTH = M.READING_MONTH
-                            WHERE K.IS_FAILED = '1'
-                            AND K.METERNO IS NOT NULL
-                        )
-                        WHERE RN = 1
-                    ),
-                    SLCC_DATA AS
-                    (
-                        SELECT /*+ LEADING(D F) USE_NL(F) INDEX(F IDX_SLCC_FORMY_MTR_MONTH) */
-                               D.METERNO,
-                               D.READING_MONTH,
-                               D.DEPARTMENT,
-                               D.REMARKS,
-                               D.INSERTED_DATE,
-                               F.CONS_REF,
-                               F.SAP_DIVISION,
-                               F.SAP_SEQ_NO,
-                               F.ADD1,
-                               F.ADD2,
-                               F.ADD3,
-                               F.LAND_MARK,
-                               F.FATHER_NAME
-                        FROM SLCC_FAILED D
-                        LEFT JOIN RCMPA.SAP_SLCC_FORMY F
-                        ON F.METERNO = D.METERNO
-                        AND F.READING_MONTH = D.READING_MONTH
-                    ),
-                    KCC_DATA AS
-                    (
-                        SELECT /*+ LEADING(D F) USE_NL(F) INDEX(F IDX_SAP_FORMY_MTR_MONTH) */
-                               D.METERNO,
-                               D.READING_MONTH,
-                               D.DEPARTMENT,
-                               D.REMARKS,
-                               D.INSERTED_DATE,
-                               F.CONS_REF,
-                               F.SAP_DIVISION,
-                               F.SAP_SEQ_NO,
-                               F.ADD1,
-                               F.ADD2,
-                               F.ADD3,
-                               F.LAND_MARK,
-                               F.FATHER_NAME
-                        FROM KCC_FAILED D
-                        LEFT JOIN RCMPA.SAP_FORMY F
-                        ON F.METERNO = D.METERNO
-                        AND F.READING_MONTH = D.READING_MONTH
-                    ),
-                    FINAL_DATA AS
-                    (
-                        SELECT
-                            METERNO,
-                            READING_MONTH,
-                            DEPARTMENT,
-                            REMARKS,
-                            INSERTED_DATE,
-                            CONS_REF,
-                            SAP_DIVISION,
-                            SAP_SEQ_NO,
-                            ADD1,
-                            ADD2,
-                            ADD3,
-                            LAND_MARK,
-                            FATHER_NAME
-                        FROM SLCC_DATA
-                        UNION ALL
-                        SELECT
-                            METERNO,
-                            READING_MONTH,
-                            DEPARTMENT,
-                            REMARKS,
-                            INSERTED_DATE,
-                            CONS_REF,
-                            SAP_DIVISION,
-                            SAP_SEQ_NO,
-                            ADD1,
-                            ADD2,
-                            ADD3,
-                            LAND_MARK,
-                            FATHER_NAME
-                        FROM KCC_DATA
-                    )
+                MONTHS AS
+                (
+                    SELECT /*+ MATERIALIZE */ TRIM( REGEXP_SUBSTR( :READING_MONTH, '[^,]+', 1, LEVEL )) AS READING_MONTH
+                    FROM DUAL
+                    CONNECT BY REGEXP_SUBSTR( :READING_MONTH,'[^,]+', 1, LEVEL ) IS NOT NULL
+                ),
+                SLCC_FAILED AS
+                (
                     SELECT
+                        METERNO,
+                        READING_MONTH,
+                        INSERTED_DATE,
+                        REMARKS,
+                        NVL(DEPARTMENT, 'SLCC') AS DEPARTMENT
+                    FROM
+                    (
+                        SELECT
+                            /*+
+                                LEADING(M S)
+                                USE_NL(S)
+                                INDEX(S IDX_SLCC_SM_LOG_FAIL)
+                            */
+                            S.METERNO,
+                            S.BILL_MONTH AS READING_MONTH,
+                            S.INSERTED_DATE,
+                            S.REMARKS,
+                            S.DEPARTMENT,
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY S.METERNO, S.BILL_MONTH
+                                ORDER BY S.INSERTED_DATE DESC NULLS LAST
+                            ) AS RN
+                        FROM MONTHS M
+                        JOIN RCMPA.SAP_SLCC_SMARTMETER_LOG S
+                          ON S.BILL_MONTH = M.READING_MONTH
+
+                        WHERE S.IS_FAILED = '1'
+                          AND S.METERNO IS NOT NULL
+                    )
+                    WHERE RN = 1
+                ),
+                KCC_FAILED AS
+                (
+                    SELECT
+                        METERNO,
+                        READING_MONTH,
+                        INSERTED_DATE,
+                        REMARKS,
+                        DEPARTMENT
+                    FROM
+                    (
+                        SELECT
+                            /*+
+                                LEADING(M K)
+                                USE_NL(K)
+                                INDEX(K IDX_KCC_SM_LOG_FAIL)
+                            */
+                            K.METERNO,
+                            K.BILL_MONTH AS READING_MONTH,
+                            K.INSERTED_DATE,
+                            K.REMARKS,
+                            K.DEPARTMENT,
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY K.METERNO, K.BILL_MONTH
+                                ORDER BY K.INSERTED_DATE DESC NULLS LAST
+                            ) AS RN
+                        FROM MONTHS M
+                        JOIN RCMPA.SAP_KCC_GCC_SMARTMETER_LOG K
+                          ON K.BILL_MONTH = M.READING_MONTH
+
+                        WHERE K.IS_FAILED = '1'
+                          AND K.METERNO IS NOT NULL
+                    )
+                    WHERE RN = 1
+                ),
+                SLCC_METERS AS
+                (
+                    SELECT /*+ MATERIALIZE */
+                           DISTINCT METERNO
+                    FROM SLCC_FAILED
+                ),
+                KCC_METERS AS
+                (
+                    SELECT /*+ MATERIALIZE */
+                           DISTINCT METERNO
+                    FROM KCC_FAILED
+                ),
+                SLCC_FORMY_FALLBACK AS
+                (
+                    SELECT METERNO, CONS_REF, SAP_DIVISION, SAP_SEQ_NO, ADD1, ADD2, ADD3, LAND_MARK, FATHER_NAME
+                    FROM
+                    (
+                        SELECT
+                            /*+
+                                LEADING(M F)
+                                USE_NL(F)
+                                INDEX(F IDX_SLCC_FORMY_MTR_MONTH)
+                            */
+                            F.METERNO,
+                            F.CONS_REF,
+                            F.SAP_DIVISION,
+                            F.SAP_SEQ_NO,
+                            F.ADD1,
+                            F.ADD2,
+                            F.ADD3,
+                            F.LAND_MARK,
+                            F.FATHER_NAME,
+
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY F.METERNO
+                                ORDER BY F.READING_MONTH DESC
+                            ) AS RN
+
+                        FROM SLCC_METERS M
+                        JOIN RCMPA.SAP_SLCC_FORMY F
+                          ON F.METERNO = M.METERNO
+                    )
+                    WHERE RN = 1
+                ),
+                SAP_FORMY_FALLBACK AS
+                (
+                    SELECT METERNO, CONS_REF, SAP_DIVISION, SAP_SEQ_NO, ADD1, ADD2,  ADD3, LAND_MARK, FATHER_NAME
+                    FROM
+                    (
+                        SELECT
+                            /*+
+                                LEADING(M F)
+                                USE_NL(F)
+                                INDEX(F IDX_SAP_FORMY_MTR_MONTH)
+                            */
+                            F.METERNO,
+                            F.CONS_REF,
+                            F.SAP_DIVISION,
+                            F.SAP_SEQ_NO,
+                            F.ADD1,
+                            F.ADD2,
+                            F.ADD3,
+                            F.LAND_MARK,
+                            F.FATHER_NAME,
+
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY F.METERNO
+                                ORDER BY F.READING_MONTH DESC
+                            ) AS RN
+
+                        FROM KCC_METERS M
+                        JOIN RCMPA.SAP_FORMY F
+                          ON F.METERNO = M.METERNO
+                    )
+                    WHERE RN = 1
+                ),
+                SLCC_DATA AS
+                (
+                    SELECT
+                        /*+
+                            LEADING(D)
+                            USE_NL(FM FL)
+                            INDEX(FM IDX_SLCC_FORMY_MTR_MONTH)
+                            INDEX(FL IDX_SLCC_FORMY_MTR_MONTH)
+                        */
                         D.METERNO,
-                        D.CONS_REF,
-                        CASE
-                            WHEN D.METERNO LIKE '92%'
-                              OR D.METERNO LIKE '99%'
-                              OR D.METERNO LIKE 'AL92%'
-                              OR D.METERNO LIKE 'AL99%'
-                            THEN '1PH'
-                            WHEN D.METERNO LIKE 'AL97%'
-                            THEN '3PH'
-                            WHEN D.METERNO LIKE '98%'
-                              OR D.METERNO LIKE 'KI98%'
-                            THEN '1PH'
-                            WHEN D.METERNO LIKE '97%'
-                              OR D.METERNO LIKE 'KI97%'
-                            THEN '3PH'
-                            ELSE 'UNKNOWN'
-                        END AS PHASE_TYPE,
-                        D.DEPARTMENT AS SAP_DEPARTMENT,
-                        D.SAP_DIVISION,
-                        D.SAP_SEQ_NO,
-                        RTRIM(
-                            D.ADD1 || ', ' ||
-                            D.ADD2 || ', ' ||
-                            D.ADD3 || ', ' ||
-                            D.LAND_MARK || ', ' ||
-                            D.FATHER_NAME,
-                            ', '
-                        ) AS ADDRESS,
-                        CASE
-                            WHEN D.METERNO LIKE '92%'
-                              OR D.METERNO LIKE '99%'
-                              OR D.METERNO LIKE 'AL%'
-                            THEN 'ALLIED'
-                            WHEN D.METERNO LIKE 'KI%'
-                              OR D.METERNO LIKE '97%'
-                              OR D.METERNO LIKE '98%'
-                            THEN 'KIMBAL'
-                            ELSE 'UNKNOWN'
-                        END AS METER_TYPE,
-                        D.REMARKS AS FAILURE_REASON,
-                        D.INSERTED_DATE
-                    FROM FINAL_DATA D
-                    ORDER BY
-                        D.INSERTED_DATE DESC NULLS LAST,
-                        D.METERNO";
+                        D.READING_MONTH,
+                        D.DEPARTMENT,
+                        D.REMARKS,
+                        D.INSERTED_DATE,
+                        COALESCE(
+                            NULLIF(TRIM(FM.CONS_REF), ''),
+                            NULLIF(TRIM(FL.CONS_REF), '')
+                        ) AS CONS_REF,
+                        COALESCE(
+                            NULLIF(TRIM(FM.SAP_DIVISION), ''),
+                            NULLIF(TRIM(FL.SAP_DIVISION), '')
+                        ) AS SAP_DIVISION,
+                        COALESCE(
+                            NULLIF(TRIM(FM.SAP_SEQ_NO), ''),
+                            NULLIF(TRIM(FL.SAP_SEQ_NO), '')
+                        ) AS SAP_SEQ_NO,
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD1), ''),
+                            NULLIF(TRIM(FL.ADD1), '')
+                        ) AS ADD1,
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD2), ''),
+                            NULLIF(TRIM(FL.ADD2), '')
+                        ) AS ADD2,
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD3), ''),
+                            NULLIF(TRIM(FL.ADD3), '')
+                        ) AS ADD3,
+                        COALESCE(
+                            NULLIF(TRIM(FM.LAND_MARK), ''),
+                            NULLIF(TRIM(FL.LAND_MARK), '')
+                        ) AS LAND_MARK,
+                        COALESCE(
+                            NULLIF(TRIM(FM.FATHER_NAME), ''),
+                            NULLIF(TRIM(FL.FATHER_NAME), '')
+                        ) AS FATHER_NAME
+                    FROM SLCC_FAILED D
+                    LEFT JOIN RCMPA.SAP_SLCC_FORMY FM
+                      ON FM.METERNO = D.METERNO
+                     AND FM.READING_MONTH = D.READING_MONTH
+                    LEFT JOIN SLCC_FORMY_FALLBACK FL
+                      ON FL.METERNO = D.METERNO
+                ),
+                KCC_DATA AS
+                (
+                    SELECT
+                        /*+
+                            LEADING(D)
+                            USE_NL(FM FL)
+                            INDEX(FM IDX_SAP_FORMY_MTR_MONTH)
+                            INDEX(FL IDX_SAP_FORMY_MTR_MONTH)
+                        */
+                        D.METERNO,
+                        D.READING_MONTH,
+                        D.DEPARTMENT,
+                        D.REMARKS,
+                        D.INSERTED_DATE,
+
+                        COALESCE(
+                            NULLIF(TRIM(FM.CONS_REF), ''),
+                            NULLIF(TRIM(FL.CONS_REF), '')
+                        ) AS CONS_REF,
+
+                        COALESCE(
+                            NULLIF(TRIM(FM.SAP_DIVISION), ''),
+                            NULLIF(TRIM(FL.SAP_DIVISION), '')
+                        ) AS SAP_DIVISION,
+
+                        COALESCE(
+                            NULLIF(TRIM(FM.SAP_SEQ_NO), ''),
+                            NULLIF(TRIM(FL.SAP_SEQ_NO), '')
+                        ) AS SAP_SEQ_NO,
+
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD1), ''),
+                            NULLIF(TRIM(FL.ADD1), '')
+                        ) AS ADD1,
+
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD2), ''),
+                            NULLIF(TRIM(FL.ADD2), '')
+                        ) AS ADD2,
+
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD3), ''),
+                            NULLIF(TRIM(FL.ADD3), '')
+                        ) AS ADD3,
+
+                        COALESCE(
+                            NULLIF(TRIM(FM.LAND_MARK), ''),
+                            NULLIF(TRIM(FL.LAND_MARK), '')
+                        ) AS LAND_MARK,
+
+                        COALESCE(
+                            NULLIF(TRIM(FM.FATHER_NAME), ''),
+                            NULLIF(TRIM(FL.FATHER_NAME), '')
+                        ) AS FATHER_NAME
+
+                    FROM KCC_FAILED D
+                    LEFT JOIN RCMPA.SAP_FORMY FM
+                      ON FM.METERNO = D.METERNO
+                     AND FM.READING_MONTH = D.READING_MONTH
+
+                    LEFT JOIN SAP_FORMY_FALLBACK FL
+                      ON FL.METERNO = D.METERNO
+                ),
+                FINAL_DATA AS
+                (
+                    SELECT METERNO, READING_MONTH, DEPARTMENT, REMARKS, INSERTED_DATE, CONS_REF, SAP_DIVISION, SAP_SEQ_NO, 
+                    ADD1, ADD2, ADD3, LAND_MARK, FATHER_NAME
+                    FROM SLCC_DATA
+                    UNION ALL
+                    SELECT METERNO, READING_MONTH, DEPARTMENT,REMARKS, INSERTED_DATE,CONS_REF, SAP_DIVISION, SAP_SEQ_NO,
+                    ADD1, ADD2, ADD3,  LAND_MARK, FATHER_NAME
+                    FROM KCC_DATA
+                )
+                SELECT
+                    D.METERNO,
+                    D.CONS_REF,
+                    CASE
+                        WHEN D.METERNO LIKE '92%'
+                          OR D.METERNO LIKE '99%'
+                          OR D.METERNO LIKE 'AL92%'
+                          OR D.METERNO LIKE 'AL99%'
+                        THEN '1PH'
+                        WHEN D.METERNO LIKE 'AL97%'
+                        THEN '3PH'
+                        WHEN D.METERNO LIKE '98%'
+                          OR D.METERNO LIKE 'KI98%'
+                        THEN '1PH'
+                        WHEN D.METERNO LIKE '97%'
+                          OR D.METERNO LIKE 'KI97%'
+                        THEN '3PH'
+                        ELSE 'UNKNOWN'
+                    END AS PHASE_TYPE,
+                    D.DEPARTMENT AS SAP_DEPARTMENT,
+                    D.SAP_DIVISION,
+                    D.SAP_SEQ_NO,
+                    RTRIM(
+                        D.ADD1 || ', ' ||
+                        D.ADD2 || ', ' ||
+                        D.ADD3 || ', ' ||
+                        D.LAND_MARK || ', ' ||
+                        D.FATHER_NAME,
+                        ', '
+                    ) AS ADDRESS,
+                    CASE
+                        WHEN D.METERNO LIKE '92%'
+                          OR D.METERNO LIKE '99%'
+                          OR D.METERNO LIKE 'AL%'
+                        THEN 'ALLIED'
+                        WHEN D.METERNO LIKE 'KI%'
+                          OR D.METERNO LIKE '97%'
+                          OR D.METERNO LIKE '98%'
+                        THEN 'KIMBAL'
+                        ELSE 'UNKNOWN'
+                    END AS METER_TYPE,
+                    D.REMARKS AS FAILURE_REASON,
+                    D.INSERTED_DATE
+                FROM FINAL_DATA D
+                ORDER BY
+                    D.INSERTED_DATE DESC NULLS LAST,
+                    D.METERNO";
 
                 using(OracleCommand cmd = new OracleCommand(query,con))
                 {

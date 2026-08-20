@@ -1130,36 +1130,808 @@ body {
 }
 
 
-#dashboardContent,
-#dashboardContent > .container-fluid {
-    overflow: hidden;
+/* =========================================================
+   GLOBAL
+========================================================= */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
-    #dashboardContent > .container-fluid > .row:last-of-type {
-        height: 470px !important;
-        min-height: 0 !important;
-        margin-top: 8px !important;
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+body {
+    background: #eef2f7;
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   MAIN DASHBOARD
+   IMPORTANT:
+   Do NOT force fixed viewport heights.
+   Fixed heights were the main reason laptop screens broke.
+========================================================= */
+
+#dashboardContent {
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+}
+
+    #dashboardContent > .container-fluid {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        height: auto;
+        padding: 10px 15px !important;
+        margin: 0;
     }
 
-        #dashboardContent > .container-fluid > .row:last-of-type .dashboard-card {
-            height: 440px !important;
-            min-height: 0 !important;
-        }
-        #dashboardContent > .container-fluid > .row:last-of-type .card-header {
-            height: 32px;
-            padding: 7px 10px;
-            font-size: 12px;
+
+    /* =========================================================
+   ROW SAFETY
+========================================================= */
+
+    #dashboardContent .row {
+        min-width: 0;
+    }
+
+        #dashboardContent .row > * {
+            min-width: 0;
         }
 
-        #dashboardContent > .container-fluid > .row:last-of-type .card-body {
-            height: 408px !important;
-            padding: 3px 7px !important;
-            margin: 0 !important;
+
+/* =========================================================
+   DASHBOARD CARD
+========================================================= */
+
+.dashboard-card {
+    width: 100%;
+    min-width: 0;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .08);
+    overflow: hidden;
+}
+
+    .dashboard-card .card-header {
+        min-height: 38px;
+        padding: 8px 12px;
+        background: linear-gradient(90deg, #3b82f6, #2563eb);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        border: none;
+    }
+
+    .dashboard-card .card-body {
+        min-width: 0;
+        padding: 10px;
+    }
+
+
+/* =========================================================
+   FILTER TOOLBAR
+========================================================= */
+
+.filter-toolbar {
+    width: 100%;
+    border-radius: 10px;
+}
+
+    .filter-toolbar .card-body {
+        padding: 10px 12px !important;
+    }
+
+    .filter-toolbar .form-control {
+        width: 160px;
+        min-width: 0;
+    }
+
+    .filter-toolbar .btn {
+        white-space: nowrap;
+    }
+
+.reading-month-strip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    min-height: 32px;
+    padding: 5px 10px;
+    background: #eef4ff;
+    border: 1px solid #cfe0ff;
+    border-radius: 6px;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   METER SUMMARY
+========================================================= */
+
+.meter-summary-card {
+    min-width: 0;
+}
+
+    .meter-summary-card .card-body {
+        padding: 10px;
+    }
+
+.meter-summary-table {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+    .meter-summary-table table {
+        width: 100%;
+        min-width: 420px;
+        margin-bottom: 0;
+    }
+
+    .meter-summary-table thead th {
+        font-size: 11px;
+        font-weight: 600;
+        color: #52606d;
+        text-transform: uppercase;
+        background-color: #f8fafc;
+        border-bottom: 1px solid #dee2e6;
+        padding: 6px 7px;
+        white-space: nowrap;
+    }
+
+    .meter-summary-table tbody td {
+        font-size: 14px;
+        padding: 7px;
+        vertical-align: middle;
+        border-bottom: 0;
+        white-space: nowrap;
+    }
+
+        .meter-summary-table tbody td:first-child {
+            color: #1f2937;
         }
+
+        .meter-summary-table tbody td:not(:first-child) {
+            font-variant-numeric: tabular-nums;
+        }
+
+
+/* =========================================================
+   METER PIE CHARTS
+========================================================= */
+
+.meter-charts-wrapper {
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    align-items: start;
+}
+
+.meter-chart-item {
+    min-width: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.meter-chart-title {
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #52606d;
+}
+
+.meter-chart-wrapper {
+    position: relative;
+    width: 100%;
+    height: 190px;
+    min-width: 0;
+}
+
+    .meter-chart-wrapper canvas {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100%;
+    }
+
+
+/* =========================================================
+   METER RECEIVED IN MRO
+   Desktop: one row
+   Laptop: compact one row
+   Tablet/Mobile: grid without overlap
+========================================================= */
+
+.mro-company-row {
+    display: grid;
+    grid-template-columns: minmax(55px, auto) repeat(5, minmax(85px, 1fr)) minmax(75px, auto);
+    align-items: center;
+    gap: 8px;
+    min-height: 92px;
+    padding: 10px 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+    .mro-company-row:last-child {
+        border-bottom: none;
+    }
+
+.mro-company,
+.mro-metric,
+.mro-action {
+    min-width: 0;
+}
+
+.mro-company {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.company-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    padding: 5px 7px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.brpl-badge {
+    background: #e8f0ff;
+    color: #2563eb;
+}
+
+.bypl-badge {
+    background: #e9f8f0;
+    color: #059669;
+}
+
+.mro-metric {
+    text-align: center;
+}
+
+.mro-label {
+    margin-bottom: 4px;
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    line-height: 1.2;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.mro-value {
+    font-size: clamp(16px, 1.4vw, 22px);
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.mro-action {
+    display: flex;
+    justify-content: center;
+}
+
+    .mro-action .btn {
+        padding: 5px 8px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+
+/* =========================================================
+   MAIN CHARTS
+========================================================= */
 
 #departmentChart,
 #readingTrendChart {
+    display: block;
     width: 100% !important;
-    height: 400px !important;
-    max-height: 400px !important;
-    margin: 0 !important;
+    max-width: 100%;
+    height: 340px !important;
+}
+
+#dashboardContent .row.mt-3 .dashboard-card {
+    height: 100%;
+}
+
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+.modal-dialog {
+    max-width: min(98vw, 1800px);
+    width: 98vw;
+    margin: 1rem auto;
+}
+
+.modal-content {
+    max-height: calc(100vh - 2rem);
+}
+
+.modal-body {
+    overflow: auto;
+}
+
+
+/* =========================================================
+   MODAL FILTER SECTION
+========================================================= */
+
+.filter-section {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.export-buttons {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+
+/* =========================================================
+   TABLE RESPONSIVE
+========================================================= */
+
+.table-responsive {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+/* BRPL TABLE */
+
+#downloadSummaryTable {
+    width: 100%;
+    min-width: 1250px;
+    table-layout: fixed;
+}
+
+
+/* BYPL TABLE */
+
+#downloadSummaryTableBYPL {
+    width: 100%;
+    min-width: 1250px;
+    table-layout: fixed;
+}
+
+
+    /* COMMON DETAIL TABLE STYLE */
+
+    #downloadSummaryTable th,
+    #downloadSummaryTable td,
+    #downloadSummaryTableBYPL th,
+    #downloadSummaryTableBYPL td {
+        vertical-align: middle;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+    }
+
+    #downloadSummaryTable thead th,
+    #downloadSummaryTableBYPL thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #0d6efd;
+        color: #fff;
+    }
+
+
+/* =========================================================
+   DESKTOP LARGE
+   1400px and above
+========================================================= */
+
+@media (min-width: 1400px) {
+
+    #dashboardContent > .container-fluid {
+        padding: 12px 18px !important;
+    }
+
+    .meter-chart-wrapper {
+        height: 200px;
+    }
+
+    #departmentChart,
+    #readingTrendChart {
+        height: 380px !important;
+    }
+}
+
+
+/* =========================================================
+   LAPTOP / SMALL DESKTOP
+   This is the important breakpoint for your problem.
+========================================================= */
+
+@media (max-width: 1399.98px) {
+
+    #dashboardContent > .container-fluid {
+        padding: 10px 12px !important;
+    }
+
+    .dashboard-card .card-body {
+        padding: 8px;
+    }
+
+    .meter-summary-table thead th {
+        font-size: 10px;
+        padding: 5px 4px;
+    }
+
+    .meter-summary-table tbody td {
+        font-size: 12px;
+        padding: 5px 4px;
+    }
+
+    .meter-chart-wrapper {
+        height: 165px;
+    }
+
+    .mro-company-row {
+        grid-template-columns: 50px repeat(5, minmax(65px, 1fr)) 65px;
+        gap: 5px;
+        min-height: 82px;
+        padding: 8px 4px;
+    }
+
+    .mro-label {
+        font-size: 9px;
+    }
+
+    .mro-value {
+        font-size: clamp(15px, 1.3vw, 19px);
+    }
+
+    .mro-action .btn {
+        padding: 4px 6px;
+        font-size: 10px;
+    }
+
+    #departmentChart,
+    #readingTrendChart {
+        height: 320px !important;
+    }
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 991.98px) {
+
+    #dashboardContent > .container-fluid {
+        padding: 10px !important;
+    }
+
+    .filter-toolbar .d-flex {
+        width: 100%;
+    }
+
+    .meter-summary-card .card-body {
+        padding: 12px;
+    }
+
+    .meter-chart-wrapper {
+        height: 220px;
+    }
+
+    .mro-company-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        min-height: auto;
+        padding: 14px 10px;
+    }
+
+    .mro-company {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+    }
+
+    .mro-action {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+    }
+
+    .mro-label {
+        font-size: 10px;
+    }
+
+    .mro-value {
+        font-size: 20px;
+    }
+
+    #departmentChart,
+    #readingTrendChart {
+        height: 340px !important;
+    }
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 767.98px) {
+
+    body {
+        font-size: 13px;
+    }
+
+    #dashboardContent > .container-fluid {
+        padding: 8px !important;
+    }
+
+    .filter-toolbar .card-body {
+        padding: 10px !important;
+    }
+
+    .filter-toolbar .d-flex.align-items-center {
+        align-items: stretch !important;
+    }
+
+    .filter-toolbar .form-control {
+        width: 100% !important;
+    }
+
+    .filter-toolbar .btn {
+        width: 100%;
+    }
+
+    .reading-month-strip {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .dashboard-card {
+        border-radius: 8px;
+    }
+
+        .dashboard-card .card-header {
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+    .meter-summary-card .card-body > .row {
+        gap: 16px;
+    }
+
+    .meter-charts-wrapper {
+        gap: 10px;
+    }
+
+    .meter-chart-wrapper {
+        height: 180px;
+    }
+
+    .mro-company-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px 10px;
+        padding: 14px 8px;
+    }
+
+    .mro-company {
+        grid-column: 1 / -1;
+    }
+
+    .mro-action {
+        grid-column: 1 / -1;
+    }
+
+    .mro-value {
+        font-size: 19px;
+    }
+
+    #departmentChart,
+    #readingTrendChart {
+        height: 300px !important;
+    }
+
+    .modal-dialog {
+        width: 100%;
+        max-width: 100%;
+        min-height: 100vh;
+        margin: 0;
+    }
+
+    .modal-content {
+        min-height: 100vh;
+        max-height: none;
+        border-radius: 0;
+    }
+
+    .modal-body {
+        padding: 10px;
+    }
+
+    .export-buttons {
+        justify-content: stretch;
+    }
+
+        .export-buttons .btn {
+            flex: 1 1 auto;
+        }
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 575.98px) {
+
+    #dashboardContent > .container-fluid {
+        padding: 6px !important;
+    }
+
+    .meter-charts-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .meter-chart-wrapper {
+        height: 220px;
+        max-width: 280px;
+        margin: 0 auto;
+    }
+
+    .mro-company-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .mro-label {
+        font-size: 9px;
+    }
+
+    .mro-value {
+        font-size: 18px;
+    }
+
+    #departmentChart,
+    #readingTrendChart {
+        height: 270px !important;
+    }
+
+    .modal-body {
+        padding: 6px;
+    }
+
+    .filter-section .row {
+        row-gap: 10px;
+    }
+
+    .export-buttons {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+}
+
+
+/* =========================================================
+   SHORT HEIGHT LAPTOP SCREENS
+   Width is not the only issue.
+========================================================= */
+
+@media (max-height: 800px) and (min-width: 992px) {
+
+    .meter-chart-wrapper {
+        height: 145px;
+    }
+
+    .mro-company-row {
+        min-height: 70px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    .mro-label {
+        font-size: 8px;
+        margin-bottom: 2px;
+    }
+
+    .mro-value {
+        font-size: 15px;
+    }
+
+    #departmentChart,
+    #readingTrendChart {
+        height: 280px !important;
+    }
+}
+
+
+/* =========================================================
+   VERY SHORT LAPTOP SCREENS
+========================================================= */
+
+@media (max-height: 700px) and (min-width: 992px) {
+
+    .meter-chart-wrapper {
+        height: 125px;
+    }
+
+    .mro-company-row {
+        min-height: 62px;
+    }
+
+    .mro-value {
+        font-size: 14px;
+    }
+
+    #departmentChart,
+    #readingTrendChart {
+        height: 240px !important;
+    }
+}
+
+
+/* =========================================================
+   PRINT
+========================================================= */
+
+@media print {
+
+    body {
+        background: #fff;
+    }
+
+    .filter-toolbar,
+    .export-buttons,
+    .modal-header,
+    .modal-footer {
+        display: none !important;
+    }
+
+    #dashboardContent {
+        overflow: visible;
+    }
+
+    .dashboard-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+
+    .modal-dialog,
+    .modal-content,
+    .modal-body {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        max-height: none;
+        margin: 0;
+        overflow: visible;
+    }
+
+    .table-responsive {
+        overflow: visible;
+    }
 }

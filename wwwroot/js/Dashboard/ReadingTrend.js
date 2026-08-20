@@ -413,7 +413,7 @@ function loadFailureReasonChart(readingMonth) {
                                             },
 
                                             {
-                                                text: "Timeout / Other",
+                                                text: "Other",
                                                 fillStyle: "#6c757d",
                                                 strokeStyle: "#6c757d",
                                                 pointStyle: "circle"
