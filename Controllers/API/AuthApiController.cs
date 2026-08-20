@@ -89,7 +89,7 @@ namespace SmartMeterReadingDash.Controllers.API
             return Ok(new LoginResponse
             {
                 Success = true,
-                Token = "", // Don't expose JWT to JavaScript
+                Token = "", 
                 ExpiresIn = 60,
                 Username = user.Username,
                 FullName = user.FullName ?? "",

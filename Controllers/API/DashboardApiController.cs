@@ -163,6 +163,22 @@ namespace SmartMeterReadingDash.Controllers.API
             }
         }
 
+        //BYPL
+
+        [HttpGet("failure-reason-count-bypl")]
+        public IActionResult GetFailureReasonCountBypl(string ReadingMonth)
+        {
+            try
+            {
+                var failureReasonCount = _dashboard.FailureReasonCountsBYPL(ReadingMonth);
+                return Ok(failureReasonCount);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
+
 
         //[HttpGet("temp-hes-wise-data")]
         //public IActionResult TempGetHESDATA()

@@ -1196,571 +1196,877 @@ ws["!cols"] = [
     
 
     //BYPL
+
     // ============================================================
-// BYPL - HES FAILED DETAILED SUMMARY
-// ============================================================
+    // BYPL METER DOWNLOAD DETAIL
+    // COMPLETE UPDATED SCRIPT
+    // ============================================================
 
-let allDownloadDataBypl = [];
-let filteredDataBypl = [];
+    let allDownloadDataBypl = [];
+    let filteredDataBypl = [];
 
 
-// ============================================================
-// OPEN MODAL
-// ============================================================
+    // ============================================================
+    // OPEN MODAL
+    // ============================================================
 
-$("#btnViewHesFailedDetails").on("click", function () {
+    $("#btnViewHesFailedDetails")
+    .off("click")
+    .on("click", function () {
 
-    const modal = new bootstrap.Modal(
-        document.getElementById("downloadSummaryModalBYPL")
+    const modalElement = document.getElementById(
+    "downloadSummaryModalBYPL"
     );
+
+    if (!modalElement) {
+    console.error("BYPL modal not found.");
+    return;
+    }
+
+    const modal =
+    bootstrap.Modal.getOrCreateInstance(modalElement);
 
     modal.show();
 
     loadDownloadSummaryBYPL();
-});
+    });
 
 
-// ============================================================
-// LOAD DATA FROM API
-// ============================================================
+    // ============================================================
+    // LOAD DATA FROM API
+    // ============================================================
 
-async function loadDownloadSummaryBYPL() {
+    async function loadDownloadSummaryBYPL() {
 
     try {
 
-        $("#downloadSummaryBodyBYPL").html(`
-            <tr>
-                <td colspan="11" class="text-center py-4">
-
-                    <div class="spinner-border spinner-border-sm text-primary"></div>
-
-                    Loading...
-
-                </td>
-            </tr>
-        `);
+    $("#downloadSummaryBodyBYPL").html(`
+    <tr>
+    <td colspan="11" class="text-center py-4">
+    <div class="spinner-border spinner-border-sm text-primary"></div>
+    <span class="ms-2">Loading...</span>
+    </td>
+    </tr>
+    `);
 
 
-        const response = await fetch(
-            "/api/dashboardapi/meter-download-detailed-summary-bypl?readingMonth="
-            + encodeURIComponent(getReadingMonth())
-        );
+    const readingMonth = getReadingMonth();
 
 
-        if (!response.ok) {
-            throw new Error("Unable to load data");
-        }
+    const response = await fetch(
+    "/api/dashboardapi/meter-download-detailed-summary-bypl?readingMonth="
+    + encodeURIComponent(readingMonth)
+    );
 
 
-        allDownloadDataBypl = await response.json();
+    if (!response.ok) {
+    throw new Error(
+    "Unable to load data. HTTP " + response.status
+    );
+    }
 
-        filteredDataBypl = [...allDownloadDataBypl];
+
+    const result = await response.json();
 
 
-        loadDepartmentFilterBYPL();
+    allDownloadDataBypl = Array.isArray(result)
+    ? result
+    : [];
 
-        loadReasonFilterBYPL();
 
-        renderTableBYPL(filteredDataBypl);
+    filteredDataBypl = [...allDownloadDataBypl];
 
+
+    // Load filters
+    loadDepartmentFilterBYPL();
+    loadReasonFilterBYPL();
+
+
+    // Render all records
+    renderTableBYPL(filteredDataBypl);
+
+
+    console.log(
+    "BYPL Download Data:",
+    allDownloadDataBypl
+    );
 
     }
     catch (err) {
 
-        console.error(err);
+    console.error(
+    "BYPL Download Summary Error:",
+    err
+    );
 
 
-        $("#downloadSummaryBodyBYPL").html(`
-            <tr>
-                <td colspan="11"
-                    class="text-center text-danger py-4">
-
-                    Failed to load data.
-                    Error: ${err.message}
-
-                </td>
-            </tr>
-        `);
+    $("#downloadSummaryBodyBYPL").html(`
+    <tr>
+    <td colspan="11"
+    class="text-center text-danger py-4">
+    Failed to load data:
+    ${escapeHtml(err.message)}
+    </td>
+    </tr>
+    `);
     }
-}
+    }
 
 
-// ============================================================
-// GET READING MONTH
-// ============================================================
+    // ============================================================
+    // GET READING MONTH
+    // ============================================================
 
-function getReadingMonth() {
+    function getReadingMonth() {
 
+    // Use dashboard selected month if available
+    const selectedMonth = $("#readingMonth").val();
+
+    if (selectedMonth) {
+    return selectedMonth;
+    }
+
+
+    // Fallback to current month
     const now = new Date();
 
-    return now.getFullYear()
-        + "-"
-        + String(now.getMonth() + 1).padStart(2, "0");
-}
+    return (
+    now.getFullYear()
+    + "-"
+    + String(now.getMonth() + 1).padStart(2, "0")
+    );
+    }
 
 
-// ============================================================
-// DEPARTMENT FILTER
-// ============================================================
+    // ============================================================
+    // LOAD DEPARTMENT FILTER
+    // ============================================================
 
-function loadDepartmentFilterBYPL() {
+    function loadDepartmentFilterBYPL() {
 
     const ddl = $("#departmentFilterBYPL");
 
     ddl.empty();
 
     ddl.append(`
-        <option value="">
-            All Departments
-        </option>
+    <option value="">
+    All Departments
+    </option>
     `);
 
 
     const departments = [
-        ...new Set(
-            allDownloadDataBypl
-                .map(x => x.sapDepartment)
-                .filter(x => x)
-        )
+    ...new Set(
+    allDownloadDataBypl
+    .map(x =>
+    String(x.sapDepartment || "").trim()
+    )
+    .filter(Boolean)
+    )
     ].sort();
 
 
     departments.forEach(department => {
 
-        ddl.append(`
-            <option value="${escapeHtml(department)}">
-                ${escapeHtml(department)}
-            </option>
-        `);
+    ddl.append(
+    $("<option>", {
+    value: department,
+    text: department
+    })
+    );
 
     });
-}
+    }
 
 
-// ============================================================
-// FAILED REASON FILTER
-// ============================================================
+    // ============================================================
+    // LOAD FAILURE REASON FILTER
+    //
+    // IMPORTANT:
+    // value = stable internal category
+    // text  = display text for user
+    // ============================================================
 
-function loadReasonFilterBYPL() {
+    function loadReasonFilterBYPL() {
 
     const ddl = $("#reasonFilterBYPL");
 
     ddl.empty();
 
-    ddl.append(`
-        <option value="">
-            All Reasons
-        </option>
-    `);
 
     ddl.append(`
-        <option value="SYSTEM TITLE">
-            System Title Mismatch
-        </option>
+    <option value="">
+    All Reasons
+    </option>
     `);
+
 
     ddl.append(`
-        <option value="TCP">
-            TCP Connection Failed
-        </option>
+    <option value="SYSTEM_TITLE">
+    System Title Mismatch
+    </option>
     `);
+
 
     ddl.append(`
-        <option value="NO DATA">
-            No Data Found ODR
-        </option>
+    <option value="TCP">
+    TCP Connection Failed
+    </option>
     `);
+
 
     ddl.append(`
-        <option value="TIMEOUT">
-            Timeout
-        </option>
+    <option value="NO_DATA">
+    Data Not Found in HES
+    </option>
     `);
+
 
     ddl.append(`
-        <option value="OTHER">
-            Other
-        </option>
+    <option value="DATE_OLDER">
+    Date Older Then FormY
+    </option>
     `);
-}
 
 
-// ============================================================
-// FILTER EVENTS
-// ============================================================
-
-$("#departmentFilterBYPL").on(
-    "change",
-    applyFiltersBYPL
-);
+    ddl.append(`
+    <option value="TIMEOUT">
+    Timeout
+    </option>
+    `);
 
 
-$("#reasonFilterBYPL").on(
-    "change",
-    applyFiltersBYPL
-);
+    ddl.append(`
+    <option value="OTHER">
+    Other
+    </option>
+    `);
+    }
 
 
-// ============================================================
-// APPLY FILTERS
-// ============================================================
+    // ============================================================
+    // GET FAILURE CATEGORY
+    //
+    // ALL FILTERING AND COLORS USE THIS SAME FUNCTION
+    // ============================================================
 
-function applyFiltersBYPL() {
+    function getFailureCategoryBYPL(reason) {
 
-    const department =
-        ($("#departmentFilterBYPL").val() || "")
-            .toUpperCase();
+    // Normalize message:
+    // Converts new lines / multiple spaces to single spaces
+    const message = String(reason || "")
+    .toUpperCase()
+    .replace(/\s+/g, " ")
+    .trim();
 
 
-    const reason =
-        ($("#reasonFilterBYPL").val() || "")
-            .toUpperCase();
+    // --------------------------------------------------------
+    // 1. SYSTEM TITLE MISMATCH
+    // --------------------------------------------------------
+
+    if (
+    message.includes("SYSTEM TITLE")
+    ) {
+    return "SYSTEM_TITLE";
+    }
+
+
+    // --------------------------------------------------------
+    // 2. TCP CONNECTION FAILED
+    // --------------------------------------------------------
+
+    if (
+    message.includes("TCP")
+    ) {
+    return "TCP";
+    }
+
+
+    // --------------------------------------------------------
+    // 3. DATA NOT FOUND IN HES
+    //
+    // Examples handled:
+    // Data not found in HES
+    // No Data Found
+    // No Data
+    // --------------------------------------------------------
+
+    if (
+    message.includes("DATA NOT FOUND")
+    ||
+    message.includes("NO DATA")
+    ||
+    message.includes("DATA NOT AVAILABLE")
+    ) {
+    return "NO_DATA";
+    }
+
+
+    // --------------------------------------------------------
+    // 4. DATE OLDER THEN / THAN FORMY
+    //
+    // ACTUAL ERROR:
+    //
+    // Smart Meter date is older then FormY
+    // SAP_MRO_DOWNLOAD_DATE for the meter no
+    //
+    // IMPORTANT:
+    // The actual message contains:
+    // "DATE IS OLDER"
+    // NOT "DATE OLDER"
+    // --------------------------------------------------------
+
+    if (
+
+    // Main exact pattern
+    message.includes("DATE IS OLDER")
+
+    ||
+
+    // Alternative wording
+    message.includes("DATE OLDER")
+
+    ||
+
+    // Additional protection for actual API error
+    (
+    message.includes("SMART METER")
+    &&
+    message.includes("OLDER")
+    &&
+    message.includes("FORMY")
+    &&
+    message.includes("SAP_MRO_DOWNLOAD_DATE")
+    )
+
+    ) {
+    return "DATE_OLDER";
+    }
+
+
+    // --------------------------------------------------------
+    // 5. TIMEOUT
+    // --------------------------------------------------------
+
+    if (
+    message.includes("TIMEOUT")
+    ||
+    message.includes("TIME OUT")
+    ) {
+    return "TIMEOUT";
+    }
+
+
+    // --------------------------------------------------------
+    // 6. EVERYTHING ELSE
+    // --------------------------------------------------------
+
+    return "OTHER";
+    }
+
+
+    // ============================================================
+    // FILTER EVENTS
+    //
+    // Remove old events first to prevent duplicate handlers
+    // ============================================================
+
+    $("#departmentFilterBYPL")
+    .off("change")
+    .on("change", function () {
+
+    applyFiltersBYPL();
+
+    });
+
+
+    $("#reasonFilterBYPL")
+    .off("change")
+    .on("change", function () {
+
+    applyFiltersBYPL();
+
+    });
+
+
+    // ============================================================
+    // APPLY FILTERS
+    // ============================================================
+
+    function applyFiltersBYPL() {
+
+    const selectedDepartment = String(
+    $("#departmentFilterBYPL").val() || ""
+    )
+    .trim()
+    .toUpperCase();
+
+
+    const selectedReason = String(
+    $("#reasonFilterBYPL").val() || ""
+    )
+    .trim()
+    .toUpperCase();
 
 
     filteredDataBypl = allDownloadDataBypl.filter(item => {
 
 
-        // ----------------------------------------
-        // Department
-        // ----------------------------------------
+    // ----------------------------------------------------
+    // DEPARTMENT FILTER
+    // ----------------------------------------------------
 
-        const itemDepartment =
-            (item.sapDepartment || "")
-                .toUpperCase();
-
-
-        const departmentMatch =
-            department === ""
-            || itemDepartment === department;
+    const itemDepartment = String(
+    item.sapDepartment || ""
+    )
+    .trim()
+    .toUpperCase();
 
 
-        // ----------------------------------------
-        // Failure Reason
-        // ----------------------------------------
+    const departmentMatch =
 
-        const message =
-            (item.schedulerMessage || "")
-                .toUpperCase();
+    selectedDepartment === ""
 
+    ||
 
-        let reasonMatch = true;
+    itemDepartment === selectedDepartment;
 
 
-        if (reason !== "") {
+    // ----------------------------------------------------
+    // GET CATEGORY FOR THIS ROW
+    // ----------------------------------------------------
 
-            if (reason === "OTHER") {
-
-                reasonMatch =
-                    !message.includes("SYSTEM TITLE")
-                    && !message.includes("TCP")
-                    && !message.includes("NO DATA")
-                    && !message.includes("TIMEOUT");
-
-            }
-            else {
-
-                reasonMatch =
-                    message.includes(reason);
-
-            }
-        }
+    const itemCategory =
+    getFailureCategoryBYPL(
+    item.schedulerMessage
+    );
 
 
-        return departmentMatch && reasonMatch;
+    // ----------------------------------------------------
+    // REASON FILTER
+    // ----------------------------------------------------
+
+    const reasonMatch =
+
+    selectedReason === ""
+
+    ||
+
+    itemCategory === selectedReason;
+
+
+    return (
+    departmentMatch
+    &&
+    reasonMatch
+    );
 
     });
 
 
+    // Debugging
+    console.log(
+    "BYPL Selected Department:",
+    selectedDepartment
+    );
+
+    console.log(
+    "BYPL Selected Reason:",
+    selectedReason
+    );
+
+    console.log(
+    "BYPL Total Records:",
+    allDownloadDataBypl.length
+    );
+
+    console.log(
+    "BYPL Filtered Records:",
+    filteredDataBypl.length
+    );
+
+
     renderTableBYPL(filteredDataBypl);
-}
+    }
 
 
-// ============================================================
-// RENDER TABLE
-// ============================================================
+    // ============================================================
+    // GET FAILURE BADGE STYLE
+    //
+    // SAME CATEGORY FUNCTION AS FILTER
+    // ============================================================
 
-function renderTableBYPL(data) {
+    function getFailureBadgeStyleBYPL(reason) {
+
+    const category =
+    getFailureCategoryBYPL(reason);
+
+
+    switch (category) {
+
+
+    // SYSTEM TITLE = RED
+    case "SYSTEM_TITLE":
+
+    return {
+    background: "#dc3545",
+    color: "#ffffff"
+    };
+
+
+    // TCP = ORANGE
+    case "TCP":
+
+    return {
+    background: "#fd7e14",
+    color: "#ffffff"
+    };
+
+
+    // NO DATA = YELLOW
+    case "NO_DATA":
+
+    return {
+    background: "#ffc107",
+    color: "#000000"
+    };
+
+
+    // DATE OLDER = TEAL
+    case "DATE_OLDER":
+
+    return {
+    background: "#20c997",
+    color: "#ffffff"
+    };
+
+
+    // TIMEOUT = GRAY
+    case "TIMEOUT":
+
+    return {
+    background: "#6c757d",
+    color: "#ffffff"
+    };
+
+
+    // OTHER = GRAY
+    default:
+
+    return {
+    background: "#6c757d",
+    color: "#ffffff"
+    };
+    }
+    }
+
+
+    // ============================================================
+    // FORMAT ENTRY DATE
+    // ============================================================
+
+    function formatEntryDateBYPL(value) {
+
+    if (!value) {
+    return "--";
+    }
+
+
+    const date = new Date(value);
+
+
+    if (isNaN(date.getTime())) {
+    return String(value);
+    }
+
+
+    return date.toLocaleString(
+    "en-GB",
+    {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+    }
+    );
+    }
+
+
+    // ============================================================
+    // RENDER TABLE
+    // ============================================================
+
+    function renderTableBYPL(data) {
 
     const tbody =
-        $("#downloadSummaryBodyBYPL");
+    $("#downloadSummaryBodyBYPL");
 
 
     tbody.empty();
 
 
-    // ----------------------------------------
+    // --------------------------------------------------------
     // NO RECORDS
-    // ----------------------------------------
+    // --------------------------------------------------------
 
-    if (!data || data.length === 0) {
+    if (
+    !Array.isArray(data)
+    ||
+    data.length === 0
+    ) {
 
-        tbody.html(`
-            <tr>
+    tbody.html(`
+    <tr>
+    <td colspan="11"
+    class="text-center py-4 text-muted">
+    No Records Found
+    </td>
+    </tr>
+    `);
 
-                <td colspan="11"
-                    class="text-center py-4">
-
-                    No Records Found
-
-                </td>
-
-            </tr>
-        `);
-
-        return;
+    return;
     }
 
 
-    // ----------------------------------------
-    // DATA
-    // ----------------------------------------
+    // --------------------------------------------------------
+    // RENDER ROWS
+    // --------------------------------------------------------
 
     data.forEach((x, index) => {
 
 
-        // ----------------------------------------
-        // STATUS BADGE
-        // ----------------------------------------
-
-        let badgeColor = "#6c757d";
-        let textColor = "#fff";
+    const badgeStyle =
+    getFailureBadgeStyleBYPL(
+    x.schedulerMessage
+    );
 
 
-        const message =
-            (x.schedulerMessage || "")
-                .toUpperCase();
+    const entryDate =
+    formatEntryDateBYPL(
+    x.entryDate
+    );
 
 
-        if (message.includes("SYSTEM TITLE")) {
+    tbody.append(`
 
-            badgeColor = "#dc3545";
+    <tr>
 
-        }
-        else if (message.includes("TCP")) {
-
-            badgeColor = "#fd7e14";
-
-        }
-        else if (message.includes("NO DATA")) {
-
-            badgeColor = "#ffc107";
-            textColor = "#000";
-
-        }
-        else if (message.includes("TIMEOUT")) {
-
-            badgeColor = "#6c757d";
-
-        }
+    <!-- S.NO -->
+    <td class="text-center">
+    ${index + 1}
+    </td>
 
 
-        // ----------------------------------------
-        // ENTRY DATE
-        // ----------------------------------------
-
-        const entryDate = x.entryDate
-            ? new Date(x.entryDate)
-                .toLocaleString("en-GB", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit"
-                })
-            : "--";
+    <!-- CONS REF -->
+    <td>
+    ${escapeHtml(x.consRef || "")}
+    </td>
 
 
-        // ----------------------------------------
-        // ROW
-        // ----------------------------------------
-
-        tbody.append(`
-
-            <tr>
-
-                <!-- 1. S.NO -->
-                <td class="text-center">
-                    ${index + 1}
-                </td>
+    <!-- METER NUMBER -->
+    <td>
+    ${escapeHtml(x.meterNumber || "")}
+    </td>
 
 
-                <!-- 2. CONS REF -->
-                <td>
-                    ${escapeHtml(x.consRef)}
-                </td>
+    <!-- PHASE -->
+    <td class="text-center">
+    ${escapeHtml(x.phase || "")}
+    </td>
 
 
-                <!-- 3. METER NUMBER -->
-                <td>
-                    ${escapeHtml(x.meterNumber)}
-                </td>
+    <!-- DEPARTMENT -->
+    <td>
+    ${escapeHtml(x.sapDepartment || "")}
+    </td>
 
 
-                <!-- 4. PHASE -->
-                <td class="text-center">
-                    ${escapeHtml(x.phase)}
-                </td>
+    <!-- DIVISION -->
+    <td>
+    ${escapeHtml(x.sapDivision || "")}
+    </td>
 
 
-                <!-- 5. DEPARTMENT -->
-                <td>
-                    ${escapeHtml(x.sapDepartment)}
-                </td>
+    <!-- SEQ NO -->
+    <td>
+    ${escapeHtml(x.sapSeqNo || "")}
+    </td>
 
 
-                <!-- 6. DIVISION -->
-                <td>
-                    ${escapeHtml(x.sapDivision)}
-                </td>
+    <!-- ADDRESS -->
+    <td class="address-cell">
+    ${escapeHtml(x.address || "--")}
+    </td>
 
 
-                <!-- 7. SEQ NO -->
-                <td>
-                    ${escapeHtml(x.sapSeqNo)}
-                </td>
+    <!-- METER MAKE -->
+    <td class="text-center">
+    ${escapeHtml(x.meterType || "")}
+    </td>
 
 
-                <!-- 8. ADDRESS -->
-                <td class="address-cell">
-                    ${escapeHtml(x.address || "--")}
-                </td>
+    <!-- FAILURE STATUS -->
+    <td class="status-cell">
+
+    <span
+    class="badge"
+    style="
+    background-color:${badgeStyle.background};
+    color:${badgeStyle.color};
+    white-space:normal;
+    display:inline-block;
+    line-height:1.35;
+    padding:6px 10px;
+    max-width:100%;
+    "
+    >
+    ${escapeHtml(
+    x.schedulerMessage || "--"
+    )}
+    </span>
+
+    </td>
 
 
-                <!-- 9. METER MAKE -->
-                <td class="text-center">
-                    ${escapeHtml(x.meterType)}
-                </td>
+    <!-- ENTRY DATE -->
+    <td class="text-center">
+    ${escapeHtml(entryDate)}
+    </td>
 
+    </tr>
 
-                <!-- 10. STATUS -->
-                <td class="status-cell">
-
-                    <span class="badge"
-                          style="
-                              background:${badgeColor};
-                              color:${textColor};
-                              white-space:normal;
-                              display:inline-block;
-                              line-height:1.2;
-                          ">
-
-                        ${escapeHtml(
-                            x.schedulerMessage || "--"
-                        )}
-
-                    </span>
-
-                </td>
-
-
-                <!-- 11. ENTRY DATE -->
-                <td class="text-center">
-                    ${entryDate}
-                </td>
-
-            </tr>
-
-        `);
+    `);
 
     });
-}
+    }
 
 
-// ============================================================
-// HTML ENCODE
-// Prevent HTML breaking because address/reason may contain
-// special characters.
-// ============================================================
+    // ============================================================
+    // HTML ESCAPE
+    // ============================================================
 
-function escapeHtml(value) {
+    function escapeHtml(value) {
 
-    if (value === null || value === undefined) {
-        return "";
+    if (
+    value === null
+    ||
+    value === undefined
+    ) {
+    return "";
     }
 
 
     return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+    }
 
 
-// ============================================================
-// EXPORT EXCEL
-// ============================================================
+    // ============================================================
+    // EXPORT TO EXCEL
+    // ============================================================
 
-function exportTableToExcelBYPL() {
+    function exportTableToExcelBYPL() {
 
     const table =
-        document.getElementById(
-            "downloadSummaryTableBYPL"
-        );
+    document.getElementById(
+    "downloadSummaryTableBYPL"
+    );
 
 
-    const wb = XLSX.utils.book_new();
+    if (!table) {
+
+    console.error(
+    "BYPL download table not found."
+    );
+
+    return;
+    }
+
+
+    const wb =
+    XLSX.utils.book_new();
 
 
     const ws =
-        XLSX.utils.table_to_sheet(table);
+    XLSX.utils.table_to_sheet(table);
 
 
-    // ----------------------------------------
-    // COLUMN WIDTHS
-    // ----------------------------------------
-
+    // Column widths
     ws["!cols"] = [
 
-        { wch: 7 },     // S.No
-        { wch: 15 },    // Cons Ref
-        { wch: 18 },    // Meter Number
-        { wch: 10 },    // Phase
-        { wch: 15 },    // Department
-        { wch: 15 },    // Division
-        { wch: 18 },    // Seq No
-        { wch: 50 },    // Address
-        { wch: 15 },    // Meter Make
-        { wch: 45 },    // Status
-        { wch: 22 }     // Entry Date
+    { wch: 7 },   // S.No
+    { wch: 15 },  // Cons Ref
+    { wch: 18 },  // Meter Number
+    { wch: 10 },  // Phase
+    { wch: 15 },  // Department
+    { wch: 15 },  // Division
+    { wch: 18 },  // Seq No
+    { wch: 50 },  // Address
+    { wch: 15 },  // Meter Make
+    { wch: 55 },  // Status
+    { wch: 22 }   // Entry Date
 
     ];
 
 
+    // Auto filter
+    ws["!autofilter"] = {
+    ref: "A1:K1"
+    };
+
+
     XLSX.utils.book_append_sheet(
-        wb,
-        ws,
-        "Meter Download"
+    wb,
+    ws,
+    "BYPL Meter Download"
     );
+
+
+    const fileDate =
+    new Date()
+    .toISOString()
+    .split("T")[0];
 
 
     XLSX.writeFile(
-        wb,
-        "Meter_Download_Summary_BYPL_"
-        + new Date()
-            .toISOString()
-            .split("T")[0]
-        + ".xlsx"
+    wb,
+    "Meter_Download_Summary_BYPL_"
+    + fileDate
+    + ".xlsx"
     );
-}
+    }
 
 
-// ============================================================
-// EXPORT CSV
-// ============================================================
+    // ============================================================
+    // EXPORT TO CSV
+    // ============================================================
 
-function exportTableToCSVBYPL() {
+    function exportTableToCSVBYPL() {
 
     const table =
-        document.getElementById(
-            "downloadSummaryTableBYPL"
-        );
+    document.getElementById(
+    "downloadSummaryTableBYPL"
+    );
+
+
+    if (!table) {
+
+    console.error(
+    "BYPL download table not found."
+    );
+
+    return;
+    }
 
 
     const rows =
-        table.querySelectorAll("tr");
+    table.querySelectorAll("tr");
 
 
     const csv = [];
@@ -1768,62 +2074,68 @@ function exportTableToCSVBYPL() {
 
     rows.forEach(row => {
 
-        if (row.style.display === "none") {
-            return;
-        }
+    const columns =
+    row.querySelectorAll("th, td");
 
 
-        const columns =
-            row.querySelectorAll("th, td");
+    const rowData = [];
 
 
-        const data = [];
+    columns.forEach(column => {
+
+    const value =
+    column.innerText
+    .replace(/"/g, '""')
+    .replace(/\r?\n|\r/g, " ")
+    .trim();
 
 
-        columns.forEach(column => {
+    rowData.push(
+    `"${value}"`
+    );
 
-            data.push(
-                '"'
-                + column.innerText
-                    .replace(/"/g, '""')
-                + '"'
-            );
-
-        });
+    });
 
 
-        csv.push(data.join(","));
+    csv.push(
+    rowData.join(",")
+    );
 
     });
 
 
     const blob = new Blob(
-        [csv.join("\n")],
-        {
-            type: "text/csv;charset=utf-8;"
-        }
+    [csv.join("\n")],
+    {
+    type: "text/csv;charset=utf-8;"
+    }
     );
 
 
+    const url =
+    URL.createObjectURL(blob);
+
+
     const link =
-        document.createElement("a");
+    document.createElement("a");
 
 
-    link.href =
-        URL.createObjectURL(blob);
-
+    link.href = url;
 
     link.download =
-        "Meter_Download_Summary_BYPL_"
-        + new Date()
-            .toISOString()
-            .split("T")[0]
-        + ".csv";
+    "Meter_Download_Summary_BYPL_"
+    + new Date()
+    .toISOString()
+    .split("T")[0]
+    + ".csv";
 
+
+    document.body.appendChild(link);
 
     link.click();
 
+    document.body.removeChild(link);
 
-    URL.revokeObjectURL(link.href);
-}
+    URL.revokeObjectURL(url);
+    }
 </script>
