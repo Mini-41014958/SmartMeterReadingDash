@@ -385,21 +385,21 @@ function loadFailureReasonChart(readingMonth) {
                                         return [
 
                                             {
-                                                text: "System Title Mismatch",
+                                                text: "System Title",
                                                 fillStyle: "#dc3545",
                                                 strokeStyle: "#dc3545",
                                                 pointStyle: "circle"
                                             },
 
                                             {
-                                                text: "TCP Connection Failed",
+                                                text: "TCP Connection",
                                                 fillStyle: "#fd7e14",
                                                 strokeStyle: "#fd7e14",
                                                 pointStyle: "circle"
                                             },
 
                                             {
-                                                text: "No Data Found in HES",
+                                                text: "No Data Found",
                                                 fillStyle: "#ffc107",
                                                 strokeStyle: "#ffc107",
                                                 pointStyle: "circle"

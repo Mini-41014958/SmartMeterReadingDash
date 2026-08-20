@@ -23,7 +23,6 @@ namespace SmartMeterReadingDash.Services
             return connection.State.ToString();
         }
 
-        //Get Meter Summary Allied + Kimbal including all department for the current month till day - 1
         public TotalMeterSummary GetMeterSummary(string ReadingMonth)
         {
             TotalMeterSummary Summary  = new TotalMeterSummary();
