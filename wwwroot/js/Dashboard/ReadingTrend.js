@@ -1,10 +1,5 @@
 ﻿let readingTrendChart = null;
 
-
-// =====================================================
-// BYPL FAILURE CATEGORY
-// =====================================================
-
 function getBYPLFailureCategory(message) {
 
     const msg = String(message || "")
@@ -12,25 +7,26 @@ function getBYPLFailureCategory(message) {
         .replace(/\s+/g, " ")
         .trim();
 
+
     if (msg.includes("SYSTEM TITLE")) {
-        return "System Title Mismatch";
+        return "System Title";
     }
 
+
     if (msg.includes("TCP")) {
-        return "TCP Connection Failed";
+        return "TCP Connection";
     }
+
 
     if (
         msg.includes("NO DATA") ||
         msg.includes("DATA NOT FOUND") ||
         msg.includes("DATA NOT AVAILABLE")
     ) {
-        return "No Data Found in HES";
+        return "No Data Found";
     }
 
-    // Actual error:
-    // Smart Meter date is older then FormY
-    // SAP_MRO_DOWNLOAD_DATE for the meter no
+
     if (
         msg.includes("DATE IS OLDER THEN FORMY") ||
         msg.includes("DATE IS OLDER THAN FORMY") ||
@@ -42,8 +38,9 @@ function getBYPLFailureCategory(message) {
             msg.includes("SAP_MRO_DOWNLOAD_DATE")
         )
     ) {
-        return "Date Older Then FormY";
+        return "Date Older Than FormY";
     }
+
 
     if (
         msg.includes("TIMEOUT") ||
@@ -52,41 +49,40 @@ function getBYPLFailureCategory(message) {
         return "Timeout";
     }
 
+
     return "Other";
 }
-
-
-// =====================================================
-// BUILD BYPL COUNTS FROM DETAILED SUMMARY
-// =====================================================
 
 function buildBYPLCountsFromDetail(data) {
 
     const grouped = {};
 
+
     (data || []).forEach(item => {
 
-        const reason = getBYPLFailureCategory(
-            item.schedulerMessage
-        );
+        const reason =
+            getBYPLFailureCategory(
+                item.schedulerMessage
+            );
+
 
         grouped[reason] =
             (grouped[reason] || 0) + 1;
+
     });
 
 
     return Object.entries(grouped)
         .map(([reason, count]) => ({
+
             reason: reason,
-            count: count
+
+            count: Number(count)
+
         }))
         .filter(item => item.count > 0);
+
 }
-
-
-// =====================================================
-// NORMALIZE BRPL API RESPONSE
-// =====================================================
 
 function normalizeFailureData(data) {
 
@@ -98,7 +94,8 @@ function normalizeFailureData(data) {
                 item.feilureReason ??
                 item.FAILURE_REASON ??
                 item.reason ??
-                "Unknown Failure",
+                "Other",
+
 
             count: Number(
                 item.count ??
@@ -110,12 +107,97 @@ function normalizeFailureData(data) {
 
         }))
         .filter(item => item.count > 0);
+
 }
 
+function normalizeReasonName(reason) {
 
-// =====================================================
-// FAILURE REASON COLORS
-// =====================================================
+    const msg = String(reason || "")
+        .toUpperCase()
+        .replace(/\s+/g, " ")
+        .trim();
+
+
+    if (msg.includes("SYSTEM TITLE")) {
+        return "System Title";
+    }
+
+
+    if (msg.includes("TCP")) {
+        return "TCP Connection ";
+    }
+
+
+    if (
+        msg.includes("NO DATA") ||
+        msg.includes("DATA NOT FOUND") ||
+        msg.includes("DATA NOT AVAILABLE")
+    ) {
+        return "No Data Found";
+    }
+
+
+    if (
+        msg.includes("DATE OLDER") ||
+        msg.includes("DATE IS OLDER") ||
+        msg.includes("FORMY")
+    ) {
+        return "Date Older Than FormY";
+    }
+
+
+    if (
+        msg.includes("TIMEOUT") ||
+        msg.includes("TIME OUT")
+    ) {
+        return "Timeout";
+    }
+
+
+    if (
+        msg.includes("OTHER") ||
+        msg.includes("UNKNOWN")
+    ) {
+        return "Other";
+    }
+
+
+    return String(reason || "Other").trim();
+
+}
+
+function mergeFailureReasons(data) {
+
+    const grouped = {};
+
+
+    (data || []).forEach(item => {
+
+        const reason =
+            normalizeReasonName(item.reason);
+
+
+        const count =
+            Number(item.count || 0);
+
+
+        grouped[reason] =
+            (grouped[reason] || 0) + count;
+
+    });
+
+
+    return Object.entries(grouped)
+        .map(([reason, count]) => ({
+
+            reason: reason,
+
+            count: Number(count)
+
+        }))
+        .filter(item => item.count > 0);
+
+}
 
 function getFailureColor(reason) {
 
@@ -124,30 +206,371 @@ function getFailureColor(reason) {
         .replace(/\s+/g, " ")
         .trim();
 
+
     if (msg.includes("SYSTEM TITLE")) {
-        return "#dc3545"; // Red
+        return "#dc3545";
     }
 
+
     if (msg.includes("TCP")) {
-        return "#fd7e14"; // Orange
+        return "#fd7e14";
     }
+
 
     if (
         msg.includes("NO DATA") ||
         msg.includes("DATA NOT FOUND")
     ) {
-        return "#ffc107"; // Yellow
+        return "#ffc107";
     }
+
 
     if (
         msg.includes("DATE OLDER") ||
-        msg.includes("DATE IS OLDER")
+        msg.includes("FORMY")
     ) {
-        return "#20C997"; // Teal
+        return "#20c997";
     }
 
-    return "#6c757d"; // Gray - Timeout / Other
+
+    if (
+        msg.includes("TIMEOUT") ||
+        msg.includes("TIME OUT")
+    ) {
+        return "#6f42c1";
+    }
+
+
+    return "#6c757d";
+
 }
+
+
+// =====================================================
+// GET FAILURE COUNT
+// =====================================================
+
+function getFailureCount(data, reason) {
+
+    const item = (data || []).find(
+        x => x.reason === reason
+    );
+
+
+    return Number(item?.count || 0);
+
+}
+
+
+// =====================================================
+// GET TOTAL FAILURE COUNT
+// =====================================================
+
+function getTotalFailureCount(data) {
+
+    return (data || []).reduce(
+        (sum, item) =>
+            sum + Number(item.count || 0),
+        0
+    );
+
+}
+
+
+// =====================================================
+// FORCE TOOLTIP HOVER BY COMPANY ROW
+//
+// This is the important fix.
+//
+// It detects whether mouse is over BRPL or BYPL row
+// and manually activates all stacked datasets for that row.
+// =====================================================
+
+const rowHoverPlugin = {
+
+    id: "rowHoverPlugin",
+
+
+    afterEvent(chart, args) {
+
+        const event = args.event;
+
+
+        if (!event) {
+            return;
+        }
+
+
+        const chartArea =
+            chart.chartArea;
+
+
+        const yScale =
+            chart.scales.y;
+
+
+        if (
+            !chartArea ||
+            !yScale
+        ) {
+            return;
+        }
+
+
+        // =============================================
+        // CLEAR TOOLTIP ON MOUSE OUT
+        // =============================================
+
+        if (
+            event.type === "mouseout"
+        ) {
+
+            chart.setActiveElements([]);
+
+
+            if (chart.tooltip) {
+
+                chart.tooltip.setActiveElements(
+                    [],
+                    {
+                        x: 0,
+                        y: 0
+                    }
+                );
+
+            }
+
+
+            chart.canvas.style.cursor =
+                "default";
+
+
+            args.changed = true;
+
+            return;
+
+        }
+
+
+        // =============================================
+        // ONLY WORK INSIDE THE ACTUAL CHART AREA
+        // =============================================
+
+        if (
+            event.x < chartArea.left ||
+            event.x > chartArea.right ||
+            event.y < chartArea.top ||
+            event.y > chartArea.bottom
+        ) {
+
+            chart.setActiveElements([]);
+
+
+            if (chart.tooltip) {
+
+                chart.tooltip.setActiveElements(
+                    [],
+                    {
+                        x: event.x,
+                        y: event.y
+                    }
+                );
+
+            }
+
+
+            chart.canvas.style.cursor =
+                "default";
+
+
+            args.changed = true;
+
+            return;
+
+        }
+
+
+        // =============================================
+        // FIND NEAREST COMPANY ROW
+        // =============================================
+
+        const brplY =
+            yScale.getPixelForValue(0);
+
+
+        const byplY =
+            yScale.getPixelForValue(1);
+
+
+        const distanceToBrpl =
+            Math.abs(event.y - brplY);
+
+
+        const distanceToBypl =
+            Math.abs(event.y - byplY);
+
+
+        let companyIndex = null;
+
+
+        if (
+            distanceToBrpl <
+            distanceToBypl
+        ) {
+
+            companyIndex = 0;
+
+        } else {
+
+            companyIndex = 1;
+
+        }
+
+
+        // =============================================
+        // GET ROW SPACING
+        // =============================================
+
+        const rowDistance =
+            Math.abs(byplY - brplY);
+
+
+        // Large hover area.
+        // Mouse can move around the entire row.
+        const hoverRange =
+            Math.max(
+                rowDistance / 2,
+                70
+            );
+
+
+        const nearestDistance =
+            Math.min(
+                distanceToBrpl,
+                distanceToBypl
+            );
+
+
+        // =============================================
+        // NOT CLOSE TO ANY ROW
+        // =============================================
+
+        if (
+            nearestDistance > hoverRange
+        ) {
+
+            chart.setActiveElements([]);
+
+
+            if (chart.tooltip) {
+
+                chart.tooltip.setActiveElements(
+                    [],
+                    {
+                        x: event.x,
+                        y: event.y
+                    }
+                );
+
+            }
+
+
+            chart.canvas.style.cursor =
+                "default";
+
+
+            args.changed = true;
+
+            return;
+
+        }
+
+
+        // =============================================
+        // BUILD ACTIVE ELEMENTS
+        //
+        // Activate every visible stacked segment
+        // for BRPL or BYPL.
+        // =============================================
+
+        const activeElements =
+            chart.data.datasets
+                .map(
+                    (dataset, datasetIndex) => {
+
+                        const value =
+                            Number(
+                                dataset.data[
+                                companyIndex
+                                ] || 0
+                            );
+
+
+                        if (value <= 0) {
+                            return null;
+                        }
+
+
+                        return {
+
+                            datasetIndex:
+                                datasetIndex,
+
+                            index:
+                                companyIndex
+
+                        };
+
+                    }
+                )
+                .filter(Boolean);
+
+
+        // =============================================
+        // MANUALLY ACTIVATE THE ROW
+        // =============================================
+
+        chart.setActiveElements(
+            activeElements
+        );
+
+
+        // =============================================
+        // MANUALLY POSITION TOOLTIP
+        // =============================================
+
+        if (chart.tooltip) {
+
+            chart.tooltip.setActiveElements(
+                activeElements,
+                {
+                    x: event.x,
+                    y: event.y
+                }
+            );
+
+        }
+
+
+        // =============================================
+        // POINTER CURSOR
+        // =============================================
+
+        chart.canvas.style.cursor =
+            activeElements.length > 0
+                ? "pointer"
+                : "default";
+
+
+        // =============================================
+        // FORCE CHART REDRAW
+        // =============================================
+
+        args.changed = true;
+
+    }
+
+};
 
 
 // =====================================================
@@ -156,106 +579,194 @@ function getFailureColor(reason) {
 
 function loadFailureReasonChart(readingMonth) {
 
-    const month = readingMonth || getReadingMonth();
+    const month =
+        readingMonth || getReadingMonth();
 
+
+    // =================================================
+    // LOAD BRPL + BYPL APIs
+    // =================================================
 
     $.when(
 
         // BRPL API
         $.ajax({
-            url: "/api/dashboardApi/failure-reason-count",
+
+            url:
+                "/api/dashboardApi/failure-reason-count",
+
             type: "GET",
+
             data: {
+
                 ReadingMonth: month
+
             }
+
         }),
 
-        // BYPL detailed summary API
+
+        // BYPL API
         $.ajax({
-            url: "/api/dashboardapi/meter-download-detailed-summary-bypl",
+
+            url:
+                "/api/dashboardapi/meter-download-detailed-summary-bypl",
+
             type: "GET",
+
             data: {
+
                 readingMonth: month
+
             }
+
         })
 
     )
 
-        .done(function (brplResponse, byplResponse) {
+        .done(function (
+            brplResponse,
+            byplResponse
+        ) {
 
 
-            const brplData = brplResponse[0] || [];
-            const byplDetailData = byplResponse[0] || [];
+            // =============================================
+            // GET API DATA
+            // =============================================
+
+            const brplData =
+                brplResponse[0] || [];
 
 
-            // Normalize BRPL
+            const byplDetailData =
+                byplResponse[0] || [];
+
+
+            // =============================================
+            // PROCESS BRPL DATA
+            // =============================================
+
+            const normalizedBrpl =
+                normalizeFailureData(
+                    brplData
+                );
+
+
             const brpl =
-                normalizeFailureData(brplData);
+                mergeFailureReasons(
+                    normalizedBrpl
+                );
 
 
-            // Build BYPL from exact detailed table data
-            const bypl =
+            // =============================================
+            // PROCESS BYPL DATA
+            // =============================================
+
+            const rawBypl =
                 buildBYPLCountsFromDetail(
-                    Array.isArray(byplDetailData)
+                    Array.isArray(
+                        byplDetailData
+                    )
                         ? byplDetailData
                         : []
                 );
 
 
-            console.log("BRPL Failure Data:", brpl);
-            console.log("BYPL Detail Rows:", byplDetailData.length);
-            console.log("BYPL Chart Counts:", bypl);
+            const bypl =
+                mergeFailureReasons(
+                    rawBypl
+                );
 
 
-            // Sort each company by count
-            brpl.sort((a, b) => b.count - a.count);
-            bypl.sort((a, b) => b.count - a.count);
+            console.log(
+                "BRPL Failure Data:",
+                brpl
+            );
 
 
-            // =====================================================
-            // COMBINE DATA
-            // Y-AXIS SHOWS ONLY COMPANY NAME
-            // =====================================================
+            console.log(
+                "BYPL Failure Data:",
+                bypl
+            );
 
-            const chartData = [
 
-                ...brpl.map(item => ({
+            // =============================================
+            // GET ALL UNIQUE FAILURE REASONS
+            // =============================================
 
-                    company: "BRPL",
-                    reason: item.reason,
-                    count: item.count,
-                    label: "BRPL",
+            const failureReasons = [
 
-                    color:
-                        getFailureColor(item.reason)
+                ...new Set([
 
-                })),
+                    ...brpl.map(
+                        item => item.reason
+                    ),
 
-                ...bypl.map(item => ({
+                    ...bypl.map(
+                        item => item.reason
+                    )
 
-                    company: "BYPL",
-                    reason: item.reason,
-                    count: item.count,
-                    label: "BYPL",
-
-                    color:
-                        getFailureColor(item.reason)
-
-                }))
+                ])
 
             ];
 
 
-            // Destroy previous chart
+            // =============================================
+            // SORT BY TOTAL COUNT
+            // =============================================
+
+            failureReasons.sort(
+                (a, b) => {
+
+                    const aTotal =
+                        getFailureCount(
+                            brpl,
+                            a
+                        ) +
+                        getFailureCount(
+                            bypl,
+                            a
+                        );
+
+
+                    const bTotal =
+                        getFailureCount(
+                            brpl,
+                            b
+                        ) +
+                        getFailureCount(
+                            bypl,
+                            b
+                        );
+
+
+                    return bTotal - aTotal;
+
+                }
+            );
+
+
+            // =============================================
+            // DESTROY OLD CHART
+            // =============================================
+
             if (readingTrendChart) {
 
                 readingTrendChart.destroy();
+
                 readingTrendChart = null;
+
             }
 
 
+            // =============================================
+            // GET CANVAS
+            // =============================================
+
             const chartCanvas =
-                document.getElementById("readingTrendChart");
+                document.getElementById(
+                    "readingTrendChart"
+                );
 
 
             if (!chartCanvas) {
@@ -265,14 +776,21 @@ function loadFailureReasonChart(readingMonth) {
                 );
 
                 return;
+
             }
 
 
-            // Empty data
-            if (chartData.length === 0) {
+            // =============================================
+            // HANDLE EMPTY DATA
+            // =============================================
+
+            if (
+                failureReasons.length === 0
+            ) {
 
                 const ctx =
                     chartCanvas.getContext("2d");
+
 
                 ctx.clearRect(
                     0,
@@ -281,145 +799,472 @@ function loadFailureReasonChart(readingMonth) {
                     chartCanvas.height
                 );
 
+
                 return;
+
             }
 
 
-            // =====================================================
-            // CREATE CHART
-            // =====================================================
+            // =============================================
+            // CREATE STACKED DATASETS
+            // =============================================
 
-            readingTrendChart = new Chart(
-                chartCanvas,
-                {
+            const datasets =
+                failureReasons.map(
+                    reason => ({
 
-                    type: "bar",
+                        label: reason,
 
-                    data: {
 
-                        labels:
-                            chartData.map(
-                                item => item.label
+                        data: [
+
+                            getFailureCount(
+                                brpl,
+                                reason
                             ),
 
-                        datasets: [
-                            {
+                            getFailureCount(
+                                bypl,
+                                reason
+                            )
 
-                                label: "Failure Count",
-
-                                data:
-                                    chartData.map(
-                                        item => item.count
-                                    ),
-
-                                backgroundColor:
-                                    chartData.map(
-                                        item => item.color
-                                    ),
-
-                                borderRadius: 6,
-
-                                borderSkipped: false,
-
-                                barThickness: 26,
-
-                                maxBarThickness: 30
-
-                            }
-                        ]
-
-                    },
+                        ],
 
 
-                    options: {
-
-                        indexAxis: "y",
-
-                        responsive: true,
-
-                        maintainAspectRatio: false,
+                        backgroundColor:
+                            getFailureColor(
+                                reason
+                            ),
 
 
-                        interaction: {
+                        borderColor:
+                            "#ffffff",
 
-                            mode: "nearest",
 
-                            axis: "y",
+                        borderWidth: 2,
 
-                            intersect: false
+
+                        borderRadius: 2,
+
+
+                        borderSkipped: false,
+
+
+                        barThickness: 52,
+
+
+                        maxBarThickness: 58
+
+                    })
+                );
+
+
+            // =============================================
+            // CREATE CHART
+            // =============================================
+
+            readingTrendChart =
+                new Chart(
+                    chartCanvas,
+                    {
+
+                        type: "bar",
+
+
+                        data: {
+
+                            labels: [
+
+                                "BRPL",
+
+                                "BYPL"
+
+                            ],
+
+
+                            datasets:
+                                datasets
 
                         },
 
 
-                        plugins: {
+                        plugins: [
 
-                            // =========================================
-                            // ONLY FAILURE REASON LEGEND
-                            // NO BRPL / BYPL FILTER
-                            // =========================================
+                            rowHoverPlugin
 
-                            legend: {
+                        ],
 
-                                display: true,
 
-                                position: "top",
+                        options: {
 
-                                align: "center",
 
-                                labels: {
+                            // =====================================
+                            // HORIZONTAL BAR
+                            // =====================================
 
-                                    usePointStyle: true,
+                            indexAxis: "y",
 
-                                    pointStyle: "circle",
 
-                                    padding: 16,
+                            responsive: true,
+
+
+                            maintainAspectRatio: false,
+
+
+                            animation: {
+
+                                duration: 500
+
+                            },
+
+
+                            // =====================================
+                            // ENABLE ALL REQUIRED EVENTS
+                            // =====================================
+
+                            events: [
+
+                                "mousemove",
+
+                                "mouseout",
+
+                                "touchstart",
+
+                                "touchmove"
+
+                            ],
+
+
+                            // =====================================
+                            // DEFAULT INTERACTION
+                            //
+                            // Plugin above handles hover.
+                            // =====================================
+
+                            interaction: {
+
+                                mode: "index",
+
+                                intersect: false
+
+                            },
+
+
+                            plugins: {
+
+
+                                // =================================
+                                // LEGEND
+                                // =================================
+
+                                legend: {
+
+                                    display: true,
+
+
+                                    position: "top",
+
+
+                                    align: "start",
+
+
+                                    labels: {
+
+                                        usePointStyle: true,
+
+
+                                        pointStyle:
+                                            "circle",
+
+
+                                        padding: 20,
+
+
+                                        boxWidth: 13,
+
+
+                                        boxHeight: 13,
+
+
+                                        font: {
+
+                                            size: 13,
+
+                                            weight: "700"
+
+                                        },
+
+
+                                        color:
+                                            "#4b5563"
+
+                                    }
+
+                                },
+
+
+                                // =================================
+                                // TITLE
+                                // =================================
+
+                                title: {
+
+                                    display: true,
+
+
+                                    text:
+                                        "HES Download Failure Comparison",
+
+
+                                    align:
+                                        "start",
+
+
+                                    color:
+                                        "#374151",
+
 
                                     font: {
-                                        size: 11,
-                                        weight: "600"
+
+                                        size: 20,
+
+                                        weight: "700"
+
                                     },
 
 
-                                    generateLabels: function () {
+                                    padding: {
 
-                                        return [
+                                        top: 5,
 
-                                            {
-                                                text: "System Title",
-                                                fillStyle: "#dc3545",
-                                                strokeStyle: "#dc3545",
-                                                pointStyle: "circle"
-                                            },
+                                        bottom: 6
 
-                                            {
-                                                text: "TCP Connection",
-                                                fillStyle: "#fd7e14",
-                                                strokeStyle: "#fd7e14",
-                                                pointStyle: "circle"
-                                            },
+                                    }
 
-                                            {
-                                                text: "No Data Found",
-                                                fillStyle: "#ffc107",
-                                                strokeStyle: "#ffc107",
-                                                pointStyle: "circle"
-                                            },
+                                },
 
-                                            {
-                                                text: "Date Older Then FormY",
-                                                fillStyle: "#20C997",
-                                                strokeStyle: "#20C997",
-                                                pointStyle: "circle"
-                                            },
 
-                                            {
-                                                text: "Other",
-                                                fillStyle: "#6c757d",
-                                                strokeStyle: "#6c757d",
-                                                pointStyle: "circle"
+                                // =================================
+                                // SUBTITLE
+                                // =================================
+
+                                subtitle: {
+
+                                    display: true,
+
+
+                                    text:
+                                        `BRPL vs BYPL • ${month}`,
+
+
+                                    align:
+                                        "start",
+
+
+                                    color:
+                                        "#6b7280",
+
+
+                                    font: {
+
+                                        size: 14,
+
+                                        weight: "600"
+
+                                    },
+
+
+                                    padding: {
+
+                                        bottom: 18
+
+                                    }
+
+                                },
+
+
+                                // =================================
+                                // TOOLTIP
+                                // SMALL + READABLE
+                                // =================================
+
+                                tooltip: {
+
+                                    enabled: true,
+
+
+                                    backgroundColor:
+                                        "#111827",
+
+
+                                    titleColor:
+                                        "#ffffff",
+
+
+                                    bodyColor:
+                                        "#ffffff",
+
+
+                                    footerColor:
+                                        "#d1d5db",
+
+
+                                    padding: 10,
+
+
+                                    cornerRadius: 8,
+
+
+                                    displayColors: true,
+
+
+                                    boxWidth: 11,
+
+
+                                    boxHeight: 11,
+
+
+                                    boxPadding: 6,
+
+
+                                    caretSize: 5,
+
+
+                                    titleFont: {
+
+                                        size: 14,
+
+                                        weight: "700"
+
+                                    },
+
+
+                                    bodyFont: {
+
+                                        size: 13,
+
+                                        weight: "600"
+
+                                    },
+
+
+                                    footerFont: {
+
+                                        size: 13,
+
+                                        weight: "700"
+
+                                    },
+
+
+                                    titleSpacing: 5,
+
+
+                                    titleMarginBottom: 6,
+
+
+                                    bodySpacing: 4,
+
+
+                                    footerMarginTop: 7,
+
+
+                                    footerSpacing: 4,
+
+
+                                    callbacks: {
+
+
+                                        // =========================
+                                        // TITLE
+                                        // =========================
+
+                                        title: function (
+                                            context
+                                        ) {
+
+                                            if (
+                                                !context ||
+                                                context.length === 0
+                                            ) {
+
+                                                return "";
+
                                             }
 
-                                        ];
+
+                                            return (
+                                                context[0].label +
+                                                " Breakdown"
+                                            );
+
+                                        },
+
+
+                                        // =========================
+                                        // LABEL
+                                        // =========================
+
+                                        label: function (
+                                            context
+                                        ) {
+
+                                            const value =
+                                                Number(
+                                                    context.raw || 0
+                                                );
+
+
+                                            // Hide zero values
+                                            if (value <= 0) {
+
+                                                return null;
+
+                                            }
+
+
+                                            return (
+                                                context.dataset.label +
+                                                ": " +
+                                                value.toLocaleString()
+                                            );
+
+                                        },
+
+
+                                        // =========================
+                                        // TOTAL
+                                        // =========================
+
+                                        footer: function (
+                                            context
+                                        ) {
+
+                                            const total =
+                                                context.reduce(
+                                                    function (
+                                                        sum,
+                                                        item
+                                                    ) {
+
+                                                        return (
+                                                            sum +
+                                                            Number(
+                                                                item.raw || 0
+                                                            )
+                                                        );
+
+                                                    },
+                                                    0
+                                                );
+
+
+                                            return (
+                                                "Total: " +
+                                                total.toLocaleString()
+                                            );
+
+                                        }
 
                                     }
 
@@ -428,139 +1273,120 @@ function loadFailureReasonChart(readingMonth) {
                             },
 
 
-                            title: {
+                            // =====================================
+                            // AXES
+                            // =====================================
 
-                                display: true,
-
-                                text:
-                                    "HES Download Failure Analysis",
-
-                                align: "start",
-
-                                color: "#4B5563",
-
-                                font: {
-                                    size: 17,
-                                    weight: "700"
-                                },
-
-                                padding: {
-                                    bottom: 4
-                                }
-
-                            },
+                            scales: {
 
 
-                            subtitle: {
+                                // =================================
+                                // X AXIS
+                                // =================================
 
-                                display: true,
+                                x: {
 
-                                text:
-                                    `Failure reasons for ${month}`,
-
-                                align: "start",
-
-                                color: "#6B7280",
-
-                                font: {
-                                    size: 12,
-                                    weight: "400"
-                                },
-
-                                padding: {
-                                    bottom: 18
-                                }
-
-                            },
+                                    stacked: true,
 
 
-                            tooltip: {
-
-                                enabled: true,
-
-                                backgroundColor: "#111827",
-
-                                titleColor: "#FFFFFF",
-
-                                bodyColor: "#FFFFFF",
-
-                                padding: 12,
-
-                                cornerRadius: 8,
-
-                                displayColors: true,
+                                    beginAtZero: true,
 
 
-                                callbacks: {
+                                    title: {
 
-                                    title: function (context) {
+                                        display: true,
 
-                                        const index =
-                                            context[0].dataIndex;
 
-                                        const item =
-                                            chartData[index];
+                                        text:
+                                            "Number of Failed Meters",
 
-                                        if (!item) {
-                                            return "";
+
+                                        color:
+                                            "#4b5563",
+
+
+                                        font: {
+
+                                            size: 14,
+
+                                            weight: "700"
+
+                                        },
+
+
+                                        padding: {
+
+                                            top: 12
+
                                         }
-
-                                        return (
-                                            item.company +
-                                            " • " +
-                                            item.reason
-                                        );
 
                                     },
 
 
-                                    label: function (context) {
+                                    ticks: {
 
-                                        return (
-                                            "Failed meters: " +
-                                            Number(
-                                                context.raw
-                                            ).toLocaleString()
-                                        );
+                                        precision: 0,
+
+
+                                        color:
+                                            "#4b5563",
+
+
+                                        font: {
+
+                                            size: 13,
+
+                                            weight: "600"
+
+                                        },
+
+
+                                        padding: 8
+
+                                    },
+
+
+                                    grid: {
+
+                                        color:
+                                            "rgba(0,0,0,0.08)",
+
+
+                                        drawBorder: false
 
                                     }
 
-                                }
-
-                            }
-
-                        },
-
-
-                        scales: {
-
-                            x: {
-
-                                beginAtZero: true,
-
-                                ticks: {
-                                    precision: 0
                                 },
 
-                                grid: {
-                                    color:
-                                        "rgba(0,0,0,0.06)"
-                                }
+                                y: {
 
-                            },
+                                    stacked: true,
 
 
-                            y: {
+                                    grid: {
 
-                                grid: {
-                                    display: false
-                                },
+                                        display: false
 
-                                ticks: {
+                                    },
 
-                                    font: {
-                                        size: 12,
-                                        weight: "600"
+
+                                    ticks: {
+
+                                        color:
+                                            "#374151",
+
+
+                                        font: {
+
+                                            size: 16,
+
+                                            weight: "700"
+
+                                        },
+
+
+                                        padding: 12
+
                                     }
 
                                 }
@@ -570,22 +1396,26 @@ function loadFailureReasonChart(readingMonth) {
                         }
 
                     }
-
-                }
-            );
+                );
 
         })
 
-        .fail(function (brplError, byplError) {
+
+        .fail(function (
+            brplError,
+            byplError
+        ) {
 
             console.error(
                 "Failure reason chart load error."
             );
 
+
             console.error(
                 "BRPL Error:",
                 brplError
             );
+
 
             console.error(
                 "BYPL Error:",
@@ -593,4 +1423,5 @@ function loadFailureReasonChart(readingMonth) {
             );
 
         });
+
 }

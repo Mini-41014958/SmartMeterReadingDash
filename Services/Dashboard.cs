@@ -357,15 +357,6 @@ namespace SmartMeterReadingDash.Services
                     (
                         SELECT
 
-                            /* =====================================================
-                               TOTAL = SUCCESSFUL DISTINCT METERS
-                                     + FAILED DISTINCT METERS
-
-                               IMPORTANT:
-                               Same meter can therefore be counted twice if it has
-                               both success and failure records.
-                               ===================================================== */
-
                             COUNT(DISTINCT
                                 CASE
                                     WHEN IS_FAILED = 0
@@ -379,10 +370,6 @@ namespace SmartMeterReadingDash.Services
                                     THEN METERNO
                                 END
                             ) AS TOTAL_METERS,
-
-                            /* =====================================================
-                               ALLIED TOTAL
-                               ===================================================== */
 
                             COUNT(DISTINCT
                                 CASE
@@ -407,10 +394,6 @@ namespace SmartMeterReadingDash.Services
                                     THEN METERNO
                                 END
                             ) AS ALLIED_COUNT,
-
-                            /* =====================================================
-                               ALLIED 1PH
-                               ===================================================== */
 
                             COUNT(DISTINCT
                                 CASE
@@ -438,10 +421,6 @@ namespace SmartMeterReadingDash.Services
                                 END
                             ) AS ALLIED_1PH,
 
-                            /* =====================================================
-                               ALLIED 3PH
-                               ===================================================== */
-
                             COUNT(DISTINCT
                                 CASE
                                     WHEN IS_FAILED = 0
@@ -457,10 +436,6 @@ namespace SmartMeterReadingDash.Services
                                     THEN METERNO
                                 END
                             ) AS ALLIED_3PH,
-
-                            /* =====================================================
-                               KIMBAL TOTAL
-                               ===================================================== */
 
                             COUNT(DISTINCT
                                 CASE
@@ -486,10 +461,6 @@ namespace SmartMeterReadingDash.Services
                                 END
                             ) AS KIMBAL_COUNT,
 
-                            /* =====================================================
-                               KIMBAL 1PH
-                               ===================================================== */
-
                             COUNT(DISTINCT
                                 CASE
                                     WHEN IS_FAILED = 0
@@ -511,10 +482,6 @@ namespace SmartMeterReadingDash.Services
                                     THEN METERNO
                                 END
                             ) AS KIMBAL_1PH,
-
-                            /* =====================================================
-                               KIMBAL 3PH
-                               ===================================================== */
 
                             COUNT(DISTINCT
                                 CASE

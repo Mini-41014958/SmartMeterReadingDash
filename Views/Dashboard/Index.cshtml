@@ -29,7 +29,7 @@
 }
 
 .meter-summary-table thead th {
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 600;
     color: #52606d;
     text-transform: uppercase;
@@ -39,10 +39,11 @@
 }
 
 .meter-summary-table tbody td {
-    font-size: 10px;
+    font-size: 14px;
     padding: 7px;
     vertical-align: middle;
     border-bottom: 0;
+    font-weight:700;
 }
 
 .meter-summary-table tbody td:first-child {
@@ -176,6 +177,10 @@
 .table-responsive {
     overflow-x: auto;
 }
+    #readingTrendChart {
+        cursor: pointer;
+        pointer-events: auto !important;
+    }
 
 </style>
 
@@ -293,7 +298,7 @@
                                             <tr>
 
                                                 <th rowspan="2">
-                                                    COMPANY
+                                                    Utility
                                                 </th>
 
                                                 <th colspan="2"
@@ -515,7 +520,7 @@
                             <div class="mro-metric">
 
                                 <div class="mro-label">
-                                    HES Download
+                                    Download
                                 </div>
 
                                 <div class="mro-value text-success"
@@ -530,7 +535,7 @@
                             <div class="mro-metric">
 
                                 <div class="mro-label">
-                                    Download Failed
+                                    Failed
                                 </div>
 
                                 <div class="mro-value text-danger"
@@ -617,7 +622,7 @@
                             <div class="mro-metric">
 
                                 <div class="mro-label">
-                                    HES Download
+                                    Download
                                 </div>
 
                                 <div class="mro-value" style="color:#20c997;"
@@ -632,7 +637,7 @@
                             <div class="mro-metric">
 
                                 <div class="mro-label">
-                                    Download Failed
+                                   Failed
                                 </div>
 
                                 <div class="mro-value" style="color:#e85d75;"
@@ -718,19 +723,19 @@
             </div>
 
         </div>
-
         <div class="col-lg-6">
 
-            <div class="card dashboard-card">
+            <div class="card dashboard-card h-100">
 
                 <div class="card-header">
-                        Failure Reason Summary
+                    Failure Reason Summary
                 </div>
 
                 <div class="card-body">
 
-                    <canvas id="readingTrendChart"
-                           ></canvas>
+                    <div style="height: 420px;">
+                        <canvas id="readingTrendChart"></canvas>
+                    </div>
 
                 </div>
 
