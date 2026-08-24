@@ -1013,7 +1013,7 @@ function loadFailureReasonChart(readingMonth) {
 
 
                                     text:
-                                        "HES Download Failure Comparison",
+                                        "HES Download Failure Reason",
 
 
                                     align:
@@ -1026,7 +1026,7 @@ function loadFailureReasonChart(readingMonth) {
 
                                     font: {
 
-                                        size: 20,
+                                        size: 15,
 
                                         weight: "700"
 
@@ -1067,7 +1067,7 @@ function loadFailureReasonChart(readingMonth) {
 
                                     font: {
 
-                                        size: 14,
+                                        size: 12,
 
                                         weight: "600"
 
@@ -1134,12 +1134,18 @@ function loadFailureReasonChart(readingMonth) {
 
                                         size: 14,
 
-                                        weight: "700"
+                                        weight: "600"
 
                                     },
 
-
                                     bodyFont: {
+
+                                        size: 13,
+
+                                        weight: "600"
+                                    },
+
+                                    footerFont: {
 
                                         size: 13,
 
@@ -1147,30 +1153,15 @@ function loadFailureReasonChart(readingMonth) {
 
                                     },
 
-
-                                    footerFont: {
-
-                                        size: 13,
-
-                                        weight: "700"
-
-                                    },
-
-
                                     titleSpacing: 5,
-
 
                                     titleMarginBottom: 6,
 
-
                                     bodySpacing: 4,
-
 
                                     footerMarginTop: 7,
 
-
                                     footerSpacing: 4,
-
 
                                     callbacks: {
 

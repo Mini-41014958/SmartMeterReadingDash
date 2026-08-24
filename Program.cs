@@ -44,54 +44,63 @@ builder.Services.AddAuthentication(
 
             IssuerSigningKey =
                 new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(
-                        jwtSettings.Key
-                    )
+                    Encoding.UTF8.GetBytes(jwtSettings.Key)
                 ),
 
             ValidateIssuer = true,
 
-            ValidIssuer =
-                jwtSettings.Issuer,
+            ValidIssuer = jwtSettings.Issuer,
 
             ValidateAudience = true,
 
-            ValidAudience =
-                jwtSettings.Audience,
+            ValidAudience = jwtSettings.Audience,
 
             ValidateLifetime = true,
 
-            ClockSkew =
-                TimeSpan.FromMinutes(1)
+            ClockSkew = TimeSpan.FromMinutes(1)
         };
 
-
-    // =========================================================
-    // READ JWT FROM COOKIE
-    // =========================================================
-
-    options.Events =
-        new JwtBearerEvents
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
         {
-            OnMessageReceived = context =>
-            {
-                var token =
-                    context.Request.Cookies[
-                        "SmartMeterAuth"
-                    ];
+            var token =
+                context.Request.Cookies["SmartMeterAuth"];
 
-                if (!string.IsNullOrEmpty(token))
-                {
-                    context.Token = token;
-                }
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+            }
+
+            return Task.CompletedTask;
+        },
+        OnChallenge = context =>
+        {
+            context.HandleResponse();
+
+            var request = context.Request;
+
+            if (request.Path.StartsWithSegments("/api"))
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
 
                 return Task.CompletedTask;
             }
-        };
+
+            if (!request.Path.StartsWithSegments("/Account/Login"))
+            {
+                context.Response.Redirect(
+                    request.PathBase + "/Account/Login"
+                );
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -99,7 +108,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
