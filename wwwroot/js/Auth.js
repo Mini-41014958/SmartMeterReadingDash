@@ -1,28 +1,339 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+﻿// ============================================================
+// SMART METER AUTHENTICATION
+// COMPLETE UPDATED SCRIPT
+// Supports:
+// - Localhost
+// - IIS virtual directory: /SmartMeter
+// - Login
+// - First Admin Registration
+// - Logout
+// - Password Toggle
+// - Safe API Error Handling
+// ============================================================
 
-    const loginForm =
-        document.getElementById("loginForm");
 
-    const registerForm =
-        document.getElementById("registerForm");
+// ============================================================
+// APPLICATION BASE PATH
+// ============================================================
+
+function getAppBasePath() {
+
+    // --------------------------------------------------------
+    // 1. SERVER-PROVIDED BASE PATH
+    // Example:
+    // Local:       /
+    // Production:  /SmartMeter/
+    // --------------------------------------------------------
+
+    if (
+        typeof window.appBasePath === "string" &&
+        window.appBasePath.trim() !== ""
+    ) {
+
+        let basePath =
+            window.appBasePath.trim();
 
 
-    if (loginForm) {
-        loginForm.addEventListener(
-            "submit",
-            handleLogin
+        if (!basePath.startsWith("/")) {
+
+            basePath =
+                "/" + basePath;
+        }
+
+
+        return (
+            basePath.replace(/\/+$/, "") +
+            "/"
         );
     }
 
 
-    if (registerForm) {
-        registerForm.addEventListener(
-            "submit",
-            handleRegister
+    // --------------------------------------------------------
+    // 2. DETECT BASE TAG
+    // --------------------------------------------------------
+
+    const baseElement =
+        document.querySelector("base[href]");
+
+
+    if (baseElement) {
+
+        try {
+
+            const baseUrl =
+                new URL(
+                    baseElement.href,
+                    window.location.origin
+                );
+
+
+            let basePath =
+                baseUrl.pathname;
+
+
+            return (
+                basePath.replace(/\/+$/, "") +
+                "/"
+            );
+
+        }
+        catch (error) {
+
+            console.warn(
+                "Unable to read base tag:",
+                error
+            );
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // 3. AUTO-DETECT FROM CURRENT URL
+    //
+    // Example:
+    // /SmartMeter/Account/Login
+    // → /SmartMeter/
+    // --------------------------------------------------------
+
+    const currentPath =
+        window.location.pathname;
+
+
+    const accountIndex =
+        currentPath.toLowerCase()
+            .indexOf("/account/");
+
+
+    if (accountIndex > 0) {
+
+        return (
+            currentPath.substring(
+                0,
+                accountIndex
+            ).replace(/\/+$/, "") +
+            "/"
         );
     }
 
-});
+
+    // --------------------------------------------------------
+    // 4. DASHBOARD PATH FALLBACK
+    // --------------------------------------------------------
+
+    const dashboardIndex =
+        currentPath.toLowerCase()
+            .indexOf("/dashboard/");
+
+
+    if (dashboardIndex > 0) {
+
+        return (
+            currentPath.substring(
+                0,
+                dashboardIndex
+            ).replace(/\/+$/, "") +
+            "/"
+        );
+    }
+
+
+    // --------------------------------------------------------
+    // 5. ROOT APPLICATION FALLBACK
+    // --------------------------------------------------------
+
+    return "/";
+}
+
+
+const appBasePath =
+    getAppBasePath();
+
+
+console.log(
+    "Application Base Path:",
+    appBasePath
+);
+
+
+// ============================================================
+// BUILD APPLICATION URL
+// ============================================================
+
+function buildAppUrl(path) {
+
+    if (!path) {
+
+        return appBasePath;
+    }
+
+
+    return (
+        appBasePath +
+        String(path).replace(/^\/+/, "")
+    );
+}
+
+
+// ============================================================
+// DOM READY
+// ============================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const loginForm =
+            document.getElementById(
+                "loginForm"
+            );
+
+
+        const registerForm =
+            document.getElementById(
+                "registerForm"
+            );
+
+
+        if (loginForm) {
+
+            loginForm.addEventListener(
+                "submit",
+                handleLogin
+            );
+        }
+
+
+        if (registerForm) {
+
+            registerForm.addEventListener(
+                "submit",
+                handleRegister
+            );
+        }
+
+    }
+);
+
+
+// ============================================================
+// SAFE API RESPONSE READER
+// IMPORTANT:
+// NEVER DISPLAY IIS HTML ERROR PAGES TO USER
+// ============================================================
+
+async function getResponseData(response) {
+
+    const contentType =
+        (
+            response.headers.get(
+                "content-type"
+            ) || ""
+        ).toLowerCase();
+
+
+    // --------------------------------------------------------
+    // JSON RESPONSE
+    // --------------------------------------------------------
+
+    if (
+        contentType.includes(
+            "application/json"
+        )
+    ) {
+
+        try {
+
+            return await response.json();
+
+        }
+        catch {
+
+            return {
+                success: false,
+
+                message:
+                    "The server returned an invalid JSON response."
+            };
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // HTTP STATUS BASED ERRORS
+    // --------------------------------------------------------
+
+    switch (response.status) {
+
+        case 400:
+
+            return {
+                success: false,
+
+                message:
+                    "Invalid request."
+            };
+
+
+        case 401:
+
+            return {
+                success: false,
+
+                message:
+                    "Invalid username or password."
+            };
+
+
+        case 403:
+
+            return {
+                success: false,
+
+                message:
+                    "You do not have permission to perform this action."
+            };
+
+
+        case 404:
+
+            return {
+                success: false,
+
+                message:
+                    "The requested API endpoint was not found."
+            };
+
+
+        case 409:
+
+            return {
+                success: false,
+
+                message:
+                    "The requested record already exists."
+            };
+
+
+        case 500:
+
+            return {
+                success: false,
+
+                message:
+                    "A server error occurred. Please contact the administrator."
+            };
+
+
+        default:
+
+            return {
+                success: false,
+
+                message:
+                    `Request failed. HTTP ${response.status}.`
+            };
+    }
+}
 
 
 // ============================================================
@@ -33,96 +344,155 @@ async function handleLogin(event) {
 
     event.preventDefault();
 
+
     const username =
-        document.getElementById("username")
-            .value
-            .trim();
+        document.getElementById(
+            "username"
+        )
+            ?.value
+            ?.trim();
+
 
     const password =
-        document.getElementById("password")
-            .value;
+        document.getElementById(
+            "password"
+        )
+            ?.value;
+
 
     const errorElement =
-        document.getElementById("loginError");
+        document.getElementById(
+            "loginError"
+        );
+
 
     const button =
-        document.getElementById("loginButton");
+        document.getElementById(
+            "loginButton"
+        );
+
 
     const buttonText =
-        document.getElementById("loginButtonText");
+        document.getElementById(
+            "loginButtonText"
+        );
+
 
     const loader =
-        document.getElementById("loginLoader");
-
-
-    errorElement.style.display = "none";
+        document.getElementById(
+            "loginLoader"
+        );
 
 
     // --------------------------------------------------------
-    // Basic validation
+    // CLEAR PREVIOUS ERROR
+    // --------------------------------------------------------
+
+    if (errorElement) {
+
+        errorElement.style.display =
+            "none";
+
+        errorElement.textContent =
+            "";
+    }
+
+
+    // --------------------------------------------------------
+    // VALIDATION
     // --------------------------------------------------------
 
     if (!username || !password) {
 
-        errorElement.textContent =
-            "Username and password are required.";
+        if (errorElement) {
 
-        errorElement.style.display =
-            "block";
+            errorElement.textContent =
+                "Username and password are required.";
+
+            errorElement.style.display =
+                "block";
+        }
 
         return;
     }
 
 
-    button.disabled = true;
+    // --------------------------------------------------------
+    // LOADING STATE
+    // --------------------------------------------------------
 
-    buttonText.style.display =
-        "none";
-
-    loader.style.display =
-        "inline-block";
+    setButtonLoading(
+        button,
+        buttonText,
+        loader,
+        true
+    );
 
 
     try {
 
-        const response = await fetch(
-            "/api/AuthApi/login",
-            {
-                method: "POST",
+        const apiUrl =
+            buildAppUrl(
+                "api/AuthApi/login"
+            );
 
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
 
-                body: JSON.stringify({
-                    username: username,
-                    password: password
-                })
-            }
+        console.log(
+            "Login API URL:",
+            apiUrl
         );
 
 
+        const response =
+            await fetch(
+                apiUrl,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "Accept":
+                            "application/json"
+                    },
+
+                    credentials:
+                        "same-origin",
+
+                    body: JSON.stringify(
+                        {
+                            username: username,
+                            password: password
+                        }
+                    )
+                }
+            );
+
+
         const data =
-            await response.json();
+            await getResponseData(
+                response
+            );
 
 
         // ----------------------------------------------------
-        // API error
+        // HTTP ERROR
         // ----------------------------------------------------
 
         if (!response.ok) {
 
             throw new Error(
                 data.message ||
-                "Login failed."
+                `Login failed. HTTP ${response.status}.`
             );
         }
 
 
         // ----------------------------------------------------
-        // Validate response
+        // VALIDATE RESPONSE
         // ----------------------------------------------------
+
         if (!data.success) {
 
             throw new Error(
@@ -133,9 +503,9 @@ async function handleLogin(event) {
 
 
         // ----------------------------------------------------
-        // Store JWT
+        // STORE USER INFORMATION
+        // JWT COOKIE IS MANAGED BY SERVER
         // ----------------------------------------------------
-
 
         localStorage.setItem(
             "username",
@@ -155,41 +525,61 @@ async function handleLogin(event) {
         );
 
 
-        // ----------------------------------------------------
-        // Calculate token expiry
-        // ----------------------------------------------------
+        // Remove old local JWT if any
+        localStorage.removeItem(
+            "accessToken"
+        );
 
-        const expiresIn =
-            Number(data.expiresIn) || 60;
 
+        localStorage.removeItem(
+            "tokenExpiry"
+        );
+
+
+        // ----------------------------------------------------
+        // REDIRECT TO DASHBOARD
+        // ----------------------------------------------------
 
         window.location.href =
-            "/Dashboard/Index";
+            buildAppUrl(
+                "Dashboard/Index"
+            );
 
     }
     catch (error) {
 
-        errorElement.textContent =
-            error.message ||
-            "Unable to login.";
+        console.error(
+            "Login Error:",
+            error
+        );
 
-        errorElement.style.display =
-            "block";
+
+        if (errorElement) {
+
+            errorElement.textContent =
+                error.message ||
+                "Unable to login.";
+
+            errorElement.style.display =
+                "block";
+        }
 
     }
     finally {
 
-        button.disabled = false;
-
-        buttonText.style.display =
-            "inline";
-
-        loader.style.display =
-            "none";
+        setButtonLoading(
+            button,
+            buttonText,
+            loader,
+            false
+        );
     }
-
 }
 
+
+// ============================================================
+// TOGGLE LOGIN PASSWORD
+// ============================================================
 
 function togglePassword() {
 
@@ -198,34 +588,50 @@ function togglePassword() {
             "password"
         );
 
+
     const button =
         document.querySelector(
             "#loginForm .password-toggle"
         );
 
 
-    if (!password || !button) {
+    if (!password) {
+
         return;
     }
 
 
     if (password.type === "password") {
 
-        password.type = "text";
+        password.type =
+            "text";
 
-        button.textContent =
-            "Hide";
+
+        if (button) {
+
+            button.textContent =
+                "Hide";
+        }
 
     }
     else {
 
-        password.type = "password";
+        password.type =
+            "password";
 
-        button.textContent =
-            "Show";
+
+        if (button) {
+
+            button.textContent =
+                "Show";
+        }
     }
-
 }
+
+
+// ============================================================
+// TOGGLE REGISTER PASSWORD
+// ============================================================
 
 function toggleRegisterPassword() {
 
@@ -234,34 +640,50 @@ function toggleRegisterPassword() {
             "registerPassword"
         );
 
+
     const button =
         document.querySelector(
             "#registerForm .password-toggle"
         );
 
 
-    if (!password || !button) {
+    if (!password) {
+
         return;
     }
 
 
     if (password.type === "password") {
 
-        password.type = "text";
+        password.type =
+            "text";
 
-        button.textContent =
-            "Hide";
+
+        if (button) {
+
+            button.textContent =
+                "Hide";
+        }
 
     }
     else {
 
-        password.type = "password";
+        password.type =
+            "password";
 
-        button.textContent =
-            "Show";
+
+        if (button) {
+
+            button.textContent =
+                "Show";
+        }
     }
-
 }
+
+
+// ============================================================
+// REGISTER FIRST ADMIN
+// ============================================================
 
 async function handleRegister(event) {
 
@@ -271,31 +693,31 @@ async function handleRegister(event) {
     const username =
         document.getElementById(
             "registerUsername"
-        ).value.trim();
+        )
+            ?.value
+            ?.trim();
 
 
     const fullName =
         document.getElementById(
             "fullName"
-        ).value.trim();
+        )
+            ?.value
+            ?.trim();
 
 
     const password =
         document.getElementById(
             "registerPassword"
-        ).value;
+        )
+            ?.value;
 
 
     const confirmPassword =
         document.getElementById(
             "confirmPassword"
-        ).value;
-
-
-    const message =
-        document.getElementById(
-            "registerMessage"
-        );
+        )
+            ?.value;
 
 
     const button =
@@ -316,12 +738,15 @@ async function handleRegister(event) {
         );
 
 
-    message.style.display =
-        "none";
+    // --------------------------------------------------------
+    // CLEAR PREVIOUS MESSAGE
+    // --------------------------------------------------------
+
+    hideRegisterMessage();
 
 
     // --------------------------------------------------------
-    // Validation
+    // VALIDATION
     // --------------------------------------------------------
 
     if (!username) {
@@ -379,64 +804,81 @@ async function handleRegister(event) {
     }
 
 
-    button.disabled = true;
+    // --------------------------------------------------------
+    // LOADING STATE
+    // --------------------------------------------------------
 
-    buttonText.style.display =
-        "none";
-
-    loader.style.display =
-        "inline-block";
+    setButtonLoading(
+        button,
+        buttonText,
+        loader,
+        true
+    );
 
 
     try {
 
-        // ----------------------------------------------------
-        // FIRST USER REGISTRATION
-        // No JWT required
-        // ----------------------------------------------------
+        const apiUrl =
+            buildAppUrl(
+                "api/AuthApi/register"
+            );
 
-        const response = await fetch(
-            "/api/AuthApi/register",
-            {
-                method: "POST",
 
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify({
-
-                    username: username,
-
-                    password: password,
-
-                    fullName: fullName
-
-                })
-            }
+        console.log(
+            "Register API URL:",
+            apiUrl
         );
 
 
+        const response =
+            await fetch(
+                apiUrl,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "Accept":
+                            "application/json"
+                    },
+
+                    credentials:
+                        "same-origin",
+
+                    body: JSON.stringify(
+                        {
+                            username: username,
+                            password: password,
+                            fullName: fullName
+                        }
+                    )
+                }
+            );
+
+
         const data =
-            await response.json();
+            await getResponseData(
+                response
+            );
 
 
         // ----------------------------------------------------
-        // API error
+        // HTTP ERROR
         // ----------------------------------------------------
 
         if (!response.ok) {
 
             throw new Error(
                 data.message ||
-                "Registration failed."
+                `Registration failed. HTTP ${response.status}.`
             );
         }
 
 
         // ----------------------------------------------------
-        // Validate response
+        // VALIDATE RESPONSE
         // ----------------------------------------------------
 
         if (!data.success) {
@@ -449,7 +891,7 @@ async function handleRegister(event) {
 
 
         // ----------------------------------------------------
-        // Success
+        // SUCCESS
         // ----------------------------------------------------
 
         showRegisterMessage(
@@ -459,23 +901,36 @@ async function handleRegister(event) {
 
 
         document
-            .getElementById("registerForm")
-            .reset();
+            .getElementById(
+                "registerForm"
+            )
+            ?.reset();
 
 
         // ----------------------------------------------------
-        // Redirect to login
+        // REDIRECT TO LOGIN
         // ----------------------------------------------------
 
-        setTimeout(function () {
+        setTimeout(
+            function () {
 
-            window.location.href =
-                "/Account/Login";
+                window.location.href =
+                    buildAppUrl(
+                        "Account/Login"
+                    );
 
-        }, 1500);
+            },
+            1500
+        );
 
     }
     catch (error) {
+
+        console.error(
+            "Registration Error:",
+            error
+        );
+
 
         showRegisterMessage(
             error.message ||
@@ -486,15 +941,13 @@ async function handleRegister(event) {
     }
     finally {
 
-        button.disabled = false;
-
-        buttonText.style.display =
-            "inline";
-
-        loader.style.display =
-            "none";
+        setButtonLoading(
+            button,
+            buttonText,
+            loader,
+            false
+        );
     }
-
 }
 
 
@@ -514,6 +967,7 @@ function showRegisterMessage(
 
 
     if (!message) {
+
         return;
     }
 
@@ -532,32 +986,145 @@ function showRegisterMessage(
 
 
 // ============================================================
-// LOGOUT
+// HIDE REGISTER MESSAGE
 // ============================================================
 
-function logout() {
+function hideRegisterMessage() {
 
-    localStorage.removeItem(
-        "accessToken"
-    );
-
-    localStorage.removeItem(
-        "username"
-    );
-
-    localStorage.removeItem(
-        "fullName"
-    );
-
-    localStorage.removeItem(
-        "role"
-    );
-
-    localStorage.removeItem(
-        "tokenExpiry"
-    );
+    const message =
+        document.getElementById(
+            "registerMessage"
+        );
 
 
-    window.location.href =
-        "/Account/Login";
+    if (!message) {
+
+        return;
+    }
+
+
+    message.textContent =
+        "";
+
+
+    message.style.display =
+        "none";
+}
+
+
+// ============================================================
+// COMMON BUTTON LOADING STATE
+// ============================================================
+
+function setButtonLoading(
+    button,
+    buttonText,
+    loader,
+    isLoading
+) {
+
+    if (button) {
+
+        button.disabled =
+            isLoading;
+    }
+
+
+    if (buttonText) {
+
+        buttonText.style.display =
+            isLoading
+                ? "none"
+                : "inline";
+    }
+
+
+    if (loader) {
+
+        loader.style.display =
+            isLoading
+                ? "inline-block"
+                : "none";
+    }
+}
+
+async function logout() {
+
+    try {
+
+        const apiUrl =
+            buildAppUrl(
+                "api/AuthApi/logout"
+            );
+
+
+        console.log(
+            "Logout API URL:",
+            apiUrl
+        );
+
+
+        await fetch(
+            apiUrl,
+            {
+                method: "POST",
+
+                credentials:
+                    "same-origin",
+
+                headers: {
+                    "Accept":
+                        "application/json"
+                }
+            }
+        );
+
+    }
+    catch (error) {
+
+        console.error(
+            "Logout API Error:",
+            error
+        );
+    }
+    finally {
+
+        // ----------------------------------------------------
+        // CLEAR LOCAL STORAGE
+        // ----------------------------------------------------
+
+        localStorage.removeItem(
+            "accessToken"
+        );
+
+
+        localStorage.removeItem(
+            "username"
+        );
+
+
+        localStorage.removeItem(
+            "fullName"
+        );
+
+
+        localStorage.removeItem(
+            "role"
+        );
+
+
+        localStorage.removeItem(
+            "tokenExpiry"
+        );
+
+
+        // ----------------------------------------------------
+        // REDIRECT TO LOGIN
+        // ----------------------------------------------------
+
+        window.location.href =
+            buildAppUrl(
+                "Account/Login"
+            );
+    }
 }

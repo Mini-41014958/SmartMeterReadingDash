@@ -1,4 +1,28 @@
-﻿let departmentChart = null;
+﻿// =============================================================
+// API BASE URL
+// =============================================================
+
+function getApiUrl(endpoint) {
+
+    const basePath = window.location.pathname
+        .toLowerCase()
+        .startsWith("/smartmeter/")
+        ? "/SmartMeter"
+        : "";
+
+    return `${basePath}/api/${endpoint}`;
+}
+
+// =============================================================
+// DEPARTMENT CHART INSTANCE
+// =============================================================
+
+let departmentChart = null;
+
+
+// =============================================================
+// LOAD DEPARTMENT DISTRIBUTION
+// =============================================================
 
 async function loadDepartmentDistribution() {
 
@@ -8,54 +32,105 @@ async function loadDepartmentDistribution() {
 
         const [brplResponse, byplResponse] = await Promise.all([
 
+            // BRPL API
             fetch(
-                `/api/DashboardApi/department-wise-data?readingMonth=${encodeURIComponent(month)}`
+                `${getApiUrl("DashboardApi/department-wise-data")}?readingMonth=${encodeURIComponent(month)}`
             ),
 
+            // BYPL API
             fetch(
-                `/api/DashboardApi/department-wise-data-bypl?readingMonth=${encodeURIComponent(month)}`
+                `${getApiUrl("DashboardApi/department-wise-data-bypl")}?readingMonth=${encodeURIComponent(month)}`
             )
 
         ]);
 
+
+        // =====================================================
+        // CHECK API RESPONSES
+        // =====================================================
+
         if (!brplResponse.ok) {
+
             throw new Error(
-                "Failed to load BRPL Department Distribution."
+                `Failed to load BRPL Department Distribution. Status: ${brplResponse.status}`
             );
+
         }
 
+
         if (!byplResponse.ok) {
+
             throw new Error(
-                "Failed to load BYPL Department Distribution."
+                `Failed to load BYPL Department Distribution. Status: ${byplResponse.status}`
             );
+
         }
+
+
+        // =====================================================
+        // GET JSON DATA
+        // =====================================================
 
         const brplData = await brplResponse.json();
         const byplData = await byplResponse.json();
 
+
         console.log("BRPL Department Data:", brplData);
         console.log("BYPL Department Data:", byplData);
 
+
+        // =====================================================
+        // GET UNIQUE DEPARTMENTS
+        // =====================================================
+
         const departments = [
+
             ...new Set([
+
                 ...brplData.map(x => x.department),
+
                 ...byplData.map(x => x.department)
+
             ])
+
         ];
 
+
+        // =====================================================
+        // CREATE BRPL DATA MAP
+        // =====================================================
+
         const brplMap = Object.fromEntries(
+
             brplData.map(x => [
+
                 x.department,
                 x
+
             ])
+
         );
 
+
+        // =====================================================
+        // CREATE BYPL DATA MAP
+        // =====================================================
+
         const byplMap = Object.fromEntries(
+
             byplData.map(x => [
+
                 x.department,
                 x
+
             ])
+
         );
+
+
+        // =====================================================
+        // BRPL HES DOWNLOAD DATA
+        // =====================================================
 
         const brplHes = departments.map(department => {
 
@@ -65,6 +140,11 @@ async function loadDepartmentDistribution() {
 
         });
 
+
+        // =====================================================
+        // BRPL FAILED DATA
+        // =====================================================
+
         const brplFailed = departments.map(department => {
 
             return Number(
@@ -72,6 +152,11 @@ async function loadDepartmentDistribution() {
             );
 
         });
+
+
+        // =====================================================
+        // BYPL HES DOWNLOAD DATA
+        // =====================================================
 
         const byplHes = departments.map(department => {
 
@@ -81,6 +166,11 @@ async function loadDepartmentDistribution() {
 
         });
 
+
+        // =====================================================
+        // BYPL FAILED DATA
+        // =====================================================
+
         const byplFailed = departments.map(department => {
 
             return Number(
@@ -89,9 +179,15 @@ async function loadDepartmentDistribution() {
 
         });
 
+
+        // =====================================================
+        // GET CHART CANVAS
+        // =====================================================
+
         const ctx = document.getElementById(
             "departmentChart"
         );
+
 
         if (!ctx) {
 
@@ -100,14 +196,26 @@ async function loadDepartmentDistribution() {
             );
 
             return;
+
         }
+
+
+        // =====================================================
+        // DESTROY OLD CHART
+        // =====================================================
 
         if (departmentChart) {
 
             departmentChart.destroy();
 
             departmentChart = null;
+
         }
+
+
+        // =====================================================
+        // CREATE CHART
+        // =====================================================
 
         departmentChart = new Chart(ctx, {
 
@@ -119,6 +227,7 @@ async function loadDepartmentDistribution() {
 
                 datasets: [
 
+                    // BRPL HES DOWNLOAD
                     {
                         label: "BRPL - HES Download",
 
@@ -138,6 +247,7 @@ async function loadDepartmentDistribution() {
                     },
 
 
+                    // BRPL FAILED
                     {
                         label: "BRPL - Download Failed",
 
@@ -156,12 +266,14 @@ async function loadDepartmentDistribution() {
                         categoryPercentage: 0.85
                     },
 
+
+                    // BYPL HES DOWNLOAD
                     {
                         label: "BYPL - HES Download",
 
                         data: byplHes,
 
-                        backgroundColor: "#20c997",   // Teal/green shade
+                        backgroundColor: "#20c997",
 
                         borderColor: "#198f6a",
 
@@ -174,12 +286,14 @@ async function loadDepartmentDistribution() {
                         categoryPercentage: 0.85
                     },
 
+
+                    // BYPL FAILED
                     {
                         label: "BYPL - Download Failed",
 
                         data: byplFailed,
 
-                        backgroundColor: "#e85d75",   // Different red shade
+                        backgroundColor: "#e85d75",
 
                         borderColor: "#c43d55",
 
@@ -196,6 +310,7 @@ async function loadDepartmentDistribution() {
 
             },
 
+
             options: {
 
                 responsive: true,
@@ -204,23 +319,45 @@ async function loadDepartmentDistribution() {
 
                 indexAxis: "y",
 
+
+                // =================================================
+                // INTERACTION
+                // =================================================
+
                 interaction: {
+
                     mode: "nearest",
+
                     intersect: true
+
                 },
 
+
                 plugins: {
+
+
+                    // =============================================
+                    // LEGEND
+                    // =============================================
 
                     legend: {
 
                         position: "top",
 
                         labels: {
+
                             usePointStyle: true,
+
                             padding: 15
+
                         }
 
                     },
+
+
+                    // =============================================
+                    // TOOLTIP
+                    // =============================================
 
                     tooltip: {
 
@@ -232,7 +369,8 @@ async function loadDepartmentDistribution() {
 
                         displayColors: true,
 
-                        backgroundColor: "rgba(33, 37, 41, 0.95)",
+                        backgroundColor:
+                            "rgba(33, 37, 41, 0.95)",
 
                         titleColor: "#ffffff",
 
@@ -242,6 +380,7 @@ async function loadDepartmentDistribution() {
 
                         cornerRadius: 8,
 
+
                         callbacks: {
 
                             title: function (tooltipItems) {
@@ -249,14 +388,21 @@ async function loadDepartmentDistribution() {
                                 return tooltipItems.length
                                     ? `Department: ${tooltipItems[0].label}`
                                     : "";
+
                             },
+
 
                             label: function (context) {
 
-                                const value =
-                                    Number(context.raw || 0);
+                                const value = Number(
+                                    context.raw || 0
+                                );
 
-                                return `${context.dataset.label}: ${value.toLocaleString()}`;
+                                return (
+                                    `${context.dataset.label}: ` +
+                                    `${value.toLocaleString()}`
+                                );
+
                             }
 
                         }
@@ -265,8 +411,15 @@ async function loadDepartmentDistribution() {
 
                 },
 
+
+                // =================================================
+                // SCALES
+                // =================================================
+
                 scales: {
 
+
+                    // X AXIS
                     x: {
 
                         beginAtZero: true,
@@ -286,6 +439,8 @@ async function loadDepartmentDistribution() {
 
                     },
 
+
+                    // Y AXIS
                     y: {
 
                         stacked: false,
@@ -293,14 +448,19 @@ async function loadDepartmentDistribution() {
                         ticks: {
 
                             font: {
+
                                 size: 13,
+
                                 weight: "600"
+
                             }
 
                         },
 
                         grid: {
+
                             display: false
+
                         }
 
                     }

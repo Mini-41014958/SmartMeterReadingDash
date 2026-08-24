@@ -404,7 +404,11 @@
         </div>
 
     </main>
+    <script>
+            window.appBasePath = '@Url.Content("~/")';
+    </script>
 
+    <script src="@Url.Content("~/js/auth.js")" asp-append-version="true"></script>
 
     <script src="~/js/auth.js"
             asp-append-version="true">

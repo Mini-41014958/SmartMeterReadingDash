@@ -952,10 +952,9 @@
     </tr>
     `);
 
-    // Replace with your actual API endpoint
-    const response = await fetch(
-    "/api/dashboardapi/meter-download-detailed-summary?readingMonth=" + getReadingMonth()
-    );
+      const response = await fetch(
+        `${getApiUrl("dashboardapi/meter-download-detailed-summary")}?readingMonth=${encodeURIComponent(getReadingMonth())}`
+      );
 
     if (!response.ok) {
     throw new Error("Unable to load data");
@@ -1258,11 +1257,9 @@ ws["!cols"] = [
     const readingMonth = getReadingMonth();
 
 
-    const response = await fetch(
-    "/api/dashboardapi/meter-download-detailed-summary-bypl?readingMonth="
-    + encodeURIComponent(readingMonth)
-    );
-
+     const response = await fetch(
+     `${getApiUrl("dashboardapi/meter-download-detailed-summary-bypl")}?readingMonth=${encodeURIComponent(readingMonth)}`
+       );
 
     if (!response.ok) {
     throw new Error(
@@ -2046,11 +2043,6 @@ ws["!cols"] = [
     + ".xlsx"
     );
     }
-
-
-    // ============================================================
-    // EXPORT TO CSV
-    // ============================================================
 
     function exportTableToCSVBYPL() {
 

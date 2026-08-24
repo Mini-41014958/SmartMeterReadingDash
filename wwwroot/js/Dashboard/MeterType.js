@@ -1,4 +1,15 @@
-﻿let brplMeterTypeChart = null;
+﻿
+function getApiUrl(endpoint) {
+
+    const basePath = window.location.pathname
+        .toLowerCase()
+        .startsWith("/smartmeter/")
+        ? "/SmartMeter"
+        : "";
+
+    return `${basePath}/api/${endpoint}`;
+}
+let brplMeterTypeChart = null;
 let byplMeterTypeChart = null;
 
 
@@ -18,11 +29,11 @@ async function loadMeterSummary() {
         ] = await Promise.all([
 
             fetch(
-                `/api/DashboardApi/meter-type-wise-summary?readingMonth=${encodeURIComponent(month)}`
+                `${getApiUrl("DashboardApi/meter-type-wise-summary")}?readingMonth=${encodeURIComponent(month)}`
             ),
 
             fetch(
-                `/api/DashboardApi/meter-type-wise-summary-bypl?readingMonth=${encodeURIComponent(month)}`
+                `${getApiUrl("DashboardApi/meter-type-wise-summary-bypl")}?readingMonth=${encodeURIComponent(month)}`
             )
 
         ]);
@@ -30,13 +41,13 @@ async function loadMeterSummary() {
 
         if (!brplResponse.ok) {
             throw new Error(
-                "Failed to load BRPL Meter Summary."
+                `Failed to load BRPL Meter Summary. Status: ${brplResponse.status}`
             );
         }
 
         if (!byplResponse.ok) {
             throw new Error(
-                "Failed to load BYPL Meter Summary."
+                `Failed to load BYPL Meter Summary. Status: ${byplResponse.status}`
             );
         }
 
@@ -81,7 +92,6 @@ async function loadMeterSummary() {
             ).toLocaleString()
         );
 
-
         $("#brplKimbalCount").text(
             Number(
                 brplData.kimbalCount || 0
@@ -99,7 +109,6 @@ async function loadMeterSummary() {
                 brplData.kimbal_3PhCount || 0
             ).toLocaleString()
         );
-
 
         $("#brplTotalMeter").text(
             Number(
@@ -130,7 +139,6 @@ async function loadMeterSummary() {
             ).toLocaleString()
         );
 
-
         $("#byplKimbalCount").text(
             Number(
                 byplData.kimbalCount || 0
@@ -148,7 +156,6 @@ async function loadMeterSummary() {
                 byplData.kimbal_3PhCount || 0
             ).toLocaleString()
         );
-
 
         $("#byplTotalMeter").text(
             Number(
@@ -249,12 +256,10 @@ function drawMeterTypeChart(
             data.alliedCount || 0
         );
 
-
     const kimbal =
         Number(
             data.kimbalCount || 0
         );
-
 
     const total =
         allied + kimbal;
@@ -327,7 +332,6 @@ function drawMeterTypeChart(
 
                 maintainAspectRatio: false,
 
-
                 animation: {
 
                     animateRotate: true,
@@ -340,10 +344,6 @@ function drawMeterTypeChart(
 
 
                 plugins: {
-
-                    // =========================================
-                    // LEGEND
-                    // =========================================
 
                     legend: {
 
@@ -374,10 +374,6 @@ function drawMeterTypeChart(
                     },
 
 
-                    // =========================================
-                    // TOOLTIP
-                    // =========================================
-
                     tooltip: {
 
                         backgroundColor:
@@ -397,16 +393,12 @@ function drawMeterTypeChart(
                                         context.raw || 0
                                     );
 
-
                                 const percentage =
                                     total > 0
-
                                         ? (
                                             (value / total) * 100
                                         ).toFixed(1)
-
                                         : "0.0";
-
 
                                 return (
                                     `${context.label}: ` +

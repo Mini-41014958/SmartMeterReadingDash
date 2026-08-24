@@ -1,4 +1,14 @@
-﻿async function loadMeterDownloadSummary() {
+﻿function getApiUrl(endpoint) {
+
+    const basePath = window.location.pathname
+        .toLowerCase()
+        .startsWith("/smartmeter/")
+        ? "/SmartMeter"
+        : "";
+
+    return `${basePath}/api/${endpoint}`;
+}
+async function loadMeterDownloadSummary() {
 
     const month = getReadingMonth();
 
@@ -7,21 +17,25 @@
         const [brplResponse, byplResponse] = await Promise.all([
 
             fetch(
-                `/api/dashboardapi/meter-download-summary?readingMonth=${encodeURIComponent(month)}`
+                `${getApiUrl("dashboardapi/meter-download-summary")}?readingMonth=${encodeURIComponent(month)}`
             ),
 
             fetch(
-                `/api/dashboardapi/meter-download-summary-bypl?readingMonth=${encodeURIComponent(month)}`
+                `${getApiUrl("dashboardapi/meter-download-summary-bypl")}?readingMonth=${encodeURIComponent(month)}`
             )
 
         ]);
 
         if (!brplResponse.ok) {
-            throw new Error("Failed to load BRPL Meter Summary.");
+            throw new Error(
+                `Failed to load BRPL Meter Summary. Status: ${brplResponse.status}`
+            );
         }
 
         if (!byplResponse.ok) {
-            throw new Error("Failed to load BYPL Meter Summary.");
+            throw new Error(
+                `Failed to load BYPL Meter Summary. Status: ${byplResponse.status}`
+            );
         }
 
         const brplData = await brplResponse.json();
@@ -35,12 +49,10 @@
         console.log("BRPL Meter Summary:", brplData);
         console.log("BYPL Meter Summary:", byplData);
 
-
         const brplFailed =
             Number(brplData?.manualForwardinCount || 0) +
             Number(brplData?.pendingCount || 0) +
             Number(brplData?.mismatchCount || 0);
-
 
         function setValue(id, value) {
 
@@ -58,6 +70,7 @@
             element.textContent = value;
         }
 
+        // BRPL
         setValue(
             "totalMeters",
             Number(brplData?.totalMetersCount || 0)
@@ -87,6 +100,7 @@
                 .toFixed(2) + "%"
         );
 
+        // BYPL
         setValue(
             "byplTotalMeters",
             Number(byplData?.totalMetersCount || 0)

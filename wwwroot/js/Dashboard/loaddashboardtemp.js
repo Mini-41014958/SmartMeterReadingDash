@@ -1,4 +1,14 @@
-﻿async function loadDashboardTemporary() {
+﻿function getApiUrl(endpoint) {
+
+    const basePath = window.location.pathname
+        .toLowerCase()
+        .startsWith("/smartmeter/")
+        ? "/SmartMeter"
+        : "";
+
+    return `${basePath}/api/${endpoint}`;
+}
+async function loadDashboardTemporary() {
 
     try {
 
