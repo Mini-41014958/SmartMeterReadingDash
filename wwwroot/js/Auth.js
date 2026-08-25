@@ -1001,54 +1001,54 @@ function setButtonLoading(
     }
 }
 
-async function logout() {
+// async function logout() {
 
-    try {
+//     try {
 
-        const response =
-            await fetch(
-                buildAppUrl(
-                    "api/AuthApi/logout"
-                ),
-                {
-                    method: "POST",
-                    credentials:
-                        "same-origin",
-                    headers: {
-                        "Accept":
-                            "application/json"
-                    }
-                }
-            );
+//         const response =
+//             await fetch(
+//                 buildAppUrl(
+//                     "api/AuthApi/logout"
+//                 ),
+//                 {
+//                     method: "POST",
+//                     credentials:
+//                         "same-origin",
+//                     headers: {
+//                         "Accept":
+//                             "application/json"
+//                     }
+//                 }
+//             );
 
-        if (!response.ok) {
+//         if (!response.ok) {
 
-            console.warn(
-                `Logout failed with HTTP ${response.status}`
-            );
-        }
+//             console.warn(
+//                 `Logout failed with HTTP ${response.status}`
+//             );
+//         }
 
-    }
-    catch (error) {
+//     }
+//     catch (error) {
 
-        console.error(
-            "Logout API Error:",
-            error
-        );
+//         console.error(
+//             "Logout API Error:",
+//             error
+//         );
 
-    }
-    finally {
+//     }
+//     finally {
 
        
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("username");
-        localStorage.removeItem("fullName");
-        localStorage.removeItem("role");
-        localStorage.removeItem("tokenExpiry");
+//         localStorage.removeItem("accessToken");
+//         localStorage.removeItem("username");
+//         localStorage.removeItem("fullName");
+//         localStorage.removeItem("role");
+//         localStorage.removeItem("tokenExpiry");
 
    
-        window.location.replace(
-            buildAppUrl("Account/Login")
-        );
-    }
-}
+//         window.location.replace(
+//             buildAppUrl("Account/Login")
+//         );
+//     }
+// }

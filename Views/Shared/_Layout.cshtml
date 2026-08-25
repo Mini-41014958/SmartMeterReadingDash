@@ -139,17 +139,23 @@
                     <div class="dropdown-divider"></div>
 
 
-                    <button type="button"
-                            class="dropdown-item logout-button"
-                            onclick="logout()">
+             <form asp-controller="Account"
+                  asp-action="Logout"
+                  method="post"
+                  id="logoutForm">
 
-                        <span>
-                            ⇥
-                        </span>
+                @Html.AntiForgeryToken()
 
-                        Logout
+                <button type="submit"
+                        class="dropdown-item logout-button">
 
-                    </button>
+                    <span>⇥</span>
+
+                    Logout
+
+                </button>
+
+            </form>
 
                 </div>
 

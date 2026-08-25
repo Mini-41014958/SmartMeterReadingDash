@@ -27,6 +27,25 @@ namespace SmartMeterReadingDash.Controllers
         {
             return View();
         }
+        [AllowAnonymous]
+        [HttpPost]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete(
+                "SmartMeterAuth",
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = Request.IsHttps,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/"
+                }
+            );
 
+            return RedirectToAction(
+                "Login",
+                "Account"
+            );
+        }
     }
 }
