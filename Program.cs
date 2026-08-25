@@ -1,30 +1,32 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Oracle.ManagedDataAccess.Client;
 using SmartMeterReadingDash.Models.Dashboard;
 using SmartMeterReadingDash.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Add Oracle connection service
+// Application Services
 builder.Services.AddScoped<OracleCon>();
 builder.Services.AddScoped<Dashboard>();
 builder.Services.AddScoped<AuthRepository>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<JwtService>();
+
+
 var jwtSettings = builder.Configuration
     .GetSection("Jwt")
     .Get<JWTSettings>();
 
 if (jwtSettings == null ||
-    string.IsNullOrWhiteSpace(jwtSettings.Key))
+    string.IsNullOrWhiteSpace(jwtSettings.Key) ||
+    string.IsNullOrWhiteSpace(jwtSettings.Issuer) ||
+    string.IsNullOrWhiteSpace(jwtSettings.Audience))
 {
     throw new InvalidOperationException(
-        "JWT configuration is missing."
+        "JWT configuration is missing or incomplete."
     );
 }
 
@@ -32,98 +34,141 @@ builder.Services.Configure<JWTSettings>(
     builder.Configuration.GetSection("Jwt")
 );
 
-builder.Services.AddAuthentication(
-    JwtBearerDefaults.AuthenticationScheme
-)
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters =
-        new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-
-            IssuerSigningKey =
-                new SymmetricSecurityKey(
-                    Encoding.UTF8.GetBytes(jwtSettings.Key)
-                ),
-
-            ValidateIssuer = true,
-
-            ValidIssuer = jwtSettings.Issuer,
-
-            ValidateAudience = true,
-
-            ValidAudience = jwtSettings.Audience,
-
-            ValidateLifetime = true,
-
-            ClockSkew = TimeSpan.FromMinutes(1)
-        };
-
-    options.Events = new JwtBearerEvents
+builder.Services
+    .AddAuthentication(options =>
     {
-        OnMessageReceived = context =>
-        {
-            var token =
-                context.Request.Cookies["SmartMeterAuth"];
+        options.DefaultAuthenticateScheme =
+            JwtBearerDefaults.AuthenticationScheme;
 
-            if (!string.IsNullOrEmpty(token))
+        options.DefaultChallengeScheme =
+            JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata =
+            !builder.Environment.IsDevelopment();
+
+        options.TokenValidationParameters =
+            new TokenValidationParameters
             {
-                context.Token = token;
-            }
+                ValidateIssuerSigningKey = true,
 
-            return Task.CompletedTask;
-        },
-        OnChallenge = context =>
-        {
-            context.HandleResponse();
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(
+                            jwtSettings.Key
+                        )
+                    ),
 
-            var request = context.Request;
+                ValidateIssuer = true,
+                ValidIssuer = jwtSettings.Issuer,
 
-            if (request.Path.StartsWithSegments("/api"))
+                ValidateAudience = true,
+                ValidAudience = jwtSettings.Audience,
+
+                ValidateLifetime = true,
+
+                ClockSkew =
+                    TimeSpan.FromMinutes(1)
+            };
+
+        options.Events =
+            new JwtBearerEvents
             {
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                OnMessageReceived =
+                    context =>
+                    {
+                        var token =
+                            context.Request.Cookies[
+                                "SmartMeterAuth"
+                            ];
 
-                return Task.CompletedTask;
-            }
+                        if (!string.IsNullOrWhiteSpace(
+                            token))
+                        {
+                            context.Token = token;
+                        }
 
-            if (!request.Path.StartsWithSegments("/Account/Login"))
-            {
-                context.Response.Redirect(
-                    request.PathBase + "/Account/Login"
-                );
-            }
+                        return Task.CompletedTask;
+                    },
 
-            return Task.CompletedTask;
-        }
-    };
-});
+                OnChallenge =
+                    context =>
+                    {
+                        context.HandleResponse();
+
+                        var request =
+                            context.Request;
+
+                        var response =
+                            context.Response;
+
+                        // API → JSON/API clients get 401
+                        if (request.Path.StartsWithSegments(
+                            "/api",
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            response.StatusCode =
+                                StatusCodes.Status401Unauthorized;
+
+                            return Task.CompletedTask;
+                        }
+
+                        // Avoid redirect loop
+                        if (request.Path.StartsWithSegments(
+                            "/Account/Login",
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            response.StatusCode =
+                                StatusCodes.Status401Unauthorized;
+
+                            return Task.CompletedTask;
+                        }
+
+                        // MVC pages → Login
+                        response.Redirect(
+                            $"{request.PathBase}/Account/Login"
+                        );
+
+                        return Task.CompletedTask;
+                    }
+            };
+    });
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+
     app.UseHsts();
 }
 
+// Redirect HTTP -> HTTPS
+app.UseHttpsRedirection();
 
+// Serve CSS, JS, Images, etc.
 app.UseStaticFiles();
 
+// Routing
 app.UseRouting();
 
+// JWT Authentication
 app.UseAuthentication();
 
+// Authorization
 app.UseAuthorization();
-
 
 app.MapControllers();
 
-
+// MVC controller routing
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}"
 );
+
 
 app.Run();

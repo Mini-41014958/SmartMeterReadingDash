@@ -46,8 +46,6 @@ async function loadMeterDownloadSummary() {
             ? byplResult[0]
             : byplResult;
 
-        console.log("BRPL Meter Summary:", brplData);
-        console.log("BYPL Meter Summary:", byplData);
 
         const brplFailed =
             Number(brplData?.manualForwardinCount || 0) +

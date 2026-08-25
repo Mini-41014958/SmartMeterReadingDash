@@ -1,29 +1,6 @@
-﻿// ============================================================
-// SMART METER AUTHENTICATION
-// COMPLETE UPDATED SCRIPT
-// Supports:
-// - Localhost
-// - IIS virtual directory: /SmartMeter
-// - Login
-// - First Admin Registration
-// - Logout
-// - Password Toggle
-// - Safe API Error Handling
-// ============================================================
-
-
-// ============================================================
-// APPLICATION BASE PATH
-// ============================================================
+﻿
 
 function getAppBasePath() {
-
-    // --------------------------------------------------------
-    // 1. SERVER-PROVIDED BASE PATH
-    // Example:
-    // Local:       /
-    // Production:  /SmartMeter/
-    // --------------------------------------------------------
 
     if (
         typeof window.appBasePath === "string" &&
@@ -47,10 +24,6 @@ function getAppBasePath() {
         );
     }
 
-
-    // --------------------------------------------------------
-    // 2. DETECT BASE TAG
-    // --------------------------------------------------------
 
     const baseElement =
         document.querySelector("base[href]");
@@ -501,12 +474,6 @@ async function handleLogin(event) {
             );
         }
 
-
-        // ----------------------------------------------------
-        // STORE USER INFORMATION
-        // JWT COOKIE IS MANAGED BY SERVER
-        // ----------------------------------------------------
-
         localStorage.setItem(
             "username",
             data.username || username
@@ -951,10 +918,6 @@ async function handleRegister(event) {
 }
 
 
-// ============================================================
-// REGISTER MESSAGE
-// ============================================================
-
 function showRegisterMessage(
     text,
     type
@@ -984,11 +947,6 @@ function showRegisterMessage(
         "block";
 }
 
-
-// ============================================================
-// HIDE REGISTER MESSAGE
-// ============================================================
-
 function hideRegisterMessage() {
 
     const message =
@@ -1010,11 +968,6 @@ function hideRegisterMessage() {
     message.style.display =
         "none";
 }
-
-
-// ============================================================
-// COMMON BUTTON LOADING STATE
-// ============================================================
 
 function setButtonLoading(
     button,
@@ -1052,32 +1005,28 @@ async function logout() {
 
     try {
 
-        const apiUrl =
-            buildAppUrl(
-                "api/AuthApi/logout"
+        const response =
+            await fetch(
+                buildAppUrl(
+                    "api/AuthApi/logout"
+                ),
+                {
+                    method: "POST",
+                    credentials:
+                        "same-origin",
+                    headers: {
+                        "Accept":
+                            "application/json"
+                    }
+                }
             );
 
+        if (!response.ok) {
 
-        console.log(
-            "Logout API URL:",
-            apiUrl
-        );
-
-
-        await fetch(
-            apiUrl,
-            {
-                method: "POST",
-
-                credentials:
-                    "same-origin",
-
-                headers: {
-                    "Accept":
-                        "application/json"
-                }
-            }
-        );
+            console.warn(
+                `Logout failed with HTTP ${response.status}`
+            );
+        }
 
     }
     catch (error) {
@@ -1086,45 +1035,20 @@ async function logout() {
             "Logout API Error:",
             error
         );
+
     }
     finally {
 
-        // ----------------------------------------------------
-        // CLEAR LOCAL STORAGE
-        // ----------------------------------------------------
+       
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("username");
+        localStorage.removeItem("fullName");
+        localStorage.removeItem("role");
+        localStorage.removeItem("tokenExpiry");
 
-        localStorage.removeItem(
-            "accessToken"
+   
+        window.location.replace(
+            buildAppUrl("Account/Login")
         );
-
-
-        localStorage.removeItem(
-            "username"
-        );
-
-
-        localStorage.removeItem(
-            "fullName"
-        );
-
-
-        localStorage.removeItem(
-            "role"
-        );
-
-
-        localStorage.removeItem(
-            "tokenExpiry"
-        );
-
-
-        // ----------------------------------------------------
-        // REDIRECT TO LOGIN
-        // ----------------------------------------------------
-
-        window.location.href =
-            buildAppUrl(
-                "Account/Login"
-            );
     }
 }

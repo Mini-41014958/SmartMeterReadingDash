@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SmartMeterReadingDash.Models.Dashboard;
 using SmartMeterReadingDash.Services;
 
@@ -19,9 +20,10 @@ namespace SmartMeterReadingDash.Controllers.API
             _jwtService = jwtService;
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login(
-         [FromBody] Models.Dashboard.LoginRequest request)
+           [FromBody] LoginRequest request)
         {
             if (request == null ||
                 string.IsNullOrWhiteSpace(request.Username) ||
@@ -34,10 +36,8 @@ namespace SmartMeterReadingDash.Controllers.API
                 });
             }
 
-            var user =
-                await _authRepository.GetUserByUsernameAsync(
-                    request.Username
-                );
+            var user = await _authRepository
+                .GetUserByUsernameAsync(request.Username);
 
             if (user == null)
             {
@@ -57,6 +57,8 @@ namespace SmartMeterReadingDash.Controllers.API
                 });
             }
 
+            // IMPORTANT:
+            // Replace this with PasswordService verification
             if (request.Password != user.Password)
             {
                 return Unauthorized(new
@@ -66,12 +68,10 @@ namespace SmartMeterReadingDash.Controllers.API
                 });
             }
 
-            await _authRepository.UpdateLastLoginAsync(
-                user.UserId
-            );
+            await _authRepository
+                .UpdateLastLoginAsync(user.UserId);
 
-            var token =
-                _jwtService.GenerateToken(user);
+            var token = _jwtService.GenerateToken(user);
 
             Response.Cookies.Append(
                 "SmartMeterAuth",
@@ -79,9 +79,12 @@ namespace SmartMeterReadingDash.Controllers.API
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
+                    Secure = !HttpContext.Request.IsHttps
+                        ? false
+                        : true,
                     SameSite = SameSiteMode.Lax,
                     Expires = DateTimeOffset.UtcNow.AddMinutes(60),
+
                     Path = "/"
                 }
             );
@@ -89,13 +92,15 @@ namespace SmartMeterReadingDash.Controllers.API
             return Ok(new LoginResponse
             {
                 Success = true,
-                Token = "", 
+                Token = "",
                 ExpiresIn = 60,
                 Username = user.Username,
                 FullName = user.FullName ?? "",
                 Role = user.Role
             });
         }
+
+        [AllowAnonymous]
         [HttpPost("logout")]
         public IActionResult Logout()
         {
@@ -104,17 +109,18 @@ namespace SmartMeterReadingDash.Controllers.API
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.Strict
+                    Secure = Request.IsHttps,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/"
                 }
             );
 
             return Ok(new
             {
-                success = true,
-                message = "Logged out successfully."
+                success = true
             });
         }
+
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(

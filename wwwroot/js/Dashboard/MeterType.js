@@ -59,17 +59,6 @@ async function loadMeterSummary() {
             await byplResponse.json();
 
 
-        console.log(
-            "BRPL Meter Summary:",
-            brplData
-        );
-
-        console.log(
-            "BYPL Meter Summary:",
-            byplData
-        );
-
-
         // =====================================================
         // BRPL TABLE
         // =====================================================

@@ -495,10 +495,6 @@ function loadFailureReasonChart(readingMonth) {
         }),
 
 
-        // =================================================
-        // BYPL API
-        // =================================================
-
         $.ajax({
 
             url: getApiUrl(
@@ -520,20 +516,12 @@ function loadFailureReasonChart(readingMonth) {
             byplResponse
         ) {
 
-            // =================================================
-            // GET API DATA
-            // =================================================
-
             const brplData =
                 brplResponse[0] || [];
 
             const byplDetailData =
                 byplResponse[0] || [];
 
-
-            // =================================================
-            // PROCESS BRPL DATA
-            // =================================================
 
             const normalizedBrpl =
                 normalizeFailureData(
@@ -544,11 +532,6 @@ function loadFailureReasonChart(readingMonth) {
                 mergeFailureReasons(
                     normalizedBrpl
                 );
-
-
-            // =================================================
-            // PROCESS BYPL DATA
-            // =================================================
 
             const rawBypl =
                 buildBYPLCountsFromDetail(
@@ -562,21 +545,6 @@ function loadFailureReasonChart(readingMonth) {
                     rawBypl
                 );
 
-
-            console.log(
-                "BRPL Failure Data:",
-                brpl
-            );
-
-            console.log(
-                "BYPL Failure Data:",
-                bypl
-            );
-
-
-            // =================================================
-            // GET UNIQUE FAILURE REASONS
-            // =================================================
 
             const failureReasons = [
 

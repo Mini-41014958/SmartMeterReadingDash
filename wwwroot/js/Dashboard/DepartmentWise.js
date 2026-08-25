@@ -66,22 +66,9 @@ async function loadDepartmentDistribution() {
 
         }
 
-
-        // =====================================================
-        // GET JSON DATA
-        // =====================================================
-
         const brplData = await brplResponse.json();
         const byplData = await byplResponse.json();
 
-
-        console.log("BRPL Department Data:", brplData);
-        console.log("BYPL Department Data:", byplData);
-
-
-        // =====================================================
-        // GET UNIQUE DEPARTMENTS
-        // =====================================================
 
         const departments = [
 
@@ -95,11 +82,6 @@ async function loadDepartmentDistribution() {
 
         ];
 
-
-        // =====================================================
-        // CREATE BRPL DATA MAP
-        // =====================================================
-
         const brplMap = Object.fromEntries(
 
             brplData.map(x => [
@@ -110,11 +92,6 @@ async function loadDepartmentDistribution() {
             ])
 
         );
-
-
-        // =====================================================
-        // CREATE BYPL DATA MAP
-        // =====================================================
 
         const byplMap = Object.fromEntries(
 
@@ -127,11 +104,6 @@ async function loadDepartmentDistribution() {
 
         );
 
-
-        // =====================================================
-        // BRPL HES DOWNLOAD DATA
-        // =====================================================
-
         const brplHes = departments.map(department => {
 
             return Number(
@@ -140,10 +112,6 @@ async function loadDepartmentDistribution() {
 
         });
 
-
-        // =====================================================
-        // BRPL FAILED DATA
-        // =====================================================
 
         const brplFailed = departments.map(department => {
 
@@ -154,10 +122,6 @@ async function loadDepartmentDistribution() {
         });
 
 
-        // =====================================================
-        // BYPL HES DOWNLOAD DATA
-        // =====================================================
-
         const byplHes = departments.map(department => {
 
             return Number(
@@ -167,10 +131,6 @@ async function loadDepartmentDistribution() {
         });
 
 
-        // =====================================================
-        // BYPL FAILED DATA
-        // =====================================================
-
         const byplFailed = departments.map(department => {
 
             return Number(
@@ -179,10 +139,6 @@ async function loadDepartmentDistribution() {
 
         });
 
-
-        // =====================================================
-        // GET CHART CANVAS
-        // =====================================================
 
         const ctx = document.getElementById(
             "departmentChart"
