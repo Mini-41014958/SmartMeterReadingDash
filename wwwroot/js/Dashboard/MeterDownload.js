@@ -25,7 +25,7 @@ async function loadMeterDownloadSummary() {
             )
 
         ]);
-
+        console.log(month)
         if (!brplResponse.ok) {
             throw new Error(
                 `Failed to load BRPL Meter Summary. Status: ${brplResponse.status}`

@@ -7,6 +7,9 @@
         public string Password { get; set; } = string.Empty;
 
         public string FullName { get; set; } = string.Empty;
+        public string Role { get; set; } = "USER";
+        public string? Company { get; set; }
+        public string? Department { get; set; }
 
     }
 }

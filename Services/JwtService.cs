@@ -34,6 +34,14 @@ namespace SmartMeterReadingDash.Services
                 new Claim(
                     ClaimTypes.Role,
                     user.Role
+                ),
+                new Claim(
+                    "company",
+                    user.Company ?? string.Empty
+                ),
+                new Claim(
+                    "department",
+                    user.Department ?? string.Empty
                 )
             };
 

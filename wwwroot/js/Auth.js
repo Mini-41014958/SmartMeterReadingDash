@@ -10,13 +10,11 @@ function getAppBasePath() {
         let basePath =
             window.appBasePath.trim();
 
-
         if (!basePath.startsWith("/")) {
 
             basePath =
                 "/" + basePath;
         }
-
 
         return (
             basePath.replace(/\/+$/, "") +
@@ -48,7 +46,6 @@ function getAppBasePath() {
                 basePath.replace(/\/+$/, "") +
                 "/"
             );
-
         }
         catch (error) {
 
@@ -59,60 +56,48 @@ function getAppBasePath() {
         }
     }
 
-
-    // --------------------------------------------------------
-    // 3. AUTO-DETECT FROM CURRENT URL
-    //
-    // Example:
-    // /SmartMeter/Account/Login
-    // → /SmartMeter/
-    // --------------------------------------------------------
-
     const currentPath =
         window.location.pathname;
 
 
     const accountIndex =
-        currentPath.toLowerCase()
+        currentPath
+            .toLowerCase()
             .indexOf("/account/");
 
 
     if (accountIndex > 0) {
 
         return (
-            currentPath.substring(
-                0,
-                accountIndex
-            ).replace(/\/+$/, "") +
+            currentPath
+                .substring(
+                    0,
+                    accountIndex
+                )
+                .replace(/\/+$/, "") +
             "/"
         );
     }
 
 
-    // --------------------------------------------------------
-    // 4. DASHBOARD PATH FALLBACK
-    // --------------------------------------------------------
-
     const dashboardIndex =
-        currentPath.toLowerCase()
+        currentPath
+            .toLowerCase()
             .indexOf("/dashboard/");
 
 
     if (dashboardIndex > 0) {
 
         return (
-            currentPath.substring(
-                0,
-                dashboardIndex
-            ).replace(/\/+$/, "") +
+            currentPath
+                .substring(
+                    0,
+                    dashboardIndex
+                )
+                .replace(/\/+$/, "") +
             "/"
         );
     }
-
-
-    // --------------------------------------------------------
-    // 5. ROOT APPLICATION FALLBACK
-    // --------------------------------------------------------
 
     return "/";
 }
@@ -190,8 +175,6 @@ document.addEventListener(
 
 // ============================================================
 // SAFE API RESPONSE READER
-// IMPORTANT:
-// NEVER DISPLAY IIS HTML ERROR PAGES TO USER
 // ============================================================
 
 async function getResponseData(response) {
@@ -201,12 +184,13 @@ async function getResponseData(response) {
             response.headers.get(
                 "content-type"
             ) || ""
-        ).toLowerCase();
+        )
+            .toLowerCase();
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // JSON RESPONSE
-    // --------------------------------------------------------
+    // ========================================================
 
     if (
         contentType.includes(
@@ -222,6 +206,7 @@ async function getResponseData(response) {
         catch {
 
             return {
+
                 success: false,
 
                 message:
@@ -231,15 +216,16 @@ async function getResponseData(response) {
     }
 
 
-    // --------------------------------------------------------
-    // HTTP STATUS BASED ERRORS
-    // --------------------------------------------------------
+    // ========================================================
+    // HTTP STATUS ERRORS
+    // ========================================================
 
     switch (response.status) {
 
         case 400:
 
             return {
+
                 success: false,
 
                 message:
@@ -250,16 +236,18 @@ async function getResponseData(response) {
         case 401:
 
             return {
+
                 success: false,
 
                 message:
-                    "Invalid username or password."
+                    "You are not authenticated. Please login again."
             };
 
 
         case 403:
 
             return {
+
                 success: false,
 
                 message:
@@ -270,6 +258,7 @@ async function getResponseData(response) {
         case 404:
 
             return {
+
                 success: false,
 
                 message:
@@ -280,16 +269,18 @@ async function getResponseData(response) {
         case 409:
 
             return {
+
                 success: false,
 
                 message:
-                    "The requested record already exists."
+                    "Username already exists."
             };
 
 
         case 500:
 
             return {
+
                 success: false,
 
                 message:
@@ -300,6 +291,7 @@ async function getResponseData(response) {
         default:
 
             return {
+
                 success: false,
 
                 message:
@@ -309,27 +301,21 @@ async function getResponseData(response) {
 }
 
 
-// ============================================================
-// LOGIN
-// ============================================================
-
 async function handleLogin(event) {
 
     event.preventDefault();
 
 
     const username =
-        document.getElementById(
-            "username"
-        )
+        document
+            .getElementById("username")
             ?.value
             ?.trim();
 
 
     const password =
-        document.getElementById(
-            "password"
-        )
+        document
+            .getElementById("password")
             ?.value;
 
 
@@ -357,9 +343,9 @@ async function handleLogin(event) {
         );
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // CLEAR PREVIOUS ERROR
-    // --------------------------------------------------------
+    // ========================================================
 
     if (errorElement) {
 
@@ -371,9 +357,9 @@ async function handleLogin(event) {
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // VALIDATION
-    // --------------------------------------------------------
+    // ========================================================
 
     if (!username || !password) {
 
@@ -390,9 +376,9 @@ async function handleLogin(event) {
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // LOADING STATE
-    // --------------------------------------------------------
+    // ========================================================
 
     setButtonLoading(
         button,
@@ -423,6 +409,7 @@ async function handleLogin(event) {
                     method: "POST",
 
                     headers: {
+
                         "Content-Type":
                             "application/json",
 
@@ -435,8 +422,12 @@ async function handleLogin(event) {
 
                     body: JSON.stringify(
                         {
-                            username: username,
-                            password: password
+
+                            username:
+                                username,
+
+                            password:
+                                password
                         }
                     )
                 }
@@ -449,10 +440,6 @@ async function handleLogin(event) {
             );
 
 
-        // ----------------------------------------------------
-        // HTTP ERROR
-        // ----------------------------------------------------
-
         if (!response.ok) {
 
             throw new Error(
@@ -461,10 +448,6 @@ async function handleLogin(event) {
             );
         }
 
-
-        // ----------------------------------------------------
-        // VALIDATE RESPONSE
-        // ----------------------------------------------------
 
         if (!data.success) {
 
@@ -492,7 +475,6 @@ async function handleLogin(event) {
         );
 
 
-        // Remove old local JWT if any
         localStorage.removeItem(
             "accessToken"
         );
@@ -503,15 +485,14 @@ async function handleLogin(event) {
         );
 
 
-        // ----------------------------------------------------
+        // ====================================================
         // REDIRECT TO DASHBOARD
-        // ----------------------------------------------------
+        // ====================================================
 
         window.location.href =
             buildAppUrl(
                 "Dashboard/Index"
             );
-
     }
     catch (error) {
 
@@ -530,7 +511,6 @@ async function handleLogin(event) {
             errorElement.style.display =
                 "block";
         }
-
     }
     finally {
 
@@ -568,7 +548,9 @@ function togglePassword() {
     }
 
 
-    if (password.type === "password") {
+    if (
+        password.type === "password"
+    ) {
 
         password.type =
             "text";
@@ -579,7 +561,6 @@ function togglePassword() {
             button.textContent =
                 "Hide";
         }
-
     }
     else {
 
@@ -620,7 +601,9 @@ function toggleRegisterPassword() {
     }
 
 
-    if (password.type === "password") {
+    if (
+        password.type === "password"
+    ) {
 
         password.type =
             "text";
@@ -631,7 +614,6 @@ function toggleRegisterPassword() {
             button.textContent =
                 "Hide";
         }
-
     }
     else {
 
@@ -649,7 +631,7 @@ function toggleRegisterPassword() {
 
 
 // ============================================================
-// REGISTER FIRST ADMIN
+// REGISTER USER
 // ============================================================
 
 async function handleRegister(event) {
@@ -657,34 +639,58 @@ async function handleRegister(event) {
     event.preventDefault();
 
 
+    // ========================================================
+    // GET FORM VALUES
+    // ========================================================
+
     const username =
-        document.getElementById(
-            "registerUsername"
-        )
+        document
+            .getElementById("registerUsername")
             ?.value
             ?.trim();
 
 
     const fullName =
-        document.getElementById(
-            "fullName"
-        )
+        document
+            .getElementById("fullName")
             ?.value
             ?.trim();
 
 
     const password =
-        document.getElementById(
-            "registerPassword"
-        )
+        document
+            .getElementById("registerPassword")
             ?.value;
 
 
     const confirmPassword =
-        document.getElementById(
-            "confirmPassword"
-        )
+        document
+            .getElementById("confirmPassword")
             ?.value;
+
+
+    const role =
+        document
+            .getElementById("role")
+            ?.value
+            ?.trim()
+            ?.toUpperCase();
+
+
+    const company =
+        document
+            .getElementById("company")
+            ?.value
+            ?.trim()
+            ?.toUpperCase();
+
+
+    const department =
+        document
+            .getElementById("department")
+            ?.value
+            ?.trim()
+            ?.toUpperCase();
 
 
     const button =
@@ -705,16 +711,16 @@ async function handleRegister(event) {
         );
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // CLEAR PREVIOUS MESSAGE
-    // --------------------------------------------------------
+    // ========================================================
 
     hideRegisterMessage();
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // VALIDATION
-    // --------------------------------------------------------
+    // ========================================================
 
     if (!username) {
 
@@ -771,9 +777,92 @@ async function handleRegister(event) {
     }
 
 
-    // --------------------------------------------------------
-    // LOADING STATE
-    // --------------------------------------------------------
+    if (!role) {
+
+        showRegisterMessage(
+            "Please select a role.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // ROLE-SPECIFIC VALIDATION
+    // ========================================================
+
+    if (
+        role === "COMPANY_ADMIN" &&
+        !company
+    ) {
+
+        showRegisterMessage(
+            "Please select a company.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (
+        role === "USER" &&
+        !company
+    ) {
+
+        showRegisterMessage(
+            "Please select a company.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (
+        role === "USER" &&
+        !department
+    ) {
+
+        showRegisterMessage(
+            "Please select a department.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // BUILD REQUEST
+    // ========================================================
+
+    const requestData = {
+
+        username:
+            username,
+
+        password:
+            password,
+
+        fullName:
+            fullName,
+
+        role:
+            role,
+
+        company:
+            role === "SUPERADMIN"
+                ? null
+                : company,
+
+        department:
+            role === "USER"
+                ? department
+                : null
+    };
+
 
     setButtonLoading(
         button,
@@ -804,6 +893,7 @@ async function handleRegister(event) {
                     method: "POST",
 
                     headers: {
+
                         "Content-Type":
                             "application/json",
 
@@ -814,13 +904,10 @@ async function handleRegister(event) {
                     credentials:
                         "same-origin",
 
-                    body: JSON.stringify(
-                        {
-                            username: username,
-                            password: password,
-                            fullName: fullName
-                        }
-                    )
+                    body:
+                        JSON.stringify(
+                            requestData
+                        )
                 }
             );
 
@@ -831,10 +918,6 @@ async function handleRegister(event) {
             );
 
 
-        // ----------------------------------------------------
-        // HTTP ERROR
-        // ----------------------------------------------------
-
         if (!response.ok) {
 
             throw new Error(
@@ -844,10 +927,6 @@ async function handleRegister(event) {
         }
 
 
-        // ----------------------------------------------------
-        // VALIDATE RESPONSE
-        // ----------------------------------------------------
-
         if (!data.success) {
 
             throw new Error(
@@ -856,15 +935,12 @@ async function handleRegister(event) {
             );
         }
 
-
-        // ----------------------------------------------------
-        // SUCCESS
-        // ----------------------------------------------------
-
         showRegisterMessage(
-            "Administrator created successfully. Redirecting to login...",
+            data.message ||
+            "User created successfully.",
             "success"
         );
+
 
 
         document
@@ -874,22 +950,18 @@ async function handleRegister(event) {
             ?.reset();
 
 
-        // ----------------------------------------------------
-        // REDIRECT TO LOGIN
-        // ----------------------------------------------------
+        const roleElement =
+            document.getElementById(
+                "role"
+            );
 
-        setTimeout(
-            function () {
 
-                window.location.href =
-                    buildAppUrl(
-                        "Account/Login"
-                    );
+        if (roleElement) {
 
-            },
-            1500
-        );
-
+            roleElement.dispatchEvent(
+                new Event("change")
+            );
+        }
     }
     catch (error) {
 
@@ -901,10 +973,9 @@ async function handleRegister(event) {
 
         showRegisterMessage(
             error.message ||
-            "Unable to create administrator.",
+            "Unable to create user.",
             "error"
         );
-
     }
     finally {
 
@@ -940,12 +1011,15 @@ function showRegisterMessage(
 
 
     message.className =
-        `auth-message ${type}`;
+        type === "success"
+            ? "alert alert-success"
+            : "alert alert-error";
 
 
     message.style.display =
         "block";
 }
+
 
 function hideRegisterMessage() {
 
@@ -965,9 +1039,15 @@ function hideRegisterMessage() {
         "";
 
 
+    message.className =
+        "alert";
+
+
     message.style.display =
         "none";
 }
+
+
 
 function setButtonLoading(
     button,
@@ -1012,22 +1092,25 @@ function setButtonLoading(
 //                 ),
 //                 {
 //                     method: "POST",
+
 //                     credentials:
 //                         "same-origin",
+
 //                     headers: {
+
 //                         "Accept":
 //                             "application/json"
 //                     }
 //                 }
 //             );
 
+
 //         if (!response.ok) {
 
 //             console.warn(
-//                 `Logout failed with HTTP ${response.status}`
+//                 `Logout failed. HTTP ${response.status}.`
 //             );
 //         }
-
 //     }
 //     catch (error) {
 
@@ -1035,20 +1118,42 @@ function setButtonLoading(
 //             "Logout API Error:",
 //             error
 //         );
-
 //     }
 //     finally {
 
-       
-//         localStorage.removeItem("accessToken");
-//         localStorage.removeItem("username");
-//         localStorage.removeItem("fullName");
-//         localStorage.removeItem("role");
-//         localStorage.removeItem("tokenExpiry");
+//         ====================================================
+//         CLEAR CLIENT DISPLAY DATA
+//         ====================================================
 
-   
+//         localStorage.removeItem(
+//             "accessToken"
+//         );
+
+//         localStorage.removeItem(
+//             "username"
+//         );
+
+//         localStorage.removeItem(
+//             "fullName"
+//         );
+
+//         localStorage.removeItem(
+//             "role"
+//         );
+
+//         localStorage.removeItem(
+//             "tokenExpiry"
+//         );
+
+
+//         ====================================================
+//         REDIRECT
+//         ====================================================
+
 //         window.location.replace(
-//             buildAppUrl("Account/Login")
+//             buildAppUrl(
+//                 "Account/Login"
+//             )
 //         );
 //     }
 // }

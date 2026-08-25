@@ -42,6 +42,8 @@ namespace SmartMeterReadingDash.Services
                     PASSWORD,
                     FULL_NAME,
                     ROLE,
+                    Company,
+                    Department,
                     IS_ACTIVE,
                     CREATED_DATE,
                     LAST_LOGIN_DATE
@@ -88,6 +90,14 @@ namespace SmartMeterReadingDash.Services
 
                 Role = reader["ROLE"]?.ToString()
                        ?? "USER",
+
+                Company = reader["COMPANY"] == DBNull.Value
+                    ? null
+                    : reader["COMPANY"].ToString(),
+
+                Department = reader["DEPARTMENT"] == DBNull.Value
+                    ? null
+                    : reader["DEPARTMENT"].ToString(),
 
                 IsActive = Convert.ToInt32(
                     reader["IS_ACTIVE"]
@@ -191,6 +201,8 @@ namespace SmartMeterReadingDash.Services
                     PASSWORD,
                     FULL_NAME,
                     ROLE,
+                    COMPANY,
+                    DEPARTMENT,
                     IS_ACTIVE,
                     CREATED_DATE
                 )
@@ -200,6 +212,8 @@ namespace SmartMeterReadingDash.Services
                     :PASSWORD,
                     :FULL_NAME,
                     :ROLE,
+                    :COMPANY,
+                    :DEPARTMENT,
                     :IS_ACTIVE,
                     SYSDATE
                 )
@@ -235,6 +249,16 @@ namespace SmartMeterReadingDash.Services
                 "ROLE",
                 OracleDbType.Varchar2
             ).Value = user.Role;
+
+            command.Parameters.Add(
+                "COMPANY",
+                OracleDbType.Varchar2
+            ).Value = user.Company ?? (object)DBNull.Value;
+
+            command.Parameters.Add(
+                "DEPARTMENT",
+                OracleDbType.Varchar2
+            ).Value = user.Department ?? (object)DBNull.Value;
 
             command.Parameters.Add(
                 "IS_ACTIVE",

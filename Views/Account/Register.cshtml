@@ -1,179 +1,666 @@
 ﻿@{
     ViewData["Title"] = "Register User";
-    Layout = null;
 }
-<link href="~/css/Auth.css" rel="stylesheet" asp-append-version="true" />
 
-<!DOCTYPE html>
-<html lang="en">
+<link href="~/css/Register.css" rel="stylesheet" asp-append-version="true" />
 
-<head>
 
-    <meta charset="utf-8" />
+<div class="register-page">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0" />
+    <div class="register-container">
 
-    <title>Register User - Smart Meter Dashboard</title>
+        <!-- PAGE HEADER -->
+        <div class="register-page-header">
 
-    <link rel="stylesheet" href="~/css/auth.css" />
+            <div>
 
-</head>
-
-<body>
-
-    <div class="auth-page">
-
-        <div class="auth-card register-card">
-
-            <div class="auth-brand">
-
-                <div class="brand-icon">
-                    ⚡
+                <div class="page-breadcrumb">
+                    Dashboard
+                    <span>/</span>
+                    User Management
+                    <span>/</span>
+                    <strong>Create User</strong>
                 </div>
 
-                <h1>Smart Meter</h1>
+                <h1>Create User</h1>
 
-                <p>Reading Dashboard</p>
+                <p>
+                    Create a dashboard account and configure access permissions.
+                </p>
 
             </div>
 
-            <div class="auth-content">
 
-                <h2>Create User</h2>
+            <a asp-controller="Dashboard"
+               asp-action="Index"
+               class="back-btn">
 
-                <p class="auth-subtitle">
-                    Add a new dashboard user
-                </p>
+                <span class="back-arrow">←</span>
+                Back to Dashboard
 
-                <form id="registerForm">
+            </a>
 
-                    <div class="form-group">
+        </div>
 
-                        <label for="username">
-                            Username
-                        </label>
 
-                        <input type="text"
-                               id="registerUsername"
-                               placeholder="Enter username"
-                               autocomplete="username"
-                               required />
+        <!-- MAIN CARD -->
+        <div class="register-card">
 
-                    </div>
 
-                    <div class="form-group">
+            <!-- CARD HEADER -->
+            <div class="register-card-header">
 
-                        <label for="fullName">
-                            Full Name
-                        </label>
+                <div class="header-icon">
+                    <span>👤</span>
+                </div>
 
-                        <input type="text"
-                               id="fullName"
-                               placeholder="Enter full name"
-                               required />
+                <div>
 
-                    </div>
+                    <h2>User Information</h2>
 
-                    <div class="form-group">
+                    <p>
+                        Enter the account details and configure user access.
+                    </p>
 
-                        <label for="registerPassword">
-                            Password
-                        </label>
+                </div>
 
-                        <div class="password-wrapper">
+            </div>
 
-                            <input type="password"
-                                   id="registerPassword"
-                                   placeholder="Enter password"
-                                   autocomplete="new-password"
-                                   required />
 
-                            <button type="button"
-                                    class="password-toggle"
-                                    onclick="toggleRegisterPassword()">
-                                Show
-                            </button>
+            <form id="registerForm"
+                  novalidate>
+
+
+                <!-- ==============================
+                     ACCOUNT INFORMATION
+                     ============================== -->
+
+                <div class="form-section">
+
+                    <div class="section-title">
+
+                        <span class="section-number">
+                            1
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Account Information
+                            </h3>
+
+                            <p>
+                                Basic information for the dashboard account.
+                            </p>
 
                         </div>
 
                     </div>
 
-                    <div class="form-group">
 
-                        <label for="confirmPassword">
-                            Confirm Password
-                        </label>
+                    <div class="form-grid">
 
-                        <input type="password"
-                               id="confirmPassword"
-                               placeholder="Confirm password"
-                               autocomplete="new-password"
-                               required />
+
+                        <!-- USERNAME -->
+                        <div class="form-group">
+
+                            <label for="registerUsername">
+
+                                Username
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input type="text"
+                                   id="registerUsername"
+                                   class="form-control"
+                                   placeholder="Enter username"
+                                   autocomplete="username"
+                                   required />
+
+                        </div>
+
+
+                        <!-- FULL NAME -->
+                        <div class="form-group">
+
+                            <label for="fullName">
+
+                                Full Name
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input type="text"
+                                   id="fullName"
+                                   class="form-control"
+                                   placeholder="Enter full name"
+                                   autocomplete="name"
+                                   required />
+
+                        </div>
+
+
+                        <!-- PASSWORD -->
+                        <div class="form-group">
+
+                            <label for="registerPassword">
+
+                                Password
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <div class="password-wrapper">
+
+                                <input type="password"
+                                       id="registerPassword"
+                                       class="form-control"
+                                       placeholder="Minimum 8 characters"
+                                       autocomplete="new-password"
+                                       required />
+
+                                <button type="button"
+                                        class="password-toggle"
+                                        onclick="toggleRegisterPassword()">
+
+                                    Show
+
+                                </button>
+
+                            </div>
+
+                            <span class="form-hint">
+                                Use at least 8 characters.
+                            </span>
+
+                        </div>
+
+
+                        <!-- CONFIRM PASSWORD -->
+                        <div class="form-group">
+
+                            <label for="confirmPassword">
+
+                                Confirm Password
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <input type="password"
+                                   id="confirmPassword"
+                                   class="form-control"
+                                   placeholder="Re-enter password"
+                                   autocomplete="new-password"
+                                   required />
+
+                            <span class="form-hint">
+                                Re-enter the same password.
+                            </span>
+
+                        </div>
 
                     </div>
-
-                    @* <div class="form-group">
-
-                        <label for="role">
-                            Role
-                        </label>
-
-                        <select id="role">
-
-                            <option value="USER">
-                                User
-                            </option>
-
-                            <option value="ADMIN">
-                                Administrator
-                            </option>
-
-                        </select>
-
-                    </div> *@
-
-                    <div id="registerMessage"
-                         class="auth-message"
-                         style="display:none;">
-                    </div>
-
-                    <button type="submit"
-                            id="registerButton"
-                            class="auth-button">
-
-                        <span id="registerButtonText">
-                            Create User
-                        </span>
-
-                        <span id="registerLoader"
-                              class="loader"
-                              style="display:none;">
-                        </span>
-
-                    </button>
-
-                </form>
-
-                <div class="back-login">
-
-                    <a href="/Account/Login">
-                        ← Back to Login
-                    </a>
 
                 </div>
 
-            </div>
 
-            <div class="auth-footer">
-                Smart Meter Reading Dashboard
-            </div>
+                <!-- DIVIDER -->
+                <div class="section-divider"></div>
+
+
+                <!-- ==============================
+                     ACCESS PERMISSIONS
+                     ============================== -->
+
+                <div class="form-section">
+
+                    <div class="section-title">
+
+                        <span class="section-number">
+                            2
+                        </span>
+
+                        <div>
+
+                            <h3>
+                                Access Permissions
+                            </h3>
+
+                            <p>
+                                Define what data this user can access.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-grid">
+
+
+                        <!-- ROLE -->
+                        <div class="form-group">
+
+                            <label for="role">
+
+                                User Role
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <select id="role"
+                                    class="form-control"
+                                    required>
+
+                                <option value="USER">
+                                    User
+                                </option>
+
+                                <option value="COMPANY_ADMIN">
+                                    Company Administrator
+                                </option>
+
+                                @* <option value="SUPERADMIN">
+                                    Super Administrator
+                                </option> *@
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- COMPANY -->
+                        <div class="form-group"
+                             id="companyGroup">
+
+                            <label for="company">
+
+                                Company
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <select id="company"
+                                    class="form-control">
+
+                                <option value="">
+                                    Select Company
+                                </option>
+
+                                <option value="BRPL">
+                                    BRPL
+                                </option>
+
+                                <option value="BYPL">
+                                    BYPL
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- DEPARTMENT -->
+                        <div class="form-group"
+                             id="departmentGroup">
+
+                            <label for="department">
+
+                                Department
+
+                                <span class="required">
+                                    *
+                                </span>
+
+                            </label>
+
+                            <select id="department"
+                                    class="form-control">
+
+                                <option value="">
+                                    Select Department
+                                </option>
+
+                                <option value="MLCC">
+                                    MLCC
+                                </option>
+
+                                <option value="SLCC">
+                                    SLCC
+                                </option>
+
+                                <option value="GCC">
+                                    GCC
+                                </option>
+
+                                <option value="KCC">
+                                    KCC
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==============================
+                     ACCESS PREVIEW
+                     ============================== -->
+
+                <div class="access-preview">
+
+                    <div class="access-preview-icon">
+                        🔐
+                    </div>
+
+
+                    <div class="access-preview-content">
+
+                        <div class="preview-title">
+
+                            Access Preview
+
+                            <span class="preview-badge"
+                                  id="accessBadge">
+
+                                USER
+
+                            </span>
+
+                        </div>
+
+
+                        <div id="accessPreviewText">
+
+                            Loading access details...
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- MESSAGE -->
+                <div id="registerMessage"
+                     class="alert"
+                     style="display:none;">
+                </div>
+
+
+                <!-- ACTIONS -->
+                <div class="register-actions">
+
+                    <div class="action-info">
+
+                        <span class="required">
+                            *
+                        </span>
+
+                        Required fields
+
+                    </div>
+
+
+                    <div class="action-buttons">
+
+                        <a asp-controller="Home"
+                           asp-action="Index"
+                           class="btn btn-secondary">
+
+                            Cancel
+
+                        </a>
+
+
+                        <button type="submit"
+                                id="registerButton"
+                                class="btn btn-primary">
+
+                            <span id="registerButtonText">
+
+                                Create User
+
+                            </span>
+
+                            <span id="registerLoader"
+                                  class="loader"
+                                  style="display:none;">
+                            </span>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+            </form>
 
         </div>
 
     </div>
 
-    <script src="~/js/auth.js"></script>
+</div>
 
-</body>
-</html>
+
+@section Scripts {
+
+    <script src="~/js/Auth.js"
+            asp-append-version="true"></script>
+
+
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                const role =
+                    document.getElementById("role");
+
+                const companyGroup =
+                    document.getElementById("companyGroup");
+
+                const departmentGroup =
+                    document.getElementById("departmentGroup");
+
+                const company =
+                    document.getElementById("company");
+
+                const department =
+                    document.getElementById("department");
+
+                const accessPreviewText =
+                    document.getElementById("accessPreviewText");
+
+                const accessBadge =
+                    document.getElementById("accessBadge");
+
+
+                function updateAccessFields() {
+
+                    if (!role) {
+                        return;
+                    }
+
+                    const selectedRole =
+                        role.value;
+
+
+                    // ==========================================
+                    // SUPERADMIN
+                    // ==========================================
+
+                    if (selectedRole === "SUPERADMIN") {
+
+                        companyGroup.style.display =
+                            "none";
+
+                        departmentGroup.style.display =
+                            "none";
+
+
+                        company.value =
+                            "";
+
+                        department.value =
+                            "";
+
+
+                        company.required =
+                            false;
+
+                        department.required =
+                            false;
+
+
+                        accessBadge.textContent =
+                            "SUPER ADMIN";
+
+
+                        accessPreviewText.innerHTML =
+                            `
+                            <strong>Full Dashboard Access</strong>
+                            <span>
+                                This user can access all companies,
+                                departments, dashboard reports and
+                                administrative functions.
+                            </span>
+                            `;
+
+                        return;
+                    }
+
+
+                    // ==========================================
+                    // COMPANY ADMIN
+                    // ==========================================
+
+                    if (
+                        selectedRole ===
+                        "COMPANY_ADMIN"
+                    ) {
+
+                        companyGroup.style.display =
+                            "flex";
+
+                        departmentGroup.style.display =
+                            "none";
+
+
+                        department.value =
+                            "";
+
+
+                        company.required =
+                            true;
+
+                        department.required =
+                            false;
+
+
+                        accessBadge.textContent =
+                            "COMPANY ADMIN";
+
+
+                        accessPreviewText.innerHTML =
+                            `
+                            <strong>Company-Level Access</strong>
+                            <span>
+                                This user can access all departments
+                                and dashboard data within the selected
+                                company.
+                            </span>
+                            `;
+
+                        return;
+                    }
+
+
+                    // ==========================================
+                    // NORMAL USER
+                    // ==========================================
+
+                    companyGroup.style.display =
+                        "flex";
+
+                    departmentGroup.style.display =
+                        "flex";
+
+
+                    company.required =
+                        true;
+
+                    department.required =
+                        true;
+
+
+                    accessBadge.textContent =
+                        "USER";
+
+
+                    accessPreviewText.innerHTML =
+                        `
+                        <strong>Restricted Access</strong>
+                        <span>
+                            This user can access only the selected
+                            company and department.
+                        </span>
+                        `;
+                }
+
+
+                // ==============================================
+                // ROLE CHANGE
+                // ==============================================
+
+                role.addEventListener(
+                    "change",
+                    updateAccessFields
+                );
+
+
+                // ==============================================
+                // COMPANY CHANGE
+                // ==============================================
+
+                company.addEventListener(
+                    "change",
+                    updateAccessFields
+                );
+
+
+                // ==============================================
+                // INITIAL LOAD
+                // ==============================================
+
+                updateAccessFields();
+
+            }
+        );
+
+    </script>
+}
