@@ -1337,3 +1337,260 @@ canvas {
             padding: 7px 5px;
         }
 }
+/* =========================================================
+   HES DOWNLOAD TABLE
+   BRPL + BYPL
+   SAME UI AS SCREENSHOT
+========================================================= */
+
+#hesDownloadSummaryTable,
+#hesDownloadSummaryTableBypl {
+    width: 100%;
+    min-width: 1050px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 12px;
+    line-height: 1.35;
+    margin: 0;
+}
+
+
+    /* =========================================================
+   TABLE HEADER
+========================================================= */
+
+    #hesDownloadSummaryTable thead th,
+    #hesDownloadSummaryTableBypl thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #0d6efd;
+        color: #fff;
+        text-align: center;
+        vertical-align: middle;
+        padding: 9px 6px;
+        border: 1px solid #dee2e6;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+   TABLE BODY
+========================================================= */
+
+    #hesDownloadSummaryTable tbody td,
+    #hesDownloadSummaryTableBypl tbody td {
+        padding: 8px 6px;
+        vertical-align: middle;
+        border: 1px solid #dee2e6;
+        font-size: 12px;
+        font-weight: 500;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        background: #fff;
+    }
+
+
+    /* =========================================================
+   ZEBRA ROWS
+========================================================= */
+
+    #hesDownloadSummaryTable tbody tr:nth-child(even) td,
+    #hesDownloadSummaryTableBypl tbody tr:nth-child(even) td {
+        background: #f8f9fa;
+    }
+
+
+    /* =========================================================
+   HOVER
+========================================================= */
+
+    #hesDownloadSummaryTable tbody tr:hover td,
+    #hesDownloadSummaryTableBypl tbody tr:hover td {
+        background: #dbeafe;
+    }
+
+
+    /* =========================================================
+   COLUMN WIDTHS
+========================================================= */
+
+    /* ---------------------------------------------------------
+   1. S.No.
+--------------------------------------------------------- */
+
+    #hesDownloadSummaryTable th:nth-child(1),
+    #hesDownloadSummaryTable td:nth-child(1),
+    #hesDownloadSummaryTableBypl th:nth-child(1),
+    #hesDownloadSummaryTableBypl td:nth-child(1) {
+        width: 55px;
+        text-align: center;
+    }
+
+
+    /* ---------------------------------------------------------
+   2. Cons Ref
+--------------------------------------------------------- */
+
+    #hesDownloadSummaryTable th:nth-child(2),
+    #hesDownloadSummaryTable td:nth-child(2),
+    #hesDownloadSummaryTableBypl th:nth-child(2),
+    #hesDownloadSummaryTableBypl td:nth-child(2) {
+        width: 105px;
+    }
+
+
+    /* ---------------------------------------------------------
+   3. Meter Number
+--------------------------------------------------------- */
+
+    #hesDownloadSummaryTable th:nth-child(3),
+    #hesDownloadSummaryTable td:nth-child(3),
+    #hesDownloadSummaryTableBypl th:nth-child(3),
+    #hesDownloadSummaryTableBypl td:nth-child(3) {
+        width: 125px;
+    }
+
+
+    /* ---------------------------------------------------------
+   4. Phase
+--------------------------------------------------------- */
+
+    #hesDownloadSummaryTable th:nth-child(4),
+    #hesDownloadSummaryTable td:nth-child(4),
+    #hesDownloadSummaryTableBypl th:nth-child(4),
+    #hesDownloadSummaryTableBypl td:nth-child(4) {
+        width: 65px;
+        text-align: center;
+    }
+
+
+    /* ---------------------------------------------------------
+   5. Department
+--------------------------------------------------------- */
+
+    #hesDownloadSummaryTable th:nth-child(5),
+    #hesDownloadSummaryTable td:nth-child(5),
+    #hesDownloadSummaryTableBypl th:nth-child(5),
+    #hesDownloadSummaryTableBypl td:nth-child(5) {
+        width: 100px;
+    }
+
+
+    /* ---------------------------------------------------------
+   6. Division
+--------------------------------------------------------- */
+
+    #hesDownloadSummaryTable th:nth-child(6),
+    #hesDownloadSummaryTable td:nth-child(6),
+    #hesDownloadSummaryTableBypl th:nth-child(6),
+    #hesDownloadSummaryTableBypl td:nth-child(6) {
+        width: 100px;
+    }
+
+
+    /* ---------------------------------------------------------
+   7. Seq No
+--------------------------------------------------------- */
+
+    #hesDownloadSummaryTable th:nth-child(7),
+    #hesDownloadSummaryTable td:nth-child(7),
+    #hesDownloadSummaryTableBypl th:nth-child(7),
+    #hesDownloadSummaryTableBypl td:nth-child(7) {
+        width: 80px;
+    }
+
+
+    /* ---------------------------------------------------------
+   8. Address
+--------------------------------------------------------- */
+
+    #hesDownloadSummaryTable th:nth-child(8),
+    #hesDownloadSummaryTable td:nth-child(8),
+    #hesDownloadSummaryTableBypl th:nth-child(8),
+    #hesDownloadSummaryTableBypl td:nth-child(8) {
+        width: 200px;
+    }
+
+
+    /* ---------------------------------------------------------
+   9. Meter Make
+--------------------------------------------------------- */
+
+    #hesDownloadSummaryTable th:nth-child(9),
+    #hesDownloadSummaryTable td:nth-child(9),
+    #hesDownloadSummaryTableBypl th:nth-child(9),
+    #hesDownloadSummaryTableBypl td:nth-child(9) {
+        width: 100px;
+    }
+
+
+    /* =========================================================
+   ADDRESS COLUMN
+========================================================= */
+
+    #hesDownloadSummaryTable td:nth-child(8),
+    #hesDownloadSummaryTableBypl td:nth-child(8) {
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+
+
+/* =========================================================
+   TABLE WRAPPER
+========================================================= */
+
+.hes-download-table-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    padding: 6px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+/* =========================================================
+   EMPTY / LOADING ROW
+========================================================= */
+
+#hesDownloadSummaryTable tbody td[colspan],
+#hesDownloadSummaryTableBypl tbody td[colspan] {
+    text-align: center;
+    padding: 25px 10px;
+    color: #6c757d;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 767.98px) {
+
+    #hesDownloadSummaryTable,
+    #hesDownloadSummaryTableBypl {
+        min-width: 1050px;
+        font-size: 11px;
+    }
+
+
+        #hesDownloadSummaryTable thead th,
+        #hesDownloadSummaryTableBypl thead th {
+            font-size: 11px;
+            padding: 8px 5px;
+        }
+
+
+        #hesDownloadSummaryTable tbody td,
+        #hesDownloadSummaryTableBypl tbody td {
+            font-size: 11px;
+            padding: 7px 5px;
+        }
+}

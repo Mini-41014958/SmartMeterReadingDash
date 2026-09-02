@@ -46,46 +46,8 @@
 
 <div id="dashboardContent" style="display:none;">
 
-  <div class="container-fluid py-1">
-        <div class="card border-0 shadow-sm mb-3 filter-toolbar">
-            <div class="card-body py-2">
-
-                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-
-                    <div class="d-flex align-items-center flex-wrap gap-2 w-100">
-
-                        <div class="fw-semibold text-primary">
-                            <i class="bi bi-calendar3"></i>
-                            Reading Month
-                        </div>
-
-                        <input type="month"
-                               id="readingMonth"
-                               class="form-control form-control-sm"
-                               style="width:160px;" />
-
-                        <button class="btn btn-primary btn-sm px-3"
-                                id="btnLoadDashboard">
-                            <i class="bi bi-search"></i>
-                            Apply
-                        </button>
-
-                        <!-- Selected/default month strip -->
-                        <div id="readingMonthStrip"
-                             class="reading-month-strip">
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-        </div>
-    <!-- Top Row -->
- <!-- Top Row -->
-<div class="row g-3">
-
-
+  <div class="container-fluid py-1">   
+        <div class="row g-3">
             <div class="col-lg-6">
 
                 <div class="card dashboard-card meter-summary-card h-100">
@@ -99,10 +61,6 @@
 
                         <div class="row g-2 align-items-center">
 
-                            <!-- ========================= -->
-                            <!-- SUMMARY TABLE -->
-                            <!-- ========================= -->
-
                             <div class="col-md-7">
 
                                 <div class="meter-summary-table">
@@ -110,8 +68,6 @@
                                     <table class="table table-sm mb-0">
 
                                         <thead>
-
-                                            <!-- Main Header -->
                                             <tr>
 
                                                 <th rowspan="2">
@@ -159,10 +115,6 @@
                                         </thead>
 
                                         <tbody>
-
-                                            <!-- ========================= -->
-                                            <!-- BRPL -->
-                                            <!-- ========================= -->
 
                                             <tr>
 
@@ -602,7 +554,7 @@
 
                                 <button type="button"
                                         class="btn btn-success"
-                                        onclick="exportHesTableToExcel()">
+                                        onclick="exportHesDownloadBrplTableToExcel()">
 
                                     <i class="bi bi-file-earmark-excel"></i>
                                     Excel
@@ -612,7 +564,7 @@
 
                                 <button type="button"
                                         class="btn btn-primary"
-                                        onclick="exportHesTableToCSV()">
+                                        onclick="exportHesDownloadBrplTableToCSV()">
 
                                     <i class="bi bi-file-earmark-csv"></i>
                                     CSV
@@ -637,10 +589,6 @@
 
                 </div>
 
-
-                <!-- =====================================================
-                     TABLE
-                ====================================================== -->
 
                 <div class="table-responsive hes-download-table-wrapper">
 
@@ -785,7 +733,7 @@
 
                                 <button type="button"
                                         class="btn btn-success"
-                                        onclick="exportHesTableToExcel()">
+                                        onclick="exportHesDownloadByplTableToExcel()">
 
                                     <i class="bi bi-file-earmark-excel"></i>
                                     Excel
@@ -795,7 +743,7 @@
 
                                 <button type="button"
                                         class="btn btn-primary"
-                                        onclick="exportHesTableToCSV()">
+                                        onclick="exportHesDownloadByplTableToCSV()">
 
                                     <i class="bi bi-file-earmark-csv"></i>
                                     CSV
@@ -1305,7 +1253,7 @@
     // ============================================================
     // Excel Export - HES
     // ============================================================
-    function exportHesTableToExcel() {
+    function exportHesDownloadBrplTableToExcel() {
 
         const table = document.getElementById(
             "hesDownloadSummaryTable"
@@ -1358,13 +1306,13 @@
 
         XLSX.writeFile(
             wb,
-            "HES_Download_Summary_" +
+            "HES_Download_Summary_BRPL_" +
             new Date().toISOString().split("T")[0] +
             ".xlsx"
         );
     }
 
-    function exportHesTableToCSV() {
+    function exportHesDownloadBrplTableToCSV() {
 
         const table = document.getElementById(
             "hesDownloadSummaryTable"
@@ -1424,7 +1372,7 @@
         link.href = URL.createObjectURL(blob);
 
         link.download =
-            "HES_Download_Summary_" +
+            "HES_Download_Summary_BRPL_" +
             new Date().toISOString().split("T")[0] +
             ".csv";
 
@@ -1753,7 +1701,7 @@ function renderHesDownloadTableBypl(data) {
     });
 }
 
-function exportHesTableToExcel() {
+function exportHesDownloadByplTableToExcel() {
 
     const table =
         document.getElementById(
@@ -1821,7 +1769,7 @@ function exportHesTableToExcel() {
 
     XLSX.writeFile(
         wb,
-        "HES_Download_BYPL_" +
+        "HES_Download_Summary_BYPL_" +
         new Date().toISOString().split("T")[0] +
         ".xlsx"
     );
@@ -1832,7 +1780,7 @@ function exportHesTableToExcel() {
 // CSV Export - BYPL HES
 // ============================================================
 
-function exportHesTableToCSV() {
+function exportHesDownloadByplTableToCSV() {
 
     const table =
         document.getElementById(
@@ -1907,7 +1855,7 @@ function exportHesTableToCSV() {
 
 
     link.download =
-        "HES_Download_BYPL_" +
+        "HES_Download_Summary_BYPL_" +
         new Date().toISOString().split("T")[0] +
         ".csv";
 
@@ -1924,10 +1872,6 @@ function exportHesTableToCSV() {
     URL.revokeObjectURL(link.href);
 }
 
-
-// ============================================================
-// HTML Escape - BYPL
-// ============================================================
 
 function escapeHesHtmlBypl(
     value,
@@ -2184,8 +2128,8 @@ ws["!cols"] = [
     ySplit: 1,
     };
 
-    XLSX.utils.book_append_sheet(wb, ws, "Meter Download");
-    XLSX.writeFile(wb, "Meter_Download_Summary_" + new Date().toISOString().split('T')[0] + ".xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, "Download Failed");
+    XLSX.writeFile(wb, "Download_Failed_Summary_BRPL_" + new Date().toISOString().split('T')[0] + ".xlsx");
     }
 
     // Export to CSV
@@ -2211,25 +2155,14 @@ ws["!cols"] = [
 
     let link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "Meter_Download_Summary_" + new Date().toISOString().split('T')[0] + ".csv";
+    link.download = "Download_Failed_Summary_BRPL_" + new Date().toISOString().split('T')[0] + ".csv";
     link.click();
     }
-    
 
     //BYPL
 
-    // ============================================================
-    // BYPL METER DOWNLOAD DETAIL
-    // COMPLETE UPDATED SCRIPT
-    // ============================================================
-
     let allDownloadDataBypl = [];
     let filteredDataBypl = [];
-
-
-    // ============================================================
-    // OPEN MODAL
-    // ============================================================
 
     $("#btnViewHesFailedDetails")
     .off("click")
@@ -2253,10 +2186,6 @@ ws["!cols"] = [
     });
 
 
-    // ============================================================
-    // LOAD DATA FROM API
-    // ============================================================
-
     async function loadDownloadSummaryBYPL() {
 
     try {
@@ -2270,9 +2199,7 @@ ws["!cols"] = [
     </tr>
     `);
 
-
     const readingMonth = getReadingMonth();
-
 
      const response = await fetch(
      `${getApiUrl("dashboardapi/meter-download-detailed-summary-bypl")}?readingMonth=${encodeURIComponent(readingMonth)}`
@@ -2284,31 +2211,20 @@ ws["!cols"] = [
     );
     }
 
-
     const result = await response.json();
-
 
     allDownloadDataBypl = Array.isArray(result)
     ? result
     : [];
 
-
     filteredDataBypl = [...allDownloadDataBypl];
-
 
     // Load filters
     loadDepartmentFilterBYPL();
     loadReasonFilterBYPL();
 
-
     // Render all records
     renderTableBYPL(filteredDataBypl);
-
-
-    console.log(
-    "BYPL Download Data:",
-    allDownloadDataBypl
-    );
 
     }
     catch (err) {
@@ -2330,10 +2246,6 @@ ws["!cols"] = [
     `);
     }
     }
-
-    // ============================================================
-    // LOAD DEPARTMENT FILTER
-    // ============================================================
 
     function loadDepartmentFilterBYPL() {
 
@@ -2371,14 +2283,6 @@ ws["!cols"] = [
     });
     }
 
-
-    // ============================================================
-    // LOAD FAILURE REASON FILTER
-    //
-    // IMPORTANT:
-    // value = stable internal category
-    // text  = display text for user
-    // ============================================================
 
     function loadReasonFilterBYPL() {
 
@@ -2437,12 +2341,6 @@ ws["!cols"] = [
     }
 
 
-    // ============================================================
-    // GET FAILURE CATEGORY
-    //
-    // ALL FILTERING AND COLORS USE THIS SAME FUNCTION
-    // ============================================================
-
     function getFailureCategoryBYPL(reason) {
 
     // Normalize message:
@@ -2474,15 +2372,6 @@ ws["!cols"] = [
     return "TCP";
     }
 
-
-    // --------------------------------------------------------
-    // 3. DATA NOT FOUND IN HES
-    //
-    // Examples handled:
-    // Data not found in HES
-    // No Data Found
-    // No Data
-    // --------------------------------------------------------
 
     if (
     message.includes("DATA NOT FOUND")
@@ -2538,12 +2427,6 @@ ws["!cols"] = [
     return "OTHER";
     }
 
-
-    // ============================================================
-    // FILTER EVENTS
-    //
-    // Remove old events first to prevent duplicate handlers
-    // ============================================================
 
     $("#departmentFilterBYPL")
     .off("change")
@@ -2917,10 +2800,6 @@ ws["!cols"] = [
     }
 
 
-    // ============================================================
-    // HTML ESCAPE
-    // ============================================================
-
     function escapeHtml(value) {
 
     if (
@@ -2998,7 +2877,7 @@ ws["!cols"] = [
     XLSX.utils.book_append_sheet(
     wb,
     ws,
-    "BYPL Meter Download"
+    "Download Failed"
     );
 
 
@@ -3010,7 +2889,7 @@ ws["!cols"] = [
 
     XLSX.writeFile(
     wb,
-    "Meter_Download_Summary_BYPL_"
+    "Download_Failed_Summary_BYPL_"
     + fileDate
     + ".xlsx"
     );
@@ -3092,7 +2971,7 @@ ws["!cols"] = [
     link.href = url;
 
     link.download =
-    "Meter_Download_Summary_BYPL_"
+    "Download_Failed_Summary_BYPL_"
     + new Date()
     .toISOString()
     .split("T")[0]

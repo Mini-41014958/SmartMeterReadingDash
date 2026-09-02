@@ -1,6 +1,4 @@
-﻿
-
-function getApiUrl(endpoint) {
+﻿function getApiUrl(endpoint) {
 
     const basePath = window.location.pathname
         .toLowerCase()
@@ -10,10 +8,6 @@ function getApiUrl(endpoint) {
 
     return `${basePath}/api/${endpoint}`;
 }
-
-/* ============================================================
-   LOAD METER RECEIVED IN MRO
-============================================================ */
 
 async function loadMeterDownloadSummary() {
 
@@ -77,15 +71,6 @@ async function loadMeterDownloadSummary() {
                 ? byplResult[0] || {}
                 : byplResult || {};
 
-
-        console.log("BRPL MRO:", brplData);
-        console.log("BYPL MRO:", byplData);
-
-
-        /* ====================================================
-           HELPER
-        ==================================================== */
-
         function setValue(id, value) {
 
             const element =
@@ -104,19 +89,11 @@ async function loadMeterDownloadSummary() {
         }
 
 
-        /* ====================================================
-           BRPL FAILED
-        ==================================================== */
-
         const brplFailed =
             Number(brplData?.manualForwardinCount || 0) +
             Number(brplData?.pendingCount || 0) +
             Number(brplData?.mismatchCount || 0);
 
-
-        /* ====================================================
-           BRPL
-        ==================================================== */
 
         setValue(
             "hesDownload",
@@ -195,10 +172,6 @@ async function loadMeterDownloadSummary() {
             "%)"
         );
 
-
-        /* ====================================================
-           BYPL
-        ==================================================== */
 
         const byplFailed =
             Number(
@@ -294,12 +267,6 @@ async function loadMeterDownloadSummary() {
     }
 }
 
-
-/* ============================================================
-   BRPL FAILED LINK
-   Open BRPL detail modal directly
-============================================================ */
-
 $(document)
     .off("click.mroBrplFailed", "#downloadFailed")
     .on(
@@ -342,10 +309,6 @@ $(document)
     );
 
 
-/* ============================================================
-   BRPL BILLED FAILED LINK
-============================================================ */
-
 $(document)
     .off("click.mroBrplBilledFailed", "#billedFailed")
     .on(
@@ -387,11 +350,6 @@ $(document)
         }
     );
 
-
-/* ============================================================
-   BYPL FAILED LINK
-   Open BYPL detail modal directly
-============================================================ */
 
 $(document)
     .off("click.mroByplFailed", "#byplDownloadFailed")
@@ -437,10 +395,6 @@ $(document)
         }
     );
 
-
-/* ============================================================
-   BYPL BILLED FAILED LINK
-============================================================ */
 
 $(document)
     .off("click.mroByplBilledFailed", "#byplBilledFailed")

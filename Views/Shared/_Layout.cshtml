@@ -26,149 +26,145 @@
 
 <body>
 
-    <header class="dashboard-header">
+<header class="dashboard-header">
 
-        <!-- =====================================================
-             LEFT SIDE
-             ===================================================== -->
+    <div class="header-left">
 
-        <div class="header-left">
+        <img src="~/images/bses-logo.png"
+             class="logo"
+             alt="BSES Logo" />
 
-            <img src="~/images/bses-logo.png"
-                 class="logo"
-                 alt="BSES Logo" />
+        <div class="header-title-section">
 
-            <div>
-
-                <h4 class="title">
-                    RCM - Smart Meter Reading Dashboard
-                </h4>
-
-                <div class="month">
-                    <strong>
-                        @DateTime.Now.ToString("MMMM yyyy")
-                    </strong>
-                </div>
-
-            </div>
+            <h4 class="title">
+                RCM - Smart Meter Reading Dashboard
+            </h4>
 
         </div>
 
+    </div>
 
-        <!-- =====================================================
-             RIGHT SIDE
-             ===================================================== -->
+    <div class="header-right">
 
-        <div class="header-right">
+        <div class="dashboard-month-control">
 
+            <span class="month-label">
+                <i class="bi bi-calendar3"></i>
+                Reading Month
+            </span>
 
-            <!-- GENERATED -->
+            <div class="month-input-wrapper">
 
-            <div class="generated">
-
-                <small>
-                    Generated
-                </small>
-
-                <strong>
-                    @DateTime.Now.ToString(
-                        "dd-MMM-yyyy HH:mm"
-                    )
-                </strong>
+                <input type="month"
+                       id="readingMonth"
+                       class="form-control form-control-sm" />
 
             </div>
 
+            <button type="button"
+                    class="btn btn-primary btn-sm"
+                    id="btnLoadDashboard">
 
-            <!-- USER -->
+                <i class="bi bi-check2"></i>
+                Apply
 
-            <div class="user-menu">
+            </button>
 
-                <button type="button"
-                        class="user-menu-button"
-                        id="userMenuButton">
+        </div>
 
-                    <span class="user-avatar">
-                        @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
-                    </span>
+        <div class="user-menu">
 
-                    <span class="user-info">
+            <button type="button"
+                    class="user-menu-button"
+                    id="userMenuButton">
+
+                <span class="user-avatar">
+
+                    @(User.Identity?.Name?
+                        .Substring(0, 1)
+                        .ToUpper() ?? "U")
+
+                </span>
+
+                <span class="user-info">
+
+                    <strong>
+                        @(User.Identity?.Name ?? "User")
+                    </strong>
+
+                    <small>
+                        @(User.FindFirst(
+                            System.Security.Claims.ClaimTypes.Role
+                        )?.Value ?? "USER")
+                    </small>
+
+                </span>
+
+                <span class="user-arrow">
+                    ▾
+                </span>
+
+            </button>
+
+            <div class="user-dropdown"
+                 id="userDropdown">
+
+                <div class="dropdown-user-info">
+
+                    <div class="dropdown-avatar">
+
+                        @(User.Identity?.Name?
+                            .Substring(0, 1)
+                            .ToUpper() ?? "U")
+
+                    </div>
+
+                    <div>
 
                         <strong>
                             @(User.Identity?.Name ?? "User")
                         </strong>
 
-                        <small>
-                            @(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "USER")
-                        </small>
-
-                    </span>
-
-                    <span class="user-arrow">
-                        ▾
-                    </span>
-
-                </button>
-
-
-                <!-- DROPDOWN -->
-
-                <div class="user-dropdown"
-                     id="userDropdown">
-
-                    <div class="dropdown-user-info">
-
-                        <div class="dropdown-avatar">
-                            @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
-                        </div>
-
-                        <div>
-
-                            <strong>
-                                @(User.Identity?.Name ?? "User")
-                            </strong>
-
-                            <span>
-                                @(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "USER")
-                            </span>
-
-                        </div>
+                        <span>
+                            @(User.FindFirst(
+                                System.Security.Claims.ClaimTypes.Role
+                            )?.Value ?? "USER")
+                        </span>
 
                     </div>
 
-
-                    <div class="dropdown-divider"></div>
-
-
-             <form asp-controller="Account"
-                  asp-action="Logout"
-                  method="post"
-                  id="logoutForm">
-
-                @Html.AntiForgeryToken()
-
-                <button type="submit"
-                        class="dropdown-item logout-button">
-
-                    <span>⇥</span>
-
-                    Logout
-
-                </button>
-
-            </form>
-
                 </div>
+
+
+                <div class="dropdown-divider"></div>
+
+
+                <form asp-controller="Account"
+                      asp-action="Logout"
+                      method="post"
+                      id="logoutForm">
+
+                    @Html.AntiForgeryToken()
+
+                    <button type="submit"
+                            class="dropdown-item logout-button">
+
+                        <span>⇥</span>
+
+                        Logout
+
+                    </button>
+
+                </form>
 
             </div>
 
         </div>
 
-    </header>
+    </div>
 
+</header>
 
-    <!-- =========================================================
-         PAGE CONTENT
-         ========================================================= -->
 
     <main class="page-content">
 
@@ -176,10 +172,6 @@
 
     </main>
 
-
-    <!-- =========================================================
-         SCRIPTS
-         ========================================================= -->
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
