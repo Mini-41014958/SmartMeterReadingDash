@@ -111,12 +111,16 @@ body {
 
 /* =========================================================
    METER SUMMARY
-   NO SCROLL + LARGER FONT + MORE SPACING
 ========================================================= */
 
-.meter-summary-card .card-body {
-    padding: 16px;
+.meter-summary-card {
+    height: 100% !important;
+    min-height: 0 !important;
 }
+
+    .meter-summary-card .card-body {
+        padding: 16px;
+    }
 
 .meter-summary-table {
     width: 100%;
@@ -173,7 +177,6 @@ body {
 
 /* =========================================================
    METER CHARTS
-   REDUCED GAP
 ========================================================= */
 
 .meter-charts-wrapper {
@@ -213,40 +216,61 @@ body {
         height: 100% !important;
     }
 
+.mro-failed-value {
+    color: #dc2626 !important;
+}
 
+    .mro-failed-value .mro-link {
+        color: #dc2626 !important;
+    }
+
+    .mro-failed-value small {
+        color: #dc2626 !important;
+    }
 /* =========================================================
    MRO SUMMARY
+   FIXED:
+   6 ITEMS = 6 GRID COLUMNS
 ========================================================= */
 
 .mro-company-row {
     display: grid;
-    grid-template-columns: 60px repeat(5, minmax(65px, 1fr)) 80px;
+    /* Company + 5 metrics */
+    grid-template-columns: 58px repeat(5, minmax(0, 1fr));
     align-items: center;
-    min-height: 100px;
-    padding: 10px 8px;
+    width: 100%;
+    min-width: 0;
+    padding: 18px 6px;
+    column-gap: 4px;
     border-bottom: 1px solid #e5e7eb;
-    gap: 8px;
 }
 
     .mro-company-row:last-child {
         border-bottom: none;
     }
 
+
+/* =========================================================
+   MRO COMPANY
+========================================================= */
+
 .mro-company {
     display: flex;
     align-items: center;
     justify-content: center;
+    min-width: 0;
 }
 
 .company-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 52px;
+    min-width: 50px;
     padding: 6px 8px;
     border-radius: 5px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
+    line-height: 1;
 }
 
 .brpl-badge {
@@ -259,38 +283,91 @@ body {
     color: #059669;
 }
 
+
+/* =========================================================
+   MRO METRIC
+========================================================= */
+
 .mro-metric {
     min-width: 0;
+    width: 100%;
     text-align: center;
+    overflow: hidden;
 }
 
 .mro-label {
+    margin-bottom: 5px;
     color: #64748b;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
     white-space: nowrap;
-    margin-bottom: 5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
 }
 
 .mro-value {
-    font-size: 17px;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    min-width: 0;
+    font-size: 16px;
     font-weight: 700;
     line-height: 1.2;
     white-space: nowrap;
 }
 
-.mro-action {
-    display: flex;
-    justify-content: center;
-}
+    .mro-value span,
+    .mro-value a {
+        flex-shrink: 0;
+    }
 
-    .mro-action .btn {
-        font-size: 12px;
+    .mro-value small {
+        flex-shrink: 0;
+        margin-left: 3px;
+        color: inherit;
+        font-size: 11px;
         font-weight: 600;
-        padding: 6px 10px;
+        line-height: 1;
         white-space: nowrap;
     }
+
+
+/* =========================================================
+   MRO FAILED LINKS
+========================================================= */
+
+.mro-link {
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity .15s ease;
+}
+
+    .mro-link:hover {
+        color: #b91c1c !important;
+        opacity: .8;
+    }
+
+    .mro-link:focus {
+        color: #b91c1c !important;
+        outline: none;
+    }
+
+
+/* =========================================================
+   MRO COLORS
+========================================================= */
+
+.mro-value.text-success {
+    color: #059669 !important;
+}
+
+.mro-value.text-primary {
+    color: #2563eb !important;
+}
 
 
 /* =========================================================
@@ -305,6 +382,11 @@ canvas {
 #readingTrendChart {
     width: 100% !important;
     height: 340px !important;
+}
+
+#readingTrendChart {
+    cursor: pointer;
+    pointer-events: auto !important;
 }
 
 
@@ -376,8 +458,7 @@ canvas {
 
 
 /* =========================================================
-   TABLE RESPONSIVE CONTAINER
-   ONLY DETAIL TABLES SCROLL
+   TABLE RESPONSIVE
 ========================================================= */
 
 .table-responsive {
@@ -582,6 +663,7 @@ canvas {
     }
 
 @keyframes shimmer {
+
     100% {
         transform: translateX(100%);
     }
@@ -613,22 +695,40 @@ canvas {
 
 
 /* =========================================================
-   LARGE LAPTOP / SMALL DESKTOP
+   LARGE LAPTOP
 ========================================================= */
 
 @media (max-width: 1200px) {
 
     .mro-company-row {
-        grid-template-columns: 55px repeat(5, minmax(55px, 1fr)) 70px;
-        gap: 5px;
+        grid-template-columns: 54px repeat(5, minmax(0, 1fr));
+        column-gap: 3px;
+        padding-left: 4px;
+        padding-right: 4px;
+    }
+
+    .company-badge {
+        min-width: 46px;
+        padding: 6px 6px;
+        font-size: 10px;
     }
 
     .mro-label {
-        font-size: 11px;
+        font-size: 9px;
     }
 
     .mro-value {
-        font-size: 16px;
+        font-size: 14px;
+    }
+
+        .mro-value small {
+            font-size: 9px;
+            margin-left: 2px;
+        }
+
+    .mro-link {
+        font-size: 14px;
+        text-decoration: none;
     }
 
     .meter-chart-wrapper {
@@ -664,7 +764,26 @@ canvas {
     }
 
     .mro-company-row {
-        grid-template-columns: 70px repeat(5, minmax(65px, 1fr)) 80px;
+        grid-template-columns: 65px repeat(5, minmax(0, 1fr));
+        column-gap: 5px;
+        padding: 16px 5px;
+    }
+
+    .mro-label {
+        font-size: 10px;
+    }
+
+    .mro-value {
+        font-size: 15px;
+    }
+
+        .mro-value small {
+            font-size: 10px;
+        }
+
+    .mro-link {
+        font-size: 15px;
+        text-decoration: none;
     }
 
     #departmentChart,
@@ -692,7 +811,10 @@ canvas {
         padding: 10px;
     }
 
-    /* Filter */
+
+    /* -----------------------------------------
+       FILTER
+    ----------------------------------------- */
 
     .filter-toolbar .d-flex {
         align-items: stretch !important;
@@ -712,7 +834,10 @@ canvas {
         justify-content: center;
     }
 
-    /* Meter Summary */
+
+    /* -----------------------------------------
+       METER SUMMARY
+    ----------------------------------------- */
 
     .meter-summary-card .card-body {
         padding: 10px 6px;
@@ -743,12 +868,15 @@ canvas {
         height: 140px;
     }
 
-    /* MRO */
+
+    /* -----------------------------------------
+       MRO
+    ----------------------------------------- */
 
     .mro-company-row {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px 6px;
-        padding: 12px 6px;
+        padding: 14px 6px;
     }
 
     .mro-company {
@@ -766,25 +894,32 @@ canvas {
     }
 
     .mro-value {
-        font-size: 18px;
+        font-size: 17px;
     }
 
-    .mro-action {
-        grid-column: 1 / -1;
-    }
-
-        .mro-action .btn {
-            width: 100%;
+        .mro-value small {
+            font-size: 10px;
         }
 
-    /* Charts */
+    .mro-link {
+        font-size: 17px;
+        text-decoration:none;
+    }
+
+
+    /* -----------------------------------------
+       CHARTS
+    ----------------------------------------- */
 
     #departmentChart,
     #readingTrendChart {
         height: 260px !important;
     }
 
-    /* Modal */
+
+    /* -----------------------------------------
+       MODAL
+    ----------------------------------------- */
 
     .modal-dialog {
         max-width: 100%;
@@ -832,7 +967,10 @@ canvas {
             padding: .6rem .75rem;
         }
 
-    /* Meter Summary */
+
+    /* -----------------------------------------
+       METER SUMMARY
+    ----------------------------------------- */
 
     .meter-summary-table thead th {
         font-size: 9px;
@@ -849,7 +987,10 @@ canvas {
             font-size: 11px;
         }
 
-    /* Pie Charts */
+
+    /* -----------------------------------------
+       PIE CHARTS
+    ----------------------------------------- */
 
     .meter-charts-wrapper {
         gap: 0;
@@ -864,18 +1005,17 @@ canvas {
         font-size: 11px;
     }
 
-    /* MRO */
+
+    /* -----------------------------------------
+       MRO
+    ----------------------------------------- */
 
     .mro-company-row {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
     }
 
     .mro-company {
-        grid-column: 1 / -1;
-    }
-
-    .mro-action {
         grid-column: 1 / -1;
     }
 
@@ -887,12 +1027,28 @@ canvas {
         font-size: 17px;
     }
 
-    /* Charts */
+        .mro-value small {
+            font-size: 10px;
+        }
+
+    .mro-link {
+        font-size: 17px;
+    }
+
+
+    /* -----------------------------------------
+       CHARTS
+    ----------------------------------------- */
 
     #departmentChart,
     #readingTrendChart {
         height: 230px !important;
     }
+
+
+    /* -----------------------------------------
+       MODAL
+    ----------------------------------------- */
 
     .modal-header .modal-title {
         font-size: 15px;
@@ -924,6 +1080,14 @@ canvas {
     }
 
     .mro-value {
+        font-size: 16px;
+    }
+
+        .mro-value small {
+            font-size: 9px;
+        }
+
+    .mro-link {
         font-size: 16px;
     }
 
@@ -974,4 +1138,202 @@ canvas {
         min-width: 100%;
         font-size: 10px;
     }
+}
+/* =========================================================
+   HES DOWNLOAD TABLE
+   SAME UI AS BRPL / BYPL DOWNLOAD TABLE
+========================================================= */
+
+#hesDownloadSummaryTable {
+    width: 100%;
+    min-width: 1050px;
+    table-layout: fixed;
+    border-collapse: collapse;
+    font-size: 12px;
+    line-height: 1.35;
+    margin: 0;
+}
+
+
+    /* =========================================================
+   HES TABLE HEADER
+========================================================= */
+
+    #hesDownloadSummaryTable thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #0d6efd;
+        color: #fff;
+        text-align: center;
+        vertical-align: middle;
+        padding: 9px 6px;
+        border: 1px solid #dee2e6;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+   HES TABLE BODY
+========================================================= */
+
+    #hesDownloadSummaryTable tbody td {
+        padding: 8px 6px;
+        vertical-align: middle;
+        border: 1px solid #dee2e6;
+        font-size: 12px;
+        font-weight: 500;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+
+
+    /* =========================================================
+   HES ZEBRA ROWS
+========================================================= */
+
+    #hesDownloadSummaryTable tbody tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+
+
+    /* =========================================================
+   HES HOVER
+========================================================= */
+
+    #hesDownloadSummaryTable tbody tr:hover {
+        background: #dbeafe;
+    }
+
+
+    /* =========================================================
+   HES COLUMN WIDTHS
+========================================================= */
+
+    /* S.No */
+    #hesDownloadSummaryTable th:nth-child(1),
+    #hesDownloadSummaryTable td:nth-child(1) {
+        width: 55px;
+        text-align: center;
+    }
+
+
+    /* Cons Ref */
+    #hesDownloadSummaryTable th:nth-child(2),
+    #hesDownloadSummaryTable td:nth-child(2) {
+        width: 105px;
+    }
+
+
+    /* Meter Number */
+    #hesDownloadSummaryTable th:nth-child(3),
+    #hesDownloadSummaryTable td:nth-child(3) {
+        width: 125px;
+    }
+
+
+    /* Phase */
+    #hesDownloadSummaryTable th:nth-child(4),
+    #hesDownloadSummaryTable td:nth-child(4) {
+        width: 65px;
+        text-align: center;
+    }
+
+
+    /* Department */
+    #hesDownloadSummaryTable th:nth-child(5),
+    #hesDownloadSummaryTable td:nth-child(5) {
+        width: 100px;
+    }
+
+
+    /* Division */
+    #hesDownloadSummaryTable th:nth-child(6),
+    #hesDownloadSummaryTable td:nth-child(6) {
+        width: 100px;
+    }
+
+
+    /* Seq No */
+    #hesDownloadSummaryTable th:nth-child(7),
+    #hesDownloadSummaryTable td:nth-child(7) {
+        width: 80px;
+    }
+
+
+    /* Address */
+    #hesDownloadSummaryTable th:nth-child(8),
+    #hesDownloadSummaryTable td:nth-child(8) {
+        width: 200px;
+    }
+
+
+    /* Meter Make */
+    #hesDownloadSummaryTable th:nth-child(9),
+    #hesDownloadSummaryTable td:nth-child(9) {
+        width: 100px;
+    }
+
+
+/* =========================================================
+   HES TABLE WRAPPER
+========================================================= */
+
+.hes-download-table-wrapper {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    padding: 6px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+
+/* =========================================================
+   HES ADDRESS
+========================================================= */
+
+#hesDownloadSummaryTable .address-cell {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+
+/* =========================================================
+   HES EMPTY / LOADING ROW
+========================================================= */
+
+#hesDownloadSummaryTable tbody td[colspan] {
+    text-align: center;
+    padding: 25px 10px;
+    color: #6c757d;
+}
+
+
+/* =========================================================
+   HES MOBILE
+========================================================= */
+
+@media (max-width: 767.98px) {
+
+    #hesDownloadSummaryTable {
+        min-width: 1050px;
+        font-size: 11px;
+    }
+
+        #hesDownloadSummaryTable thead th {
+            font-size: 11px;
+            padding: 8px 5px;
+        }
+
+        #hesDownloadSummaryTable tbody td {
+            font-size: 11px;
+            padding: 7px 5px;
+        }
 }

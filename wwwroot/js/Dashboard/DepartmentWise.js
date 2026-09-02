@@ -20,10 +20,6 @@ function getApiUrl(endpoint) {
 let departmentChart = null;
 
 
-// =============================================================
-// LOAD DEPARTMENT DISTRIBUTION
-// =============================================================
-
 async function loadDepartmentDistribution() {
 
     const month = getReadingMonth();

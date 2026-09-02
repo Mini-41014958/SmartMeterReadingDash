@@ -179,34 +179,32 @@ namespace SmartMeterReadingDash.Controllers.API
             }
         }
 
+        [HttpGet("hes-download-meters-details")]
+        public IActionResult GetHESDownloadMetersDetails(string ReadingMonth)
+        {
+            try
+            {
+                var hesDownloadMeters = _dashboard.HesDownloadMeterList(ReadingMonth);
+                return Ok(hesDownloadMeters);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
 
-        //[HttpGet("temp-hes-wise-data")]
-        //public IActionResult TempGetHESDATA()
-        //{
-        //    try
-        //    {
-        //        var tempdata = _dashboard.TempDashBoardHESCount();
-
-        //        return Ok(tempdata);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, "Internal Server Error");
-        //    }
-        //}
-        //[HttpGet("temp-hes-failed-wise-data")]
-        //public IActionResult TempGetHESDATAFailed()
-        //{
-        //    try
-        //    {
-        //        var tempdatafailed = _dashboard.TempHESFailed();
-
-        //        return Ok(tempdatafailed);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, "Internal Server Error");
-        //    }
-        //}
+        [HttpGet("hes-download-meters-details-bypl")]
+        public IActionResult GetHESDownloadMetersDetailsBypl(string ReadingMonth)
+        {
+            try
+            {
+                var hesDownloadMeters = _dashboard.GetHesDownloadBypl(ReadingMonth);
+                return Ok(hesDownloadMeters);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Internal Server Error");
+            }
+        }
     } 
 }

@@ -1,4 +1,6 @@
-﻿function getApiUrl(endpoint) {
+﻿
+
+function getApiUrl(endpoint) {
 
     const basePath = window.location.pathname
         .toLowerCase()
@@ -8,57 +10,90 @@
 
     return `${basePath}/api/${endpoint}`;
 }
+
+/* ============================================================
+   LOAD METER RECEIVED IN MRO
+============================================================ */
+
 async function loadMeterDownloadSummary() {
 
     const month = getReadingMonth();
 
     try {
 
-        const [brplResponse, byplResponse] = await Promise.all([
+        const [
+            brplResponse,
+            byplResponse
+        ] = await Promise.all([
 
             fetch(
-                `${getApiUrl("dashboardapi/meter-download-summary")}?readingMonth=${encodeURIComponent(month)}`
+                `${getApiUrl(
+                    "dashboardapi/meter-download-summary"
+                )}?readingMonth=${encodeURIComponent(month)}`
             ),
 
             fetch(
-                `${getApiUrl("dashboardapi/meter-download-summary-bypl")}?readingMonth=${encodeURIComponent(month)}`
+                `${getApiUrl(
+                    "dashboardapi/meter-download-summary-bypl"
+                )}?readingMonth=${encodeURIComponent(month)}`
             )
 
         ]);
 
+
         if (!brplResponse.ok) {
+
             throw new Error(
                 `Failed to load BRPL Meter Summary. Status: ${brplResponse.status}`
             );
+
         }
 
+
         if (!byplResponse.ok) {
+
             throw new Error(
                 `Failed to load BYPL Meter Summary. Status: ${byplResponse.status}`
             );
+
         }
 
-        const brplData = await brplResponse.json();
 
-        const byplResult = await byplResponse.json();
+        const brplResult =
+            await brplResponse.json();
 
-        const byplData = Array.isArray(byplResult)
-            ? byplResult[0]
-            : byplResult;
+        const byplResult =
+            await byplResponse.json();
 
 
-        const brplFailed =
-            Number(brplData?.manualForwardinCount || 0) +
-            Number(brplData?.pendingCount || 0) +
-            Number(brplData?.mismatchCount || 0);
+        const brplData =
+            Array.isArray(brplResult)
+                ? brplResult[0] || {}
+                : brplResult || {};
+
+
+        const byplData =
+            Array.isArray(byplResult)
+                ? byplResult[0] || {}
+                : byplResult || {};
+
+
+        console.log("BRPL MRO:", brplData);
+        console.log("BYPL MRO:", byplData);
+
+
+        /* ====================================================
+           HELPER
+        ==================================================== */
 
         function setValue(id, value) {
 
-            const element = document.getElementById(id);
+            const element =
+                document.getElementById(id);
 
             if (!element) {
 
-                console.error(
+                console.warn(
                     `Missing HTML element: #${id}`
                 );
 
@@ -68,74 +103,385 @@ async function loadMeterDownloadSummary() {
             element.textContent = value;
         }
 
-        // BRPL
-        setValue(
-            "totalMeters",
-            Number(brplData?.totalMetersCount || 0)
-                .toLocaleString()
-        );
+
+        /* ====================================================
+           BRPL FAILED
+        ==================================================== */
+
+        const brplFailed =
+            Number(brplData?.manualForwardinCount || 0) +
+            Number(brplData?.pendingCount || 0) +
+            Number(brplData?.mismatchCount || 0);
+
+
+        /* ====================================================
+           BRPL
+        ==================================================== */
 
         setValue(
             "hesDownload",
-            Number(brplData?.hesDownloadCount || 0)
-                .toLocaleString()
+            Number(
+                brplData?.hesDownloadCount || 0
+            ).toLocaleString()
         );
+
+
+        setValue(
+            "downloadPercentage",
+            "(" +
+            Number(
+                brplData?.hesDownloadPercentage || 0
+            ).toFixed(2) +
+            "%)"
+        );
+
 
         setValue(
             "downloadFailed",
             brplFailed.toLocaleString()
         );
 
-        setValue(
-            "downloadPercentage",
-            Number(brplData?.hesDownloadPercentage || 0)
-                .toFixed(2) + "%"
-        );
 
         setValue(
             "failedPercentage",
-            Number(brplData?.hesFailedPercentage || 0)
-                .toFixed(2) + "%"
+            "(" +
+            Number(
+                brplData?.hesFailedPercentage || 0
+            ).toFixed(2) +
+            "%)"
         );
 
-        // BYPL
+
         setValue(
-            "byplTotalMeters",
-            Number(byplData?.totalMetersCount || 0)
-                .toLocaleString()
+            "totalMeters",
+            Number(
+                brplData?.totalMetersCount || 0
+            ).toLocaleString()
         );
+
+
+        setValue(
+            "billedMeters",
+            Number(
+                brplData?.billedCount || 0
+            ).toLocaleString()
+        );
+
+
+        setValue(
+            "billedPercentage",
+            "(" +
+            Number(
+                brplData?.billedPercentage || 0
+            ).toFixed(2) +
+            "%)"
+        );
+
+
+        setValue(
+            "billedFailed",
+            Number(
+                brplData?.billedFailedCount || 0
+            ).toLocaleString()
+        );
+
+
+        setValue(
+            "billedFailedPercentage",
+            "(" +
+            Number(
+                brplData?.billedFailedPercentage || 0
+            ).toFixed(2) +
+            "%)"
+        );
+
+
+        /* ====================================================
+           BYPL
+        ==================================================== */
+
+        const byplFailed =
+            Number(
+                byplData?.hesFailedCount || 0
+            );
+
 
         setValue(
             "byplHesDownload",
-            Number(byplData?.hesDownloadCount || 0)
-                .toLocaleString()
+            Number(
+                byplData?.hesDownloadCount || 0
+            ).toLocaleString()
         );
 
-        setValue(
-            "byplDownloadFailed",
-            Number(byplData?.hesFailedCount || 0)
-                .toLocaleString()
-        );
 
         setValue(
             "byplDownloadPercentage",
-            Number(byplData?.hesDownloadPercentage || 0)
-                .toFixed(2) + "%"
+            "(" +
+            Number(
+                byplData?.hesDownloadPercentage || 0
+            ).toFixed(2) +
+            "%)"
         );
+
+
+        setValue(
+            "byplDownloadFailed",
+            byplFailed.toLocaleString()
+        );
+
 
         setValue(
             "byplFailedPercentage",
-            Number(byplData?.hesFailedPercentage || 0)
-                .toFixed(2) + "%"
+            "(" +
+            Number(
+                byplData?.hesFailedPercentage || 0
+            ).toFixed(2) +
+            "%)"
+        );
+
+
+        setValue(
+            "byplTotalMeters",
+            Number(
+                byplData?.totalMetersCount || 0
+            ).toLocaleString()
+        );
+
+
+        setValue(
+            "byplBilledMeters",
+            Number(
+                byplData?.billedCount || 0
+            ).toLocaleString()
+        );
+
+
+        setValue(
+            "byplBilledPercentage",
+            "(" +
+            Number(
+                byplData?.billedPercentage || 0
+            ).toFixed(2) +
+            "%)"
+        );
+
+
+        setValue(
+            "byplBilledFailed",
+            Number(
+                byplData?.billedFailedCount || 0
+            ).toLocaleString()
+        );
+
+
+        setValue(
+            "byplBilledFailedPercentage",
+            "(" +
+            Number(
+                byplData?.billedFailedPercentage || 0
+            ).toFixed(2) +
+            "%)"
         );
 
     }
     catch (error) {
 
         console.error(
-            "Meter Summary Error:",
+            "Meter MRO Summary Error:",
             error
         );
 
     }
 }
+
+
+/* ============================================================
+   BRPL FAILED LINK
+   Open BRPL detail modal directly
+============================================================ */
+
+$(document)
+    .off("click.mroBrplFailed", "#downloadFailed")
+    .on(
+        "click.mroBrplFailed",
+        "#downloadFailed",
+        function (e) {
+
+            e.preventDefault();
+
+            const modalElement =
+                document.getElementById(
+                    "downloadSummaryModal"
+                );
+
+            if (!modalElement) {
+
+                console.error(
+                    "BRPL detail modal not found."
+                );
+
+                return;
+            }
+
+
+            const modal =
+                bootstrap.Modal.getOrCreateInstance(
+                    modalElement
+                );
+
+            modal.show();
+
+
+            if (typeof loadDownloadSummary === "function") {
+
+                loadDownloadSummary();
+
+            }
+
+        }
+    );
+
+
+/* ============================================================
+   BRPL BILLED FAILED LINK
+============================================================ */
+
+$(document)
+    .off("click.mroBrplBilledFailed", "#billedFailed")
+    .on(
+        "click.mroBrplBilledFailed",
+        "#billedFailed",
+        function (e) {
+
+            e.preventDefault();
+
+            const modalElement =
+                document.getElementById(
+                    "downloadSummaryModal"
+                );
+
+            if (!modalElement) {
+
+                console.error(
+                    "BRPL detail modal not found."
+                );
+
+                return;
+            }
+
+
+            const modal =
+                bootstrap.Modal.getOrCreateInstance(
+                    modalElement
+                );
+
+            modal.show();
+
+
+            if (typeof loadDownloadSummary === "function") {
+
+                loadDownloadSummary();
+
+            }
+
+        }
+    );
+
+
+/* ============================================================
+   BYPL FAILED LINK
+   Open BYPL detail modal directly
+============================================================ */
+
+$(document)
+    .off("click.mroByplFailed", "#byplDownloadFailed")
+    .on(
+        "click.mroByplFailed",
+        "#byplDownloadFailed",
+        function (e) {
+
+            e.preventDefault();
+
+            const modalElement =
+                document.getElementById(
+                    "downloadSummaryModalBYPL"
+                );
+
+            if (!modalElement) {
+
+                console.error(
+                    "BYPL detail modal not found."
+                );
+
+                return;
+            }
+
+
+            const modal =
+                bootstrap.Modal.getOrCreateInstance(
+                    modalElement
+                );
+
+            modal.show();
+
+
+            if (
+                typeof loadDownloadSummaryBYPL ===
+                "function"
+            ) {
+
+                loadDownloadSummaryBYPL();
+
+            }
+
+        }
+    );
+
+
+/* ============================================================
+   BYPL BILLED FAILED LINK
+============================================================ */
+
+$(document)
+    .off("click.mroByplBilledFailed", "#byplBilledFailed")
+    .on(
+        "click.mroByplBilledFailed",
+        "#byplBilledFailed",
+        function (e) {
+
+            e.preventDefault();
+
+            const modalElement =
+                document.getElementById(
+                    "downloadSummaryModalBYPL"
+                );
+
+            if (!modalElement) {
+
+                console.error(
+                    "BYPL detail modal not found."
+                );
+
+                return;
+            }
+
+
+            const modal =
+                bootstrap.Modal.getOrCreateInstance(
+                    modalElement
+                );
+
+            modal.show();
+
+
+            if (
+                typeof loadDownloadSummaryBYPL ===
+                "function"
+            ) {
+
+                loadDownloadSummaryBYPL();
+
+            }
+
+        }
+    );

@@ -11,23 +11,23 @@ namespace SmartMeterReadingDash.Services
         public Dashboard(OracleCon oracleCon)
         {
             _db = oracleCon;
-            
+
         }
         //Test connection to the database
         public string Testconnection()
         {
             using var connection = _db.GetConnection();
-            
+
             connection.Open();
-            
+
             return connection.State.ToString();
         }
 
         public TotalMeterSummary GetMeterSummary(string ReadingMonth)
         {
-            TotalMeterSummary Summary  = new TotalMeterSummary();
+            TotalMeterSummary Summary = new TotalMeterSummary();
 
-            using (OracleConnection  con = _db.GetConnection())
+            using (OracleConnection con = _db.GetConnection())
             {
                 con.Open();
 
@@ -264,15 +264,15 @@ namespace SmartMeterReadingDash.Services
                     D.KIMBAL_3PH + F.KIMBAL_3PH AS KIMBAL_3PH
                 FROM DOWNLOAD D
                 CROSS JOIN FAILED F";
-              
 
-                using (OracleCommand cmd = new OracleCommand(query,con))
+
+                using (OracleCommand cmd = new OracleCommand(query, con))
                 {
                     cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2)
                       .Value = ReadingMonth;
                     using (OracleDataReader dr = cmd.ExecuteReader())
                     {
-                      
+
                         if (dr.Read())
                         {
                             Summary.TotalMeter = dr["TOTALMETERS"] == DBNull.Value ? 0 : Convert.ToInt32(dr["TOTALMETERS"]);
@@ -535,7 +535,8 @@ namespace SmartMeterReadingDash.Services
                         }
                     }
                 }
-            } return totalMeterSummary;
+            }
+            return totalMeterSummary;
         }
 
 
@@ -544,7 +545,7 @@ namespace SmartMeterReadingDash.Services
         {
             MeterReceivedSummary Summary = new MeterReceivedSummary();
 
-            using(OracleConnection con  = _db.GetConnection())
+            using (OracleConnection con = _db.GetConnection())
             {
                 con.Open();
                 string query = @"WITH MONTHS (READING_MONTH) AS
@@ -662,18 +663,18 @@ namespace SmartMeterReadingDash.Services
                 CROSS JOIN FAILED F";
 
 
-                using(OracleCommand cmd =  new OracleCommand(query,con))
+                using (OracleCommand cmd = new OracleCommand(query, con))
                 {
                     cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = ReadingMonth;
                     using (OracleDataReader dr = cmd.ExecuteReader())
                     {
                         if (dr.Read())
                         {
-                          Summary.totalMetersCount = dr["TOTAL_METERS"] == DBNull.Value ? 0 : Convert.ToInt32(dr["TOTAL_METERS"]);
-                          Summary.hesDownloadCount = dr["HES_DOWNLOAD"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_DOWNLOAD"]);
-                          Summary.manualForwardinCount = dr["HES_FAILED"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_FAILED"]);
-                          Summary.hesDownloadPercentage = dr["HES_DOWNLOAD_PERCENTAGE"] == DBNull.Value ? 0 : Convert.ToDecimal(dr["HES_DOWNLOAD_PERCENTAGE"]);
-                          Summary.hesFailedPercentage = dr["HES_FAILED_PERCENTAGE"] == DBNull.Value ? 0 : Convert.ToDecimal(dr["HES_FAILED_PERCENTAGE"]);
+                            Summary.totalMetersCount = dr["TOTAL_METERS"] == DBNull.Value ? 0 : Convert.ToInt32(dr["TOTAL_METERS"]);
+                            Summary.hesDownloadCount = dr["HES_DOWNLOAD"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_DOWNLOAD"]);
+                            Summary.manualForwardinCount = dr["HES_FAILED"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_FAILED"]);
+                            Summary.hesDownloadPercentage = dr["HES_DOWNLOAD_PERCENTAGE"] == DBNull.Value ? 0 : Convert.ToDecimal(dr["HES_DOWNLOAD_PERCENTAGE"]);
+                            Summary.hesFailedPercentage = dr["HES_FAILED_PERCENTAGE"] == DBNull.Value ? 0 : Convert.ToDecimal(dr["HES_FAILED_PERCENTAGE"]);
                         }
                     }
                 }
@@ -684,7 +685,7 @@ namespace SmartMeterReadingDash.Services
         public List<MeterReceivedSummaryBypl> GetMeterReceivedSummaryBypl(string readingMonth)
         {
             List<MeterReceivedSummaryBypl> meterReceivedSummaryBypl = new List<MeterReceivedSummaryBypl>();
-            using(OracleConnection con = _db.GetConnection())
+            using (OracleConnection con = _db.GetConnection())
             {
                 con.Open();
                 string query = @"WITH MONTHS (READING_MONTH) AS
@@ -821,7 +822,8 @@ namespace SmartMeterReadingDash.Services
                             });
                         }
                     }
-                } return meterReceivedSummaryBypl;
+                }
+                return meterReceivedSummaryBypl;
             }
         }
 
@@ -995,12 +997,12 @@ namespace SmartMeterReadingDash.Services
                     NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO),
                     F.METERNO";
 
-                using(OracleCommand cmd  = new OracleCommand(query,con))
+                using (OracleCommand cmd = new OracleCommand(query, con))
                 {
                     cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = ReadingMonth;
                     using (OracleDataReader dr = cmd.ExecuteReader())
                     {
-                       
+
                         while (dr.Read())
                         {
                             SummaryList.Add(new MeterDownloadDetailedSummary
@@ -1022,7 +1024,6 @@ namespace SmartMeterReadingDash.Services
                 }
                 return SummaryList;
             }
-        
         }
 
         public List<MeterDownloadDetailedSummaryBypl> GetMeterDownloadDetailedSummaryBypl(string readingMonth)
@@ -1360,11 +1361,11 @@ namespace SmartMeterReadingDash.Services
                     D.INSERTED_DATE DESC NULLS LAST,
                     D.METERNO";
 
-                using(OracleCommand cmd = new OracleCommand(query,con))
+                using (OracleCommand cmd = new OracleCommand(query, con))
                 {
                     cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = readingMonth;
 
-                    using(OracleDataReader dr = cmd.ExecuteReader())
+                    using (OracleDataReader dr = cmd.ExecuteReader())
                     {
                         while (dr.Read())
                         {
@@ -1393,7 +1394,7 @@ namespace SmartMeterReadingDash.Services
         public List<ReadingTrendDateWise> GetReadingTrend(string ReadingMonth)
         {
             List<ReadingTrendDateWise> ReadingList = new List<ReadingTrendDateWise>();
-            using(OracleConnection con = _db.GetConnection())
+            using (OracleConnection con = _db.GetConnection())
             {
                 con.Open();
                 string query = @"
@@ -1431,12 +1432,12 @@ namespace SmartMeterReadingDash.Services
                 GROUP BY READING_DATE
                 ORDER BY READING_DATE
                 ";
-                using(OracleCommand cmd = new OracleCommand(query,con))
+                using (OracleCommand cmd = new OracleCommand(query, con))
                 {
                     cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = ReadingMonth;
                     using (OracleDataReader dr = cmd.ExecuteReader())
                     {
-                        while(dr.Read())
+                        while (dr.Read())
                         {
                             ReadingList.Add(new ReadingTrendDateWise
                             {
@@ -1452,7 +1453,7 @@ namespace SmartMeterReadingDash.Services
         public List<DepartmentWiseSummary> GetDepartmentSummary(string ReadingMonth)
         {
             List<DepartmentWiseSummary> departmentWiseData = new List<DepartmentWiseSummary>();
-            using(OracleConnection conn = _db.GetConnection())
+            using (OracleConnection conn = _db.GetConnection())
             {
                 conn.Open();
                 string query = @"WITH MONTHS (READING_MONTH) AS
@@ -1617,7 +1618,7 @@ namespace SmartMeterReadingDash.Services
                         ON D.DEPARTMENT = F.DEPARTMENT
 
                     ORDER BY DEPARTMENT";
-                using(OracleCommand cmd = new OracleCommand(query,conn))
+                using (OracleCommand cmd = new OracleCommand(query, conn))
                 {
                     cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = ReadingMonth;
                     //Console.WriteLine(query);
@@ -1643,7 +1644,7 @@ namespace SmartMeterReadingDash.Services
         public List<DepartmentWiseSummaryBypl> GetDepartmentWiseSummaryBypl(string ReadingMonth)
         {
             List<DepartmentWiseSummaryBypl> departmentWiseSummarieBypl = new List<DepartmentWiseSummaryBypl>();
-            using(OracleConnection con = _db.GetConnection())
+            using (OracleConnection con = _db.GetConnection())
             {
                 con.Open();
                 string query = @"WITH MONTHS (READING_MONTH) AS
@@ -1726,16 +1727,16 @@ namespace SmartMeterReadingDash.Services
                     FROM SUMMARY
                     ORDER BY DEPARTMENT";
 
-                using(OracleCommand cmd = new OracleCommand(query,con))
+                using (OracleCommand cmd = new OracleCommand(query, con))
                 {
                     cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = ReadingMonth;
-                    using(OracleDataReader dr = cmd.ExecuteReader())
+                    using (OracleDataReader dr = cmd.ExecuteReader())
                     {
                         while (dr.Read())
                         {
                             departmentWiseSummarieBypl.Add(new DepartmentWiseSummaryBypl
                             {
-                              Department = dr["DEPARTMENT"].ToString(),
+                                Department = dr["DEPARTMENT"].ToString(),
                                 HesDownload = dr["HES_DOWNLOAD"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_DOWNLOAD"]),
                                 Failed = dr["HES_FAILED"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_FAILED"]),
 
@@ -1751,7 +1752,7 @@ namespace SmartMeterReadingDash.Services
         public List<FailureReasonCount> FailureReasonCounts(string ReadingMonth)
         {
             List<FailureReasonCount> failureReasonCounts = new List<FailureReasonCount>();
-            using(OracleConnection con = _db.GetConnection())
+            using (OracleConnection con = _db.GetConnection())
             {
                 con.Open();
                 string query = @"WITH MONTHS (READING_MONTH) AS
@@ -1842,12 +1843,12 @@ namespace SmartMeterReadingDash.Services
                 GROUP BY FAILURE_REASON
 
                 ORDER BY TOTAL_COUNT DESC";
-                using(OracleCommand cmd = new OracleCommand(query,con))
+                using (OracleCommand cmd = new OracleCommand(query, con))
                 {
                     cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = ReadingMonth;
-                    using(OracleDataReader dr = cmd.ExecuteReader())
+                    using (OracleDataReader dr = cmd.ExecuteReader())
                     {
-                        while(dr.Read())
+                        while (dr.Read())
                         {
                             failureReasonCounts.Add(new FailureReasonCount
                             {
@@ -1974,133 +1975,399 @@ namespace SmartMeterReadingDash.Services
         }
 
 
-        //public List<TempDashHesDownload> TempDashBoardHESCount()
-        //{
-        //    List<TempDashHesDownload> departmentWiseData = new List<TempDashHesDownload>();
-        //    using (OracleConnection conn = _db.GetConnection())
-        //    {
-        //        conn.Open();
-        //        string query = @"SELECT /*+ PARALLEL(8) */
-        //            SUM(HES_DOWNLOAD) AS HES_DOWNLOAD,
-        //            SUM(ALLIED_COUNT) AS ALLIED_COUNT,
-        //            SUM(KIMBAL_COUNT) AS KIMBAL_COUNT,
-        //            SUM(SLCC_COUNT) AS SLCC_COUNT,
-        //            SUM(MLCC_COUNT) AS MLCC_COUNT,
-        //            SUM(GCC_COUNT) AS GCC_COUNT,
-        //            SUM(KCC_COUNT) AS KCC_COUNT
-        //        FROM
-        //        (
-        //            -- SAP_SLCC_FORMY
-        //            SELECT  /*+ PARALLEL(SF,8) */
-        //                COUNT(*) AS HES_DOWNLOAD,
-        //                SUM(CASE WHEN SUBSTR(METERNO,1,2) IN ('90','AL') THEN 1 ELSE 0 END) AS ALLIED_COUNT,
-        //                SUM(CASE WHEN SUBSTR(METERNO,1,2)='91' THEN 1 ELSE 0 END) AS KIMBAL_COUNT,
-        //                --SUM(CASE WHEN SAP_DEPARTMENT='SLCC' THEN 1 ELSE 0 END) AS SLCC_COUNT,
-        //                SUM(CASE WHEN (SAP_DEPARTMENT='SLCC' OR SAP_DEPARTMENT IS NULL) THEN 1 ELSE 0 END) AS SLCC_COUNT,
-        //                SUM(CASE WHEN SAP_DEPARTMENT='MLCC' AND CYCLE<>'0N' THEN 1 ELSE 0 END) AS MLCC_COUNT,
-        //                SUM(CASE WHEN SAP_DEPARTMENT='GCC' THEN 1 ELSE 0 END) AS GCC_COUNT,
-        //                SUM(CASE WHEN (SAP_DEPARTMENT = 'MLCC' AND CYCLE = '0N') OR CYCLE IN ('KA','KC','KG') THEN 1 ELSE 0 END) AS KCC_COUNT
-        //            FROM RCMPA.SMART_METER_BILLING_DATA
-        //          WHERE --SAP_COMPANY = 'BRPL'
-        //          --AND READING_MONTH = TO_CHAR(SYSDATE,'YYYYMM')
-        //         --AND SAP_MR_REASON_CODE = '01' 
-        //          --AND CSTS_CD = 'R'
-        //          --AND METERNO NOT LIKE '%D%'
-        //          (
-        //               (SUBSTR(METERNO,1,2) = '91' AND LENGTH(METERNO)=8)
-        //            OR (SUBSTR(METERNO,1,2) = '90' AND LENGTH(METERNO)=8)
-        //            OR (SUBSTR(METERNO,1,2) = 'AL' AND LENGTH(METERNO)=10)
-        //          )
-        //          )
+        //BRP HES DOWNLOAD METERS
+        public List<HesDownloadMeter> HesDownloadMeterList(string readingMonth)
+        {
+            List<HesDownloadMeter> hesDownloadMeters = new List<HesDownloadMeter>();
+            using (OracleConnection con = _db.GetConnection())
+            {
+                con.Open();
+                string query = @"WITH MONTHS (READING_MONTH) AS 
+                (
+                    SELECT TRIM(REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL ) )
+                    FROM DUAL CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+', 1,LEVEL) IS NOT NULL
+                ),
+                LATEST_DOWNLOAD AS 
+                (
+                    SELECT /*+ PARALLEL(8) */ SM.METERNO, SM.CONS_REF, SM.READING_MONTH, SM.SAP_DEPARTMENT,
+                        ROW_NUMBER() OVER 
+                        (
+                            PARTITION BY SM.METERNO, SM.READING_MONTH
+                            ORDER BY SM.ENTRY_DATE DESC
+                        ) AS RN
+                    FROM RCMPA.SMART_METER_BILLING_DATA SM
+                    WHERE
+                        (
+                               SM.METERNO LIKE '91______'
+                            OR SM.METERNO LIKE '90______'
+                            OR SM.METERNO LIKE 'AL________'
+                            OR SM.METERNO LIKE 'KI________'
+                        )
+                        AND SM.READING_MONTH IN
+                        (
+                            SELECT READING_MONTH
+                            FROM MONTHS
+                        )
+                ),
+                DOWNLOAD_DATA AS 
+                (
+                    SELECT METERNO, CONS_REF, READING_MONTH, SAP_DEPARTMENT
+                    FROM LATEST_DOWNLOAD
+                    WHERE RN = 1
+                )
+                SELECT /*+ PARALLEL(8) */
+                    DISTINCT D.METERNO, D.CONS_REF,
+                    D.SAP_DEPARTMENT AS SAP_DEPARTMENT,
+                    NVL(S.SAP_DIVISION, FM.SAP_DIVISION) AS SAP_DIVISION,
+                    NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO) AS SAP_SEQ_NO,
+                    RTRIM(
+                        NVL(S.ADD1, FM.ADD1) || ', ' ||
+                        NVL(S.ADD2, FM.ADD2) || ', ' ||
+                        NVL(S.ADD3, FM.ADD3) || ', ' ||
+                        NVL(S.LAND_MARK, FM.LAND_MARK) || ', ' ||
+                        NVL(S.FATHER_NAME, FM.FATHER_NAME),
+                        ', '
+                    ) AS ADDRESS,
+                    CASE
+                        WHEN SUBSTR(D.METERNO, 1, 2) IN ('90', 'AL')
+                            THEN 'ALLIED'
 
-        //         ";
-        //        using (OracleCommand cmd = new OracleCommand(query, conn))
-        //        {
-        //            using (OracleDataReader dr = cmd.ExecuteReader())
-        //            {
-        //                while (dr.Read())
-        //                {
-        //                    departmentWiseData.Add(new TempDashHesDownload
-        //                    {
-        //                       HesDownload = dr["HES_DOWNLOAD"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_DOWNLOAD"]),
-        //                       AlliedCount = dr["ALLIED_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["ALLIED_COUNT"]),
-        //                       KimbalCount = dr["KIMBAL_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KIMBAL_COUNT"]),
-        //                       SLCCount = dr["SLCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["SLCC_COUNT"]),
-        //                       MLCCCount = dr["MLCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["MLCC_COUNT"]),
-        //                       KCCount = dr["KCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KCC_COUNT"]),
-        //                       GCCount = dr["GCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["GCC_COUNT"])
-        //                    });
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return departmentWiseData;
-        //}
+                        WHEN SUBSTR(D.METERNO, 1, 2) IN ('91', 'KI')
+                            THEN 'KIMBAL'
+                    END AS METER_TYPE,
+                    CASE
+                        WHEN SUBSTR(D.METERNO, 1, 4) = 'AL91'
+                            THEN '1PH'
+                        WHEN SUBSTR(D.METERNO, 1, 4) = 'AL90'
+                            THEN '3PH'
+                        WHEN SUBSTR(D.METERNO, 1, 4) = 'KI91'
+                            THEN '1PH'
+                        WHEN SUBSTR(D.METERNO, 1, 4) = '9150'
+                            THEN '1PH'
+                        WHEN SUBSTR(D.METERNO, 1, 4) = '9008'
+                            THEN '1PH'
+                        WHEN SUBSTR(D.METERNO, 1, 4) = '9027'
+                            THEN '1PH'
+                        WHEN SUBSTR(D.METERNO, 1, 4) = 'KI90'
+                            THEN '3PH'
+                        WHEN SUBSTR(D.METERNO, 1, 4) = '9026'
+                            THEN '3PH'
+                        ELSE 'UNKNOWN'
+                    END AS PHASE_TYPE
+                FROM DOWNLOAD_DATA D
+                LEFT JOIN RCMPA.SAP_SLCC_FORMY S ON S.CONS_REF = D.CONS_REF AND S.READING_MONTH = D.READING_MONTH
+                LEFT JOIN RCMPA.SAP_FORMY FM ON FM.CONS_REF = D.CONS_REF AND FM.READING_MONTH = D.READING_MONTH
+                ORDER BY D.SAP_DEPARTMENT, NVL(S.SAP_DIVISION, FM.SAP_DIVISION), NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO), D.METERNO";
+                using (OracleCommand cmd = new OracleCommand(query, con))
+                {
+                    cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = readingMonth;
+                    using (OracleDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            hesDownloadMeters.Add(new HesDownloadMeter
+                            {
+                                MeterNumber = dr["METERNO"].ToString(),
+                                SapDepartment = dr["SAP_DEPARTMENT"].ToString(),
+                                MeterType = dr["METER_TYPE"].ToString(),
+                                Phase = dr["PHASE_TYPE"].ToString(),
+                                ConsRef = dr["CONS_REF"].ToString(),
+                                SapDivision = dr["SAP_DIVISION"].ToString(),
+                                Address = dr["ADDRESS"].ToString(),
+                                SapSeqNo = dr["SAP_SEQ_NO"].ToString()
+                            });
+                        }
+                    }
+                }
+                return hesDownloadMeters;
 
-        //public List<TempDashHesFailed> TempHESFailed()
-        //{
-        //    List<TempDashHesFailed> departmentWiseData = new List<TempDashHesFailed>();
-        //    using (OracleConnection conn = _db.GetConnection())
-        //    {
-        //        conn.Open();
-        //        string query = @"SELECT
-        //                COUNT(DISTINCT METERNO) AS HES_FAILED,
-        //                COUNT(DISTINCT CASE
-        //                    WHEN SUBSTR(METERNO,1,2) IN ('90','AL')
-        //                    THEN METERNO
-        //                END) AS ALLIED_COUNT,
-        //                COUNT(DISTINCT CASE
-        //                    WHEN SUBSTR(METERNO,1,2) = '91'
-        //                    THEN METERNO
-        //                END) AS KIMBAL_COUNT,
-        //                COUNT(DISTINCT CASE
-        //                    WHEN SAP_DEPARTMENT = 'SLCC'
-        //                      OR SAP_DEPARTMENT IS NULL
-        //                    THEN METERNO
-        //                END) AS SLCC_COUNT,
-        //                COUNT(DISTINCT CASE
-        //                    WHEN SAP_DEPARTMENT = 'MLCC'
-        //                     AND CYCLE <> '0N'
-        //                    THEN METERNO
-        //                END) AS MLCC_COUNT,
-        //                COUNT(DISTINCT CASE
-        //                    WHEN SAP_DEPARTMENT = 'GCC'
-        //                    THEN METERNO
-        //                END) AS GCC_COUNT,
-        //                COUNT(DISTINCT CASE
-        //                    WHEN (SAP_DEPARTMENT = 'MLCC' AND CYCLE = '0N')
-        //                      OR CYCLE IN ('KA','KC','KG')
-        //                    THEN METERNO
-        //                END) AS KCC_COUNT
-        //            FROM RCMPA.SMART_METER_SCHEDULER_LOGS
-        //            WHERE
-        //            (
-        //                   (SUBSTR(METERNO,1,2)='91' AND LENGTH(METERNO)=8)
-        //                OR (SUBSTR(METERNO,1,2)='90' AND LENGTH(METERNO)=8)
-        //                OR (SUBSTR(METERNO,1,2)='AL' AND LENGTH(METERNO)=10)
-        //            )
-        //            AND MESSAGE NOT LIKE 'Data%'";
-        //        using (OracleCommand cmd = new OracleCommand(query, conn))
-        //        {
-        //            using (OracleDataReader dr = cmd.ExecuteReader())
-        //            {
-        //                while (dr.Read())
-        //                {
-        //                    departmentWiseData.Add(new TempDashHesFailed
-        //                    {
-        //                        HesFailed = dr["HES_FAILED"] == DBNull.Value ? 0 : Convert.ToInt32(dr["HES_FAILED"]),
-        //                        AlliedCount = dr["ALLIED_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["ALLIED_COUNT"]),
-        //                        KimbalCount = dr["KIMBAL_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KIMBAL_COUNT"]),
-        //                        SLCCount = dr["SLCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["SLCC_COUNT"]),
-        //                        MLCCCount = dr["MLCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["MLCC_COUNT"]),
-        //                        KCCount = dr["KCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["KCC_COUNT"]),
-        //                        GCCount = dr["GCC_COUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["GCC_COUNT"])
-        //                    });
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return departmentWiseData;
-        //}
+            }
+
+        }
+
+        public List<HesDownloadMeterBypl> GetHesDownloadBypl(string readingMonth)
+        {
+            List<HesDownloadMeterBypl> hesDownloadMetersBypl = new List<HesDownloadMeterBypl>();
+            using (OracleConnection con = _db.GetConnection())
+            {
+                con.Open();
+                string query = @"WITH MONTHS AS
+                (
+                    SELECT /*+ MATERIALIZE */
+                    TRIM(REGEXP_SUBSTR(:READING_MONTH,'[^,]+', 1,LEVEL )) AS READING_MONTH
+                    FROM DUAL CONNECT BY REGEXP_SUBSTR( :READING_MONTH,'[^,]+',1, LEVEL) IS NOT NULL
+                ),
+                SLCC_DOWNLOADED AS
+                (
+                    SELECT METERNO, READING_MONTH,INSERTED_DATE, NVL(DEPARTMENT, 'SLCC') AS DEPARTMENT
+                    FROM
+                    (
+                        SELECT
+                            /*+
+                                LEADING(M S)
+                                USE_NL(S)
+                                INDEX(S IDX_SLCC_SM_LOG_FAIL)
+                            */
+                            TRIM(S.METERNO) AS METERNO,
+                            S.BILL_MONTH AS READING_MONTH,
+                            S.INSERTED_DATE,
+                            S.DEPARTMENT,
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY S.METERNO, S.BILL_MONTH
+                                ORDER BY S.INSERTED_DATE DESC NULLS LAST
+                            ) AS RN
+                        FROM MONTHS M
+                        JOIN RCMPA.SAP_SLCC_SMARTMETER_LOG S ON S.BILL_MONTH = M.READING_MONTH
+                        WHERE S.IS_FAILED = '0' AND S.METERNO IS NOT NULL
+                    )
+                    WHERE RN = 1
+                ),
+                KCC_DOWNLOADED AS
+                (
+                    SELECT METERNO, READING_MONTH, INSERTED_DATE, NVL(DEPARTMENT, 'KCC/GCC') AS DEPARTMENT
+                    FROM
+                    (
+                        SELECT
+                            /*+
+                                LEADING(M K)
+                                USE_NL(K)
+                                INDEX(K IDX_KCC_SM_LOG_FAIL)
+                            */
+                            TRIM(K.METERNO) AS METERNO,
+                            K.BILL_MONTH AS READING_MONTH,
+                            K.INSERTED_DATE,
+                            K.DEPARTMENT,
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY K.METERNO, K.BILL_MONTH
+                                ORDER BY K.INSERTED_DATE DESC NULLS LAST
+                            ) AS RN
+                        FROM MONTHS M
+                        JOIN RCMPA.SAP_KCC_GCC_SMARTMETER_LOG K ON K.BILL_MONTH = M.READING_MONTH
+                        WHERE K.IS_FAILED = '0' AND K.METERNO IS NOT NULL
+                    )
+                    WHERE RN = 1
+                ),
+                SLCC_METERS AS
+                (
+                    SELECT /*+ MATERIALIZE */ DISTINCT METERNO FROM SLCC_DOWNLOADED
+                ),
+                KCC_METERS AS
+                (
+                    SELECT /*+ MATERIALIZE */ DISTINCT METERNO FROM KCC_DOWNLOADED
+                ),
+                SLCC_FORMY_FALLBACK AS
+                (
+                    SELECT METERNO, CONS_REF, SAP_DIVISION, SAP_SEQ_NO, ADD1, ADD2, ADD3, LAND_MARK, FATHER_NAME
+                    FROM
+                    (
+                        SELECT
+                            /*+
+                                LEADING(M F)
+                                USE_NL(F)
+                                INDEX(F IDX_SLCC_FORMY_MTR_MONTH)
+                            */
+                            F.METERNO,
+                            F.CONS_REF,
+                            F.SAP_DIVISION,
+                            F.SAP_SEQ_NO,
+                            F.ADD1,
+                            F.ADD2,
+                            F.ADD3,
+                            F.LAND_MARK,
+                            F.FATHER_NAME,
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY F.METERNO
+                                ORDER BY F.READING_MONTH DESC
+                            ) AS RN
+                        FROM SLCC_METERS M JOIN RCMPA.SAP_SLCC_FORMY F ON F.METERNO = M.METERNO
+                    )
+                    WHERE RN = 1
+                ),
+                SAP_FORMY_FALLBACK AS
+                (
+                    SELECT METERNO, CONS_REF,SAP_DIVISION,SAP_SEQ_NO,ADD1,ADD2, ADD3, LAND_MARK, FATHER_NAME
+                    FROM
+                    (
+                        SELECT
+                            /*+
+                                LEADING(M F)
+                                USE_NL(F)
+                                INDEX(F IDX_SAP_FORMY_MTR_MONTH)
+                            */
+                            F.METERNO,
+                            F.CONS_REF,
+                            F.SAP_DIVISION,
+                            F.SAP_SEQ_NO,
+                            F.ADD1,
+                            F.ADD2,
+                            F.ADD3,
+                            F.LAND_MARK,
+                            F.FATHER_NAME,
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY F.METERNO
+                                ORDER BY F.READING_MONTH DESC
+                            ) AS RN
+                        FROM KCC_METERS M JOIN RCMPA.SAP_FORMY F ON F.METERNO = M.METERNO
+                    )
+                    WHERE RN = 1
+                ),
+                SLCC_DATA AS
+                (
+                    SELECT D.METERNO, D.READING_MONTH, D.DEPARTMENT,D.INSERTED_DATE,
+                        COALESCE(
+                            NULLIF(TRIM(FM.CONS_REF), ''),
+                            NULLIF(TRIM(FL.CONS_REF), '')
+                        ) AS CONS_REF,
+                        COALESCE(
+                            NULLIF(TRIM(FM.SAP_DIVISION), ''),
+                            NULLIF(TRIM(FL.SAP_DIVISION), '')
+                        ) AS SAP_DIVISION,
+                        COALESCE(
+                            NULLIF(TRIM(FM.SAP_SEQ_NO), ''),
+                            NULLIF(TRIM(FL.SAP_SEQ_NO), '')
+                        ) AS SAP_SEQ_NO,
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD1), ''),
+                            NULLIF(TRIM(FL.ADD1), '')
+                        ) AS ADD1,
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD2), ''),
+                            NULLIF(TRIM(FL.ADD2), '')
+                        ) AS ADD2,
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD3), ''),
+                            NULLIF(TRIM(FL.ADD3), '')
+                        ) AS ADD3,
+                        COALESCE(
+                            NULLIF(TRIM(FM.LAND_MARK), ''),
+                            NULLIF(TRIM(FL.LAND_MARK), '')
+                        ) AS LAND_MARK,
+                        COALESCE(
+                            NULLIF(TRIM(FM.FATHER_NAME), ''),
+                            NULLIF(TRIM(FL.FATHER_NAME), '')
+                        ) AS FATHER_NAME
+                    FROM SLCC_DOWNLOADED D
+                    LEFT JOIN RCMPA.SAP_SLCC_FORMY FM ON FM.METERNO = D.METERNO AND FM.READING_MONTH = D.READING_MONTH
+                    LEFT JOIN SLCC_FORMY_FALLBACK FL ON FL.METERNO = D.METERNO
+                ),
+                KCC_DATA AS
+                (
+                    SELECT D.METERNO, D.READING_MONTH, D.DEPARTMENT, D.INSERTED_DATE,
+                        COALESCE(
+                            NULLIF(TRIM(FM.CONS_REF), ''),
+                            NULLIF(TRIM(FL.CONS_REF), '')
+                        ) AS CONS_REF,
+                        COALESCE(
+                            NULLIF(TRIM(FM.SAP_DIVISION), ''),
+                            NULLIF(TRIM(FL.SAP_DIVISION), '')
+                        ) AS SAP_DIVISION,
+                        COALESCE(
+                            NULLIF(TRIM(FM.SAP_SEQ_NO), ''),
+                            NULLIF(TRIM(FL.SAP_SEQ_NO), '')
+                        ) AS SAP_SEQ_NO,
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD1), ''),
+                            NULLIF(TRIM(FL.ADD1), '')
+                        ) AS ADD1,
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD2), ''),
+                            NULLIF(TRIM(FL.ADD2), '')
+                        ) AS ADD2,
+                        COALESCE(
+                            NULLIF(TRIM(FM.ADD3), ''),
+                            NULLIF(TRIM(FL.ADD3), '')
+                        ) AS ADD3,
+                        COALESCE(
+                            NULLIF(TRIM(FM.LAND_MARK), ''),
+                            NULLIF(TRIM(FL.LAND_MARK), '')
+                        ) AS LAND_MARK,
+                        COALESCE(
+                            NULLIF(TRIM(FM.FATHER_NAME), ''),
+                            NULLIF(TRIM(FL.FATHER_NAME), '')
+                        ) AS FATHER_NAME
+                    FROM KCC_DOWNLOADED D
+                    LEFT JOIN RCMPA.SAP_FORMY FM ON FM.METERNO = D.METERNO AND FM.READING_MONTH = D.READING_MONTH
+                    LEFT JOIN SAP_FORMY_FALLBACK FL ON FL.METERNO = D.METERNO
+                ),
+                FINAL_DATA AS
+                (
+                    SELECT METERNO, READING_MONTH, DEPARTMENT, INSERTED_DATE, CONS_REF, SAP_DIVISION,
+                        SAP_SEQ_NO, ADD1, ADD2, ADD3, LAND_MARK,FATHER_NAME
+                    FROM SLCC_DATA
+                    UNION ALL
+                    SELECT METERNO, READING_MONTH, DEPARTMENT,INSERTED_DATE,CONS_REF, SAP_DIVISION,SAP_SEQ_NO, ADD1, ADD2, ADD3, LAND_MARK,FATHER_NAME
+                    FROM KCC_DATA
+                )
+                SELECT D.METERNO, D.CONS_REF,
+                    CASE
+                        WHEN D.METERNO LIKE '92%'
+                          OR D.METERNO LIKE '99%'
+                          OR D.METERNO LIKE 'AL92%'
+                          OR D.METERNO LIKE 'AL99%'
+                        THEN '1PH'
+                        WHEN D.METERNO LIKE 'AL97%'
+                        THEN '3PH'
+                        WHEN D.METERNO LIKE '98%'
+                          OR D.METERNO LIKE 'KI98%'
+                        THEN '1PH'
+                        WHEN D.METERNO LIKE '97%'
+                          OR D.METERNO LIKE 'KI97%'
+                        THEN '3PH'
+                        ELSE 'UNKNOWN'
+                    END AS PHASE_TYPE,
+                    D.DEPARTMENT AS SAP_DEPARTMENT,
+                    D.SAP_DIVISION,
+                    D.SAP_SEQ_NO,
+                    RTRIM(
+                        D.ADD1 || ', ' ||
+                        D.ADD2 || ', ' ||
+                        D.ADD3 || ', ' ||
+                        D.LAND_MARK || ', ' ||
+                        D.FATHER_NAME,
+                        ', '
+                    ) AS ADDRESS,
+                    CASE
+                        WHEN D.METERNO LIKE '92%'
+                          OR D.METERNO LIKE '99%'
+                          OR D.METERNO LIKE 'AL%'
+                        THEN 'ALLIED'
+
+                        WHEN D.METERNO LIKE 'KI%'
+                          OR D.METERNO LIKE '97%'
+                          OR D.METERNO LIKE '98%'
+                        THEN 'KIMBAL'
+
+                        ELSE 'UNKNOWN'
+                    END AS METER_TYPE, D.READING_MONTH, D.INSERTED_DATE
+                FROM FINAL_DATA D
+                ORDER BY D.INSERTED_DATE DESC NULLS LAST, D.METERNO";
+                using (OracleCommand cmd = new OracleCommand(query, con))
+                {
+                    cmd.Parameters.Add(":READING_MONTH", OracleDbType.Varchar2).Value = readingMonth;
+                    using (OracleDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            hesDownloadMetersBypl.Add(new HesDownloadMeterBypl
+                            {
+                                MeterNumber = dr["METERNO"].ToString(),
+                                SapDepartment = dr["SAP_DEPARTMENT"].ToString(),
+                                MeterType = dr["METER_TYPE"].ToString(),
+                                Phase = dr["PHASE_TYPE"].ToString(),
+                                ConsRef = dr["CONS_REF"].ToString(),
+                                SapDivision = dr["SAP_DIVISION"].ToString(),
+                                Address = dr["ADDRESS"].ToString(),
+                                SapSeqNo = dr["SAP_SEQ_NO"].ToString()
+                            });
+                        }
+                    }
+                }
+            }
+            return hesDownloadMetersBypl;
+        }
     }
 }
