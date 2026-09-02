@@ -1,25 +1,25 @@
-﻿let isFirstLoad = true;
+﻿// let isFirstLoad = true;
 
-function getReadingMonth() {
+// function getReadingMonth() {
 
-    if (isFirstLoad) {
+//     if (isFirstLoad) {
 
-        isFirstLoad = false;
+//         isFirstLoad = false;
 
-        const today = new Date();
+//         const today = new Date();
 
-        const current =
-            today.getFullYear() +
-            String(today.getMonth() + 1).padStart(2, "0");
+//         const current =
+//             today.getFullYear() +
+//             String(today.getMonth() + 1).padStart(2, "0");
 
-        const previousDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+//         const previousDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
 
-        const previous =
-            previousDate.getFullYear() +
-            String(previousDate.getMonth() + 1).padStart(2, "0");
+//         const previous =
+//             previousDate.getFullYear() +
+//             String(previousDate.getMonth() + 1).padStart(2, "0");
 
-        return previous + "," + current;
-    }
+//         return previous + "," + current;
+//     }
 
-    return $("#readingMonth").val().replace("-", "");
-}
+//     return $("#readingMonth").val().replace("-", "");
+// }

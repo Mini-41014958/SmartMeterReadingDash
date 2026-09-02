@@ -38,13 +38,16 @@ function getBYPLFailureCategory(message) {
         .replace(/\s+/g, " ")
         .trim();
 
+
     if (msg.includes("SYSTEM TITLE")) {
         return "System Title";
     }
 
+
     if (msg.includes("TCP")) {
         return "TCP Connection";
     }
+
 
     if (
         msg.includes("NO DATA") ||
@@ -53,6 +56,7 @@ function getBYPLFailureCategory(message) {
     ) {
         return "No Data Found";
     }
+
 
     if (
         msg.includes("DATE IS OLDER THEN FORMY") ||
@@ -68,12 +72,14 @@ function getBYPLFailureCategory(message) {
         return "Date Older Than FormY";
     }
 
+
     if (
         msg.includes("TIMEOUT") ||
         msg.includes("TIME OUT")
     ) {
         return "Timeout";
     }
+
 
     return "Other";
 }
@@ -87,6 +93,7 @@ function buildBYPLCountsFromDetail(data) {
 
     const grouped = {};
 
+
     (data || []).forEach(item => {
 
         const reason =
@@ -94,9 +101,12 @@ function buildBYPLCountsFromDetail(data) {
                 item.schedulerMessage
             );
 
+
         grouped[reason] =
             (grouped[reason] || 0) + 1;
+
     });
+
 
     return Object.entries(grouped)
         .map(([reason, count]) => ({
@@ -147,13 +157,16 @@ function normalizeReasonName(reason) {
         .replace(/\s+/g, " ")
         .trim();
 
+
     if (msg.includes("SYSTEM TITLE")) {
         return "System Title";
     }
 
+
     if (msg.includes("TCP")) {
         return "TCP Connection";
     }
+
 
     if (
         msg.includes("NO DATA") ||
@@ -163,6 +176,7 @@ function normalizeReasonName(reason) {
         return "No Data Found";
     }
 
+
     if (
         msg.includes("DATE OLDER") ||
         msg.includes("DATE IS OLDER") ||
@@ -171,6 +185,7 @@ function normalizeReasonName(reason) {
         return "Date Older Than FormY";
     }
 
+
     if (
         msg.includes("TIMEOUT") ||
         msg.includes("TIME OUT")
@@ -178,12 +193,14 @@ function normalizeReasonName(reason) {
         return "Timeout";
     }
 
+
     if (
         msg.includes("OTHER") ||
         msg.includes("UNKNOWN")
     ) {
         return "Other";
     }
+
 
     return String(reason || "Other").trim();
 }
@@ -197,6 +214,7 @@ function mergeFailureReasons(data) {
 
     const grouped = {};
 
+
     (data || []).forEach(item => {
 
         const reason =
@@ -205,9 +223,12 @@ function mergeFailureReasons(data) {
         const count =
             Number(item.count || 0);
 
+
         grouped[reason] =
             (grouped[reason] || 0) + count;
+
     });
+
 
     return Object.entries(grouped)
         .map(([reason, count]) => ({
@@ -229,13 +250,16 @@ function getFailureColor(reason) {
         .replace(/\s+/g, " ")
         .trim();
 
+
     if (msg.includes("SYSTEM TITLE")) {
         return "#dc3545";
     }
 
+
     if (msg.includes("TCP")) {
         return "#fd7e14";
     }
+
 
     if (
         msg.includes("NO DATA") ||
@@ -244,6 +268,7 @@ function getFailureColor(reason) {
         return "#ffc107";
     }
 
+
     if (
         msg.includes("DATE OLDER") ||
         msg.includes("FORMY")
@@ -251,12 +276,14 @@ function getFailureColor(reason) {
         return "#20c997";
     }
 
+
     if (
         msg.includes("TIMEOUT") ||
         msg.includes("TIME OUT")
     ) {
         return "#6f42c1";
     }
+
 
     return "#6c757d";
 }
@@ -273,6 +300,7 @@ function getFailureCount(data, reason) {
             x => x.reason === reason
         );
 
+
     return Number(item?.count || 0);
 }
 
@@ -285,13 +313,16 @@ const rowHoverPlugin = {
 
     id: "rowHoverPlugin",
 
+
     afterEvent(chart, args) {
 
         const event = args.event;
 
+
         if (!event) {
             return;
         }
+
 
         const chartArea =
             chart.chartArea;
@@ -299,26 +330,36 @@ const rowHoverPlugin = {
         const yScale =
             chart.scales.y;
 
+
         if (!chartArea || !yScale) {
             return;
         }
 
 
-        // Clear on mouse out
+        // =================================================
+        // CLEAR ON MOUSE OUT
+        // =================================================
+
         if (event.type === "mouseout") {
 
             chart.setActiveElements([]);
+
 
             if (chart.tooltip) {
 
                 chart.tooltip.setActiveElements(
                     [],
-                    { x: 0, y: 0 }
+                    {
+                        x: 0,
+                        y: 0
+                    }
                 );
             }
 
+
             chart.canvas.style.cursor =
                 "default";
+
 
             args.changed = true;
 
@@ -326,7 +367,10 @@ const rowHoverPlugin = {
         }
 
 
-        // Outside chart area
+        // =================================================
+        // OUTSIDE CHART AREA
+        // =================================================
+
         if (
             event.x < chartArea.left ||
             event.x > chartArea.right ||
@@ -336,6 +380,7 @@ const rowHoverPlugin = {
 
             chart.setActiveElements([]);
 
+
             if (chart.tooltip) {
 
                 chart.tooltip.setActiveElements(
@@ -347,14 +392,20 @@ const rowHoverPlugin = {
                 );
             }
 
+
             chart.canvas.style.cursor =
                 "default";
+
 
             args.changed = true;
 
             return;
         }
 
+
+        // =================================================
+        // FIND NEAREST COMPANY ROW
+        // =================================================
 
         const brplY =
             yScale.getPixelForValue(0);
@@ -362,25 +413,30 @@ const rowHoverPlugin = {
         const byplY =
             yScale.getPixelForValue(1);
 
+
         const distanceToBrpl =
             Math.abs(event.y - brplY);
 
         const distanceToBypl =
             Math.abs(event.y - byplY);
 
+
         const companyIndex =
             distanceToBrpl < distanceToBypl
                 ? 0
                 : 1;
 
+
         const rowDistance =
             Math.abs(byplY - brplY);
+
 
         const hoverRange =
             Math.max(
                 rowDistance / 2,
-                70
+                60
             );
+
 
         const nearestDistance =
             Math.min(
@@ -388,9 +444,11 @@ const rowHoverPlugin = {
                 distanceToBypl
             );
 
+
         if (nearestDistance > hoverRange) {
 
             chart.setActiveElements([]);
+
 
             if (chart.tooltip) {
 
@@ -403,8 +461,10 @@ const rowHoverPlugin = {
                 );
             }
 
+
             chart.canvas.style.cursor =
                 "default";
+
 
             args.changed = true;
 
@@ -412,25 +472,38 @@ const rowHoverPlugin = {
         }
 
 
+        // =================================================
+        // BUILD ACTIVE ELEMENTS
+        // =================================================
+
         const activeElements =
             chart.data.datasets
-                .map((dataset, datasetIndex) => {
+                .map(
+                    (dataset, datasetIndex) => {
 
-                    const value =
-                        Number(
-                            dataset.data[companyIndex] || 0
-                        );
+                        const value =
+                            Number(
+                                dataset.data[
+                                companyIndex
+                                ] || 0
+                            );
 
-                    if (value <= 0) {
-                        return null;
+
+                        if (value <= 0) {
+                            return null;
+                        }
+
+
+                        return {
+                            datasetIndex:
+                                datasetIndex,
+
+                            index:
+                                companyIndex
+                        };
+
                     }
-
-                    return {
-                        datasetIndex: datasetIndex,
-                        index: companyIndex
-                    };
-
-                })
+                )
                 .filter(Boolean);
 
 
@@ -438,6 +511,10 @@ const rowHoverPlugin = {
             activeElements
         );
 
+
+        // =================================================
+        // SHOW TOOLTIP
+        // =================================================
 
         if (chart.tooltip) {
 
@@ -456,6 +533,7 @@ const rowHoverPlugin = {
                 ? "pointer"
                 : "default";
 
+
         args.changed = true;
     }
 };
@@ -471,9 +549,10 @@ function loadFailureReasonChart(readingMonth) {
         readingMonth || getReadingMonth();
 
 
-    // IMPORTANT:
-    // Return the AJAX promise so loadDashboard()
-    // can properly await this function.
+    // =================================================
+    // RETURN AJAX PROMISE
+    // =================================================
+
     return $.when(
 
         // =================================================
@@ -495,6 +574,10 @@ function loadFailureReasonChart(readingMonth) {
         }),
 
 
+        // =================================================
+        // BYPL API
+        // =================================================
+
         $.ajax({
 
             url: getApiUrl(
@@ -511,27 +594,48 @@ function loadFailureReasonChart(readingMonth) {
 
     )
 
+
+        // =================================================
+        // SUCCESS
+        // =================================================
+
         .done(function (
             brplResponse,
             byplResponse
         ) {
 
+
+            // =================================================
+            // API RESPONSE
+            // =================================================
+
             const brplData =
                 brplResponse[0] || [];
+
 
             const byplDetailData =
                 byplResponse[0] || [];
 
+
+            // =================================================
+            // NORMALIZE BRPL
+            // =================================================
 
             const normalizedBrpl =
                 normalizeFailureData(
                     brplData
                 );
 
+
             const brpl =
                 mergeFailureReasons(
                     normalizedBrpl
                 );
+
+
+            // =================================================
+            // BUILD BYPL
+            // =================================================
 
             const rawBypl =
                 buildBYPLCountsFromDetail(
@@ -540,11 +644,16 @@ function loadFailureReasonChart(readingMonth) {
                         : []
                 );
 
+
             const bypl =
                 mergeFailureReasons(
                     rawBypl
                 );
 
+
+            // =================================================
+            // UNIQUE FAILURE REASONS
+            // =================================================
 
             const failureReasons = [
 
@@ -571,12 +680,26 @@ function loadFailureReasonChart(readingMonth) {
                 (a, b) => {
 
                     const aTotal =
-                        getFailureCount(brpl, a) +
-                        getFailureCount(bypl, a);
+                        getFailureCount(
+                            brpl,
+                            a
+                        ) +
+                        getFailureCount(
+                            bypl,
+                            a
+                        );
+
 
                     const bTotal =
-                        getFailureCount(brpl, b) +
-                        getFailureCount(bypl, b);
+                        getFailureCount(
+                            brpl,
+                            b
+                        ) +
+                        getFailureCount(
+                            bypl,
+                            b
+                        );
+
 
                     return bTotal - aTotal;
                 }
@@ -584,7 +707,7 @@ function loadFailureReasonChart(readingMonth) {
 
 
             // =================================================
-            // DESTROY OLD CHART
+            // DESTROY PREVIOUS CHART
             // =================================================
 
             if (readingTrendChart) {
@@ -603,6 +726,7 @@ function loadFailureReasonChart(readingMonth) {
                 document.getElementById(
                     "readingTrendChart"
                 );
+
 
             if (!chartCanvas) {
 
@@ -623,12 +747,14 @@ function loadFailureReasonChart(readingMonth) {
                 const ctx =
                     chartCanvas.getContext("2d");
 
+
                 ctx.clearRect(
                     0,
                     0,
                     chartCanvas.width,
                     chartCanvas.height
                 );
+
 
                 return;
             }
@@ -639,41 +765,58 @@ function loadFailureReasonChart(readingMonth) {
             // =================================================
 
             const datasets =
-                failureReasons.map(reason => ({
+                failureReasons.map(
+                    reason => ({
 
-                    label: reason,
+                        label: reason,
 
-                    data: [
 
-                        getFailureCount(
-                            brpl,
-                            reason
-                        ),
+                        data: [
 
-                        getFailureCount(
-                            bypl,
-                            reason
-                        )
+                            getFailureCount(
+                                brpl,
+                                reason
+                            ),
 
-                    ],
+                            getFailureCount(
+                                bypl,
+                                reason
+                            )
 
-                    backgroundColor:
-                        getFailureColor(reason),
+                        ],
 
-                    borderColor:
-                        "#ffffff",
 
-                    borderWidth: 2,
+                        backgroundColor:
+                            getFailureColor(
+                                reason
+                            ),
 
-                    borderRadius: 2,
 
-                    borderSkipped: false,
+                        borderColor:
+                            "#ffffff",
 
-                    barThickness: 52,
 
-                    maxBarThickness: 58
+                        // Thin separator between
+                        // stacked failure categories
+                        borderWidth: 1,
 
-                }));
+
+                        borderRadius: 1,
+
+
+                        borderSkipped: false,
+
+
+                        // =================================================
+                        // COMPACT BAR SIZE
+                        // =================================================
+
+                        barThickness: 44,
+
+                        maxBarThickness: 46
+
+                    })
+                );
 
 
             // =================================================
@@ -687,6 +830,7 @@ function loadFailureReasonChart(readingMonth) {
 
                         type: "bar",
 
+
                         data: {
 
                             labels: [
@@ -694,24 +838,41 @@ function loadFailureReasonChart(readingMonth) {
                                 "BYPL"
                             ],
 
-                            datasets: datasets
+                            datasets:
+                                datasets
                         },
+
 
                         plugins: [
                             rowHoverPlugin
                         ],
 
+
                         options: {
 
+                            // Horizontal bars
                             indexAxis: "y",
+
 
                             responsive: true,
 
-                            maintainAspectRatio: false,
+
+                            maintainAspectRatio:
+                                false,
+
+
+                            // =================================================
+                            // ANIMATION
+                            // =================================================
 
                             animation: {
-                                duration: 500
+                                duration: 450
                             },
+
+
+                            // =================================================
+                            // EVENTS
+                            // =================================================
 
                             events: [
                                 "mousemove",
@@ -720,12 +881,26 @@ function loadFailureReasonChart(readingMonth) {
                                 "touchmove"
                             ],
 
+
                             interaction: {
+
                                 mode: "index",
+
                                 intersect: false
+
                             },
 
+
+                            // =================================================
+                            // PLUGINS
+                            // =================================================
+
                             plugins: {
+
+
+                                // =================================================
+                                // LEGEND
+                                // =================================================
 
                                 legend: {
 
@@ -735,129 +910,212 @@ function loadFailureReasonChart(readingMonth) {
 
                                     align: "start",
 
+
                                     labels: {
 
-                                        usePointStyle: true,
+                                        usePointStyle:
+                                            true,
 
-                                        pointStyle: "circle",
+                                        pointStyle:
+                                            "circle",
 
-                                        padding: 20,
 
-                                        boxWidth: 13,
+                                        // Reduced spacing
+                                        padding: 14,
 
-                                        boxHeight: 13,
+
+                                        boxWidth: 11,
+
+                                        boxHeight: 11,
+
 
                                         font: {
-                                            size: 13,
-                                            weight: "700"
+
+                                            size: 12,
+
+                                            weight: "600"
+
                                         },
 
-                                        color: "#4b5563"
+
+                                        color:
+                                            "#4b5563"
                                     }
                                 },
 
+
+                                // =================================================
+                                // TITLE
+                                // =================================================
 
                                 title: {
 
                                     display: true,
 
+
                                     text:
                                         "HES Download Failure Reason",
 
-                                    align: "start",
 
-                                    color: "#374151",
+                                    align:
+                                        "start",
+
+
+                                    color:
+                                        "#374151",
+
 
                                     font: {
-                                        size: 15,
+
+                                        size: 14,
+
                                         weight: "700"
+
                                     },
 
+
                                     padding: {
-                                        top: 5,
-                                        bottom: 6
+
+                                        top: 2,
+
+                                        bottom: 4
+
                                     }
                                 },
 
+
+                                // =================================================
+                                // SUBTITLE
+                                // =================================================
 
                                 subtitle: {
 
                                     display: true,
 
+
                                     text:
                                         `BRPL vs BYPL • ${month}`,
 
-                                    align: "start",
 
-                                    color: "#6b7280",
+                                    align:
+                                        "start",
+
+
+                                    color:
+                                        "#6b7280",
+
 
                                     font: {
-                                        size: 12,
+
+                                        size: 11,
+
                                         weight: "600"
+
                                     },
 
+
                                     padding: {
-                                        bottom: 18
+
+                                        bottom: 10
+
                                     }
                                 },
 
+
+                                // =================================================
+                                // TOOLTIP
+                                // =================================================
 
                                 tooltip: {
 
                                     enabled: true,
 
+
                                     backgroundColor:
                                         "#111827",
+
 
                                     titleColor:
                                         "#ffffff",
 
+
                                     bodyColor:
                                         "#ffffff",
+
 
                                     footerColor:
                                         "#d1d5db",
 
-                                    padding: 10,
 
-                                    cornerRadius: 8,
+                                    padding: 8,
+
+
+                                    cornerRadius: 7,
+
 
                                     displayColors: true,
 
-                                    boxWidth: 11,
 
-                                    boxHeight: 11,
+                                    boxWidth: 10,
 
-                                    boxPadding: 6,
 
-                                    caretSize: 5,
+                                    boxHeight: 10,
+
+
+                                    boxPadding: 5,
+
+
+                                    caretSize: 4,
+
 
                                     titleFont: {
-                                        size: 14,
+
+                                        size: 12,
+
                                         weight: "600"
+
                                     },
+
 
                                     bodyFont: {
-                                        size: 13,
+
+                                        size: 11,
+
                                         weight: "600"
+
                                     },
+
 
                                     footerFont: {
-                                        size: 13,
+
+                                        size: 11,
+
                                         weight: "600"
+
                                     },
 
-                                    titleSpacing: 5,
 
-                                    titleMarginBottom: 6,
+                                    titleSpacing: 4,
 
-                                    bodySpacing: 4,
 
-                                    footerMarginTop: 7,
+                                    titleMarginBottom: 5,
 
-                                    footerSpacing: 4,
+
+                                    bodySpacing: 3,
+
+
+                                    footerMarginTop: 6,
+
+
+                                    footerSpacing: 3,
+
 
                                     callbacks: {
+
+
+                                        // =================================================
+                                        // TOOLTIP TITLE
+                                        // =================================================
 
                                         title: function (
                                             context
@@ -867,8 +1125,11 @@ function loadFailureReasonChart(readingMonth) {
                                                 !context ||
                                                 context.length === 0
                                             ) {
+
                                                 return "";
+
                                             }
+
 
                                             return (
                                                 context[0].label +
@@ -876,6 +1137,10 @@ function loadFailureReasonChart(readingMonth) {
                                             );
                                         },
 
+
+                                        // =================================================
+                                        // TOOLTIP LABEL
+                                        // =================================================
 
                                         label: function (
                                             context
@@ -886,9 +1151,11 @@ function loadFailureReasonChart(readingMonth) {
                                                     context.raw || 0
                                                 );
 
+
                                             if (value <= 0) {
                                                 return null;
                                             }
+
 
                                             return (
                                                 context.dataset.label +
@@ -898,19 +1165,27 @@ function loadFailureReasonChart(readingMonth) {
                                         },
 
 
+                                        // =================================================
+                                        // TOOLTIP TOTAL
+                                        // =================================================
+
                                         footer: function (
                                             context
                                         ) {
 
                                             const total =
                                                 context.reduce(
-                                                    (sum, item) =>
+                                                    (
+                                                        sum,
+                                                        item
+                                                    ) =>
                                                         sum +
                                                         Number(
                                                             item.raw || 0
                                                         ),
                                                     0
                                                 );
+
 
                                             return (
                                                 "Total: " +
@@ -925,7 +1200,16 @@ function loadFailureReasonChart(readingMonth) {
                             },
 
 
+                            // =================================================
+                            // SCALES
+                            // =================================================
+
                             scales: {
+
+
+                                // =================================================
+                                // X AXIS
+                                // =================================================
 
                                 x: {
 
@@ -933,71 +1217,108 @@ function loadFailureReasonChart(readingMonth) {
 
                                     beginAtZero: true,
 
+
                                     title: {
 
                                         display: true,
 
+
                                         text:
                                             "Number of Failed Meters",
+
 
                                         color:
                                             "#4b5563",
 
+
                                         font: {
-                                            size: 14,
-                                            weight: "700"
+
+                                            size: 12,
+
+                                            weight: "600"
+
                                         },
 
+
                                         padding: {
-                                            top: 12
+
+                                            top: 8
+
                                         }
                                     },
+
 
                                     ticks: {
 
                                         precision: 0,
 
+
                                         color:
                                             "#4b5563",
 
+
                                         font: {
-                                            size: 13,
-                                            weight: "600"
+
+                                            size: 11,
+
+                                            weight: "500"
+
                                         },
 
-                                        padding: 8
+
+                                        padding: 5
+
                                     },
+
 
                                     grid: {
 
                                         color:
                                             "rgba(0,0,0,0.08)",
 
-                                        drawBorder: false
+
+                                        drawBorder:
+                                            false
+
                                     }
 
                                 },
 
 
+                                // =================================================
+                                // Y AXIS
+                                // =================================================
+
                                 y: {
 
                                     stacked: true,
 
+
                                     grid: {
-                                        display: false
+
+                                        display:
+                                            false
+
                                     },
+
 
                                     ticks: {
 
                                         color:
                                             "#374151",
 
+
                                         font: {
-                                            size: 16,
+
+                                            size: 14,
+
                                             weight: "700"
+
                                         },
 
-                                        padding: 12
+
+                                        padding: 8
+
                                     }
 
                                 }
@@ -1011,6 +1332,11 @@ function loadFailureReasonChart(readingMonth) {
 
         })
 
+
+        // =================================================
+        // AJAX FAILURE
+        // =================================================
+
         .fail(function (
             brplError,
             byplError
@@ -1020,10 +1346,12 @@ function loadFailureReasonChart(readingMonth) {
                 "Failure reason chart load error."
             );
 
+
             console.error(
                 "BRPL Error:",
                 brplError
             );
+
 
             console.error(
                 "BYPL Error:",

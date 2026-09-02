@@ -472,7 +472,7 @@
 <!-- =========================================================
      HES DOWNLOAD SUMMARY MODAL
 ========================================================= -->
-
+<!-- HES DOWNLOAD SUMMARY MODAL -->
 <div class="modal fade"
      id="HesDownloadSummaryModal"
      tabindex="-1"
@@ -504,6 +504,7 @@
             <!-- BODY -->
             <div class="modal-body">
 
+                <!-- FILTER SECTION -->
                 <div class="filter-section">
 
                     <div class="row align-items-end g-2">
@@ -538,7 +539,7 @@
                                     class="form-select">
 
                                 <option value="">
-                                    All Division
+                                    All Divisions
                                 </option>
 
                             </select>
@@ -546,10 +547,59 @@
                         </div>
 
 
+                        <!-- PHASE -->
+                        <div class="col-lg-3 col-md-6">
 
-                        <!-- EXPORT BUTTONS -->
-                        <div class="col-lg-6 text-end">
+                            <label class="form-label fw-bold">
+                                Phase
+                            </label>
 
+                            <select id="hesPhaseFilter"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Phases
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- METER MAKE -->
+                        <div class="col-lg-3 col-md-6">
+
+                            <label class="form-label fw-bold">
+                                Meter Make
+                            </label>
+
+                            <select id="hesMeterMakeFilter"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Meter Makes
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- BUTTONS -->
+                        <div class="col-12 d-flex justify-content-between align-items-center mt-2">
+
+                            <!-- CLEAR -->
+                            <button type="button"
+                                    id="btnClearHesDownloadFilters"
+                                    class="btn btn-outline-secondary">
+
+                                <i class="bi bi-x-circle"></i>
+                                Clear Filters
+
+                            </button>
+
+
+                            <!-- EXPORT -->
                             <div class="export-buttons">
 
                                 <button type="button"
@@ -590,6 +640,7 @@
                 </div>
 
 
+                <!-- TABLE -->
                 <div class="table-responsive hes-download-table-wrapper">
 
                     <table id="hesDownloadSummaryTable"
@@ -623,7 +674,6 @@
 
 
                         <tbody id="hesDownloadSummaryBody">
-
                         </tbody>
 
                     </table>
@@ -651,6 +701,10 @@
     </div>
 
 </div>
+
+<!-- ============================================================
+     BYPL HES DOWNLOAD SUMMARY MODAL
+============================================================ -->
 
 <div class="modal fade"
      id="HesDownloadSummaryModalBypl"
@@ -683,6 +737,7 @@
             <!-- BODY -->
             <div class="modal-body">
 
+                <!-- FILTER SECTION -->
                 <div class="filter-section">
 
                     <div class="row align-items-end g-2">
@@ -717,7 +772,7 @@
                                     class="form-select">
 
                                 <option value="">
-                                    All Division
+                                    All Divisions
                                 </option>
 
                             </select>
@@ -725,10 +780,59 @@
                         </div>
 
 
+                        <!-- PHASE -->
+                        <div class="col-lg-3 col-md-6">
 
-                        <!-- EXPORT BUTTONS -->
-                        <div class="col-lg-6 text-end">
+                            <label class="form-label fw-bold">
+                                Phase
+                            </label>
 
+                            <select id="hesPhaseFilterBypl"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Phases
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- METER MAKE -->
+                        <div class="col-lg-3 col-md-6">
+
+                            <label class="form-label fw-bold">
+                                Meter Make
+                            </label>
+
+                            <select id="hesMeterMakeFilterBypl"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Meter Makes
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- BUTTONS -->
+                        <div class="col-12 d-flex justify-content-between align-items-center mt-2">
+
+                            <!-- CLEAR FILTER -->
+                            <button type="button"
+                                    id="btnClearHesDownloadFiltersBypl"
+                                    class="btn btn-outline-secondary">
+
+                                <i class="bi bi-x-circle"></i>
+                                Clear Filters
+
+                            </button>
+
+
+                            <!-- EXPORT BUTTONS -->
                             <div class="export-buttons">
 
                                 <button type="button"
@@ -769,10 +873,7 @@
                 </div>
 
 
-                <!-- =====================================================
-                     TABLE
-                ====================================================== -->
-
+                <!-- TABLE -->
                 <div class="table-responsive hes-download-table-wrapper">
 
                     <table id="hesDownloadSummaryTableBypl"
@@ -835,54 +936,207 @@
 </div>
 
 
-     <!-- Modal for Detailed Summary -->
-    <div class="modal fade" id="downloadSummaryModal" tabindex="-1" role="dialog" aria-labelledby="downloadSummaryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="downloadSummaryModalLabel">Meter Download Detailed Summary</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
+   <!-- Modal for Detailed Summary -->
+<div class="modal fade"
+     id="downloadSummaryModal"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="downloadSummaryModalLabel"
+     aria-hidden="true">
 
-                <div class="modal-body">
-                    <!-- Filter Section -->
-                    <div class="filter-section">
-                        <div class="row align-items-end">
-                            <div class="col-lg-3">
-                                <label class="form-label fw-bold">Department</label>
-                                <select id="departmentFilter" class="form-select">
-                                    <option value="">All Departments</option>
-                                </select>
-                            </div>
+    <div class="modal-dialog modal-xl" role="document">
 
-                            <div class="col-lg-3">
-                                <label class="form-label fw-bold">Failed Reason</label>
-                                <select id="reasonFilter" class="form-select">
-                                    <option value="">All Reasons</option>
-                                </select>
-                            </div>
+        <div class="modal-content">
 
-                            <div class="col-lg-6 text-end">
-                                <div class="export-buttons">
-                                    <button class="btn btn-success" onclick="exportTableToExcel()">
-                                        <i class="bi bi-file-earmark-excel"></i> Excel
-                                    </button>
-                                    <button class="btn btn-primary" onclick="exportTableToCSV()">
-                                        <i class="bi bi-file-earmark-csv"></i> CSV
-                                    </button>
-                                    <button class="btn btn-secondary" onclick="window.print()">
-                                        <i class="bi bi-printer"></i> Print
-                                    </button>
-                                </div>
-                            </div>
+            <div class="modal-header">
+
+                <h5 class="modal-title"
+                    id="downloadSummaryModalLabel">
+                    Meter Download Detailed Summary
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+
+                    <div class="row align-items-end g-2">
+
+                        <!-- Department -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Department
+                            </label>
+
+                            <select id="departmentFilter"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Departments
+                                </option>
+
+                            </select>
+
                         </div>
+
+                        <!-- Failed Reason -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Failed Reason
+                            </label>
+
+                            <select id="reasonFilter"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Reasons
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Phase -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Phase
+                            </label>
+
+                            <select id="phaseFilter"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Phases
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Meter Make -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Meter Make
+                            </label>
+
+                            <select id="meterMakeFilter"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Meter Makes
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Entry Date From -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Entry Date From
+                            </label>
+
+                            <input type="date"
+                                   id="entryDateFrom"
+                                   class="form-control">
+
+                        </div>
+
+
+                        <!-- Entry Date To -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Entry Date To
+                            </label>
+
+                            <input type="date"
+                                   id="entryDateTo"
+                                   class="form-control">
+
+                        </div>
+
+
+                        <!-- Buttons -->
+                        <div class="col-12 d-flex justify-content-between align-items-center mt-2">
+
+                            <button type="button"
+                                    id="btnClearDownloadFilters"
+                                    class="btn btn-outline-secondary">
+
+                                <i class="bi bi-x-circle"></i>
+                                Clear Filters
+
+                            </button>
+
+
+                            <div class="export-buttons">
+
+                                <button type="button"
+                                        class="btn btn-success"
+                                        onclick="exportTableToExcel()">
+
+                                    <i class="bi bi-file-earmark-excel"></i>
+                                    Excel
+
+                                </button>
+
+
+                                <button type="button"
+                                        class="btn btn-primary"
+                                        onclick="exportTableToCSV()">
+
+                                    <i class="bi bi-file-earmark-csv"></i>
+                                    CSV
+
+                                </button>
+
+
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        onclick="window.print()">
+
+                                    <i class="bi bi-printer"></i>
+                                    Print
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
                     </div>
 
-                    <!-- Table -->
-                    <div class="table-responsive">
-                        <table id="downloadSummaryTable" class="table table-bordered custom-table">
-                            <thead class="table-light">
+                </div>
+
+
+                <!-- Table -->
+                <div class="table-responsive">
+
+                    <table id="downloadSummaryTable"
+                           class="table table-bordered custom-table">
+
+                        <thead class="table-light">
+
                             <tr>
+
                                 <th>S.No.</th>
                                 <th>Cons Ref</th>
                                 <th>Meter Number</th>
@@ -894,37 +1148,84 @@
                                 <th>Meter Make</th>
                                 <th>Status</th>
                                 <th>Entry Date</th>
+
                             </tr>
-                            </thead>
-                            <tbody id="downloadSummaryBody">
-                            </tbody>
-                        </table>
-                    </div>
+
+                        </thead>
+
+                        <tbody id="downloadSummaryBody">
+                        </tbody>
+
+                    </table>
+
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
             </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                    Close
+
+                </button>
+
+            </div>
+
         </div>
+
     </div>
 
-    @* BYPL TABLE *@
-        <div class="modal fade" id="downloadSummaryModalBYPL" tabindex="-1" role="dialog" aria-labelledby="downloadSummaryModalLabelBYPL" aria-hidden="true">
-        <div class="modal-dialog modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="downloadSummaryModalLabelBYPL">Meter Download Detailed Summary</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
+</div>
 
-                <div class="modal-body">
-                    <!-- Filter Section -->
-                    <div class="filter-section">
-                        <div class="row align-items-end">
-                            <div class="col-lg-3">
-                                <label class="form-label fw-bold">Department</label>
-                              <select id="departmentFilterBYPL"
+@* BYPL TABLE *@
+<div class="modal fade"
+     id="downloadSummaryModalBYPL"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="downloadSummaryModalLabelBYPL"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-xl" role="document">
+
+        <div class="modal-content">
+
+            <!-- HEADER -->
+            <div class="modal-header">
+
+                <h5 class="modal-title"
+                    id="downloadSummaryModalLabelBYPL">
+                    Meter Download Detailed Summary
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+
+            </div>
+
+
+            <!-- BODY -->
+            <div class="modal-body">
+
+                <!-- FILTER SECTION -->
+                <div class="filter-section">
+
+                    <div class="row align-items-end g-2">
+
+                        <!-- Department -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Department
+                            </label>
+
+                            <select id="departmentFilterBYPL"
                                     class="form-select">
 
                                 <option value="">
@@ -932,11 +1233,18 @@
                                 </option>
 
                             </select>
-                            </div>
 
-                            <div class="col-lg-3">
-                                <label class="form-label fw-bold">Failed Reason</label>
-                               <select id="reasonFilterBYPL"
+                        </div>
+
+
+                        <!-- Failed Reason -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Failed Reason
+                            </label>
+
+                            <select id="reasonFilterBYPL"
                                     class="form-select">
 
                                 <option value="">
@@ -944,67 +1252,185 @@
                                 </option>
 
                             </select>
-                            </div>
 
-                            <div class="col-lg-6 text-end">
-                                <div class="export-buttons">
-                             <button type="button"
-                                    class="btn btn-success"
-                                    onclick="exportTableToExcelBYPL()">
-                                <i class="bi bi-file-earmark-excel"></i>
-                                Excel
-                            </button>
-
-                            <button type="button"
-                                    class="btn btn-primary"
-                                    onclick="exportTableToCSVBYPL()">
-                                <i class="bi bi-filetype-csv"></i>
-                                CSV
-                            </button>
-
-                            <button type="button"
-                                    class="btn btn-secondary"
-                                    onclick="window.print()">
-                                <i class="bi bi-printer"></i>
-                                Print
-                            </button>
-                                </div>
-                            </div>
                         </div>
+
+
+                        <!-- Phase -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Phase
+                            </label>
+
+                            <select id="phaseFilterBYPL"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Phases
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Meter Make -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Meter Make
+                            </label>
+
+                            <select id="meterMakeFilterBYPL"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Meter Makes
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Entry Date From -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Entry Date From
+                            </label>
+
+                            <input type="date"
+                                   id="entryDateFromBYPL"
+                                   class="form-control">
+
+                        </div>
+
+
+                        <!-- Entry Date To -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Entry Date To
+                            </label>
+
+                            <input type="date"
+                                   id="entryDateToBYPL"
+                                   class="form-control">
+
+                        </div>
+
+
+                        <!-- BUTTONS -->
+                        <div class="col-12 d-flex justify-content-between align-items-center mt-2">
+
+                            <!-- CLEAR -->
+                            <button type="button"
+                                    id="btnClearDownloadFiltersBYPL"
+                                    class="btn btn-outline-secondary">
+
+                                <i class="bi bi-x-circle"></i>
+                                Clear Filters
+
+                            </button>
+
+
+                            <!-- EXPORT -->
+                            <div class="export-buttons">
+
+                                <button type="button"
+                                        class="btn btn-success"
+                                        onclick="exportTableToExcelBYPL()">
+
+                                    <i class="bi bi-file-earmark-excel"></i>
+                                    Excel
+
+                                </button>
+
+
+                                <button type="button"
+                                        class="btn btn-primary"
+                                        onclick="exportTableToCSVBYPL()">
+
+                                    <i class="bi bi-filetype-csv"></i>
+                                    CSV
+
+                                </button>
+
+
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        onclick="window.print()">
+
+                                    <i class="bi bi-printer"></i>
+                                    Print
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
                     </div>
 
-                    <!-- Table -->
-                    <div class="table-responsive">
-                   <table id="downloadSummaryTableBYPL" class="table table-bordered table-hover align-middle">
-                  <thead>
-                    <tr>
-                        <th>S.No.</th>
-                        <th>Cons Ref</th>
-                        <th>Meter Number</th>
-                        <th>Phase</th>
-                        <th>Department</th>
-                        <th>Division</th>
-                        <th>Seq No</th>
-                        <th>Address</th>
-                        <th>Meter Make</th>
-                        <th>Status</th>
-                        <th>Entry Date</th>
-                    </tr>
-                   </thead>
-
-                    <tbody id="downloadSummaryBodyBYPL">
-                      </tbody>
-
-                     </table>
-                    </div>
                 </div>
 
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                <!-- TABLE -->
+                <div class="table-responsive">
+
+                    <table id="downloadSummaryTableBYPL"
+                           class="table table-bordered table-hover align-middle">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>S.No.</th>
+                                <th>Cons Ref</th>
+                                <th>Meter Number</th>
+                                <th>Phase</th>
+                                <th>Department</th>
+                                <th>Division</th>
+                                <th>Seq No</th>
+                                <th>Address</th>
+                                <th>Meter Make</th>
+                                <th>Status</th>
+                                <th>Entry Date</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="downloadSummaryBodyBYPL">
+                        </tbody>
+
+                    </table>
+
                 </div>
+
             </div>
+
+
+            <!-- FOOTER -->
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                    Close
+
+                </button>
+
+            </div>
+
         </div>
+
     </div>
+
+</div>
 <!-- 1. jQuery FIRST -->
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -1017,16 +1443,47 @@
     let filteredHesDownloadData = [];
 
 
-    $("#hesDownload").on("click", function() {
+    // ============================================================
+    // OPEN HES MODAL
+    // ============================================================
 
-        const modal = new bootstrap.Modal(
-            document.getElementById("HesDownloadSummaryModal")
-        );
+    $("#hesDownload")
+        .off("click")
+        .on("click", function() {
 
-        modal.show();
+            const modalElement =
+                document.getElementById(
+                    "HesDownloadSummaryModal"
+                );
 
-        loadHesDownloadSummary();
-    });
+
+            if (!modalElement) {
+
+                console.error(
+                    "HES Download modal not found."
+                );
+
+                return;
+            }
+
+
+            const modal =
+                bootstrap.Modal.getOrCreateInstance(
+                    modalElement
+                );
+
+
+            modal.show();
+
+
+            loadHesDownloadSummary();
+
+        });
+
+
+    // ============================================================
+    // LOAD HES DOWNLOAD DATA
+    // ============================================================
 
     async function loadHesDownloadSummary() {
 
@@ -1034,148 +1491,530 @@
 
             $("#hesDownloadSummaryBody").html(`
                 <tr>
-                    <td colspan="9" class="text-center py-4">
+                    <td colspan="9"
+                        class="text-center py-4">
+
                         <div class="spinner-border spinner-border-sm text-primary"></div>
-                        Loading...
+
+                        <span class="ms-2">
+                            Loading...
+                        </span>
+
                     </td>
                 </tr>
             `);
 
-            const response = await fetch(
-                `${getApiUrl("dashboardapi/hes-download-meters-details")}?ReadingMonth=${encodeURIComponent(getReadingMonth())}`
+
+            const readingMonth =
+                getReadingMonth();
+
+
+            const apiUrl =
+                `${getApiUrl("dashboardapi/hes-download-meters-details")}?ReadingMonth=${encodeURIComponent(readingMonth)}`;
+
+
+            console.log(
+                "HES Download API:",
+                apiUrl
             );
 
+
+            const response =
+                await fetch(apiUrl);
+
+
             if (!response.ok) {
-                throw new Error("Unable to load HES download data");
+
+                const errorText =
+                    await response.text();
+
+
+                console.error(
+                    "HES API Error:",
+                    response.status,
+                    errorText
+                );
+
+
+                throw new Error(
+                    `Unable to load HES download data (${response.status})`
+                );
             }
 
-            allHesDownloadData = await response.json();
 
-            filteredHesDownloadData = [...allHesDownloadData];
+            allHesDownloadData =
+                await response.json();
+
+
+            filteredHesDownloadData =
+                [...allHesDownloadData];
+
 
             loadHesDepartmentFilter();
+
             loadHesDivisionFilter();
 
-            renderHesDownloadTable(filteredHesDownloadData);
+            loadHesPhaseFilter();
+
+            loadHesMeterMakeFilter();
+
+
+            clearHesFilters();
+
+
+            renderHesDownloadTable(
+                filteredHesDownloadData
+            );
 
         }
         catch (err) {
 
-            console.error("HES Download Summary Error:", err);
+            console.error(
+                "HES Download Summary Error:",
+                err
+            );
+
 
             $("#hesDownloadSummaryBody").html(`
                 <tr>
-                    <td colspan="9" class="text-center text-danger py-4">
+                    <td colspan="9"
+                        class="text-center text-danger py-4">
+
                         Failed to load data.
-                        Error: ${err.message}
+
+                        Error:
+                        ${escapeHesHtml(
+                err.message
+            )}
+
                     </td>
                 </tr>
             `);
         }
     }
 
+
+    // ============================================================
+    // DEPARTMENT FILTER
+    // ============================================================
+
     function loadHesDepartmentFilter() {
 
-        const ddl = $("#hesDepartmentFilter");
+        const ddl =
+            $("#hesDepartmentFilter");
+
 
         ddl.empty();
 
+
         ddl.append(`
-            <option value="">All Departments</option>
+            <option value="">
+                All Departments
+            </option>
         `);
+
 
         const departments = [
             ...new Set(
                 allHesDownloadData
-                    .map(x => x.sapDepartment)
-                    .filter(x => x !== null && x !== undefined && x !== "")
+                    .map(x =>
+                        String(
+                            x.sapDepartment || ""
+                        ).trim()
+                    )
+                    .filter(Boolean)
             )
-        ].sort();
+        ];
 
-        departments.forEach(department => {
 
-            ddl.append(`
-                <option value="${escapeHesHtml(department)}">
-                    ${escapeHesHtml(department)}
-                </option>
-            `);
+        departments.sort(
+            (a, b) =>
+                a.localeCompare(b)
+        );
 
-        });
+
+        departments.forEach(
+            department => {
+
+                ddl.append(
+                    $("<option>", {
+                        value: department,
+                        text: department
+                    })
+                );
+
+            }
+        );
     }
+
+
+    // ============================================================
+    // DIVISION FILTER
+    // ============================================================
 
     function loadHesDivisionFilter() {
 
-        const ddl = $("#hesDivisionFilter");
+        const ddl =
+            $("#hesDivisionFilter");
+
 
         ddl.empty();
 
+
         ddl.append(`
-            <option value="">All Division</option>
+            <option value="">
+                All Divisions
+            </option>
         `);
+
 
         const divisions = [
             ...new Set(
                 allHesDownloadData
-                    .map(x => x.sapDivision)
-                    .filter(x => x !== null && x !== undefined && x !== "")
+                    .map(x =>
+                        String(
+                            x.sapDivision || ""
+                        ).trim()
+                    )
+                    .filter(Boolean)
             )
-        ].sort();
+        ];
 
-        divisions.forEach(division => {
 
-            ddl.append(`
-                <option value="${escapeHesHtml(division)}">
-                    ${escapeHesHtml(division)}
-                </option>
-            `);
+        divisions.sort(
+            (a, b) =>
+                a.localeCompare(b)
+        );
 
-        });
+
+        divisions.forEach(
+            division => {
+
+                ddl.append(
+                    $("<option>", {
+                        value: division,
+                        text: division
+                    })
+                );
+
+            }
+        );
     }
 
-    $("#hesDepartmentFilter").on(
-        "change",
-        applyHesFilters
-    );
+
+    // ============================================================
+    // PHASE FILTER
+    // ============================================================
+
+    function loadHesPhaseFilter() {
+
+        const ddl =
+            $("#hesPhaseFilter");
+
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">
+                All Phases
+            </option>
+        `);
+
+
+        const phases = [
+            ...new Set(
+                allHesDownloadData
+                    .map(x =>
+                        String(
+                            x.phase || ""
+                        ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+
+        phases.sort(
+            (a, b) =>
+                a.localeCompare(
+                    b,
+                    undefined,
+                    {
+                        numeric: true
+                    }
+                )
+        );
+
+
+        phases.forEach(
+            phase => {
+
+                ddl.append(
+                    $("<option>", {
+                        value: phase,
+                        text: phase
+                    })
+                );
+
+            }
+        );
+    }
+
+
+    // ============================================================
+    // METER MAKE FILTER
+    // ============================================================
+
+    function loadHesMeterMakeFilter() {
+
+        const ddl =
+            $("#hesMeterMakeFilter");
+
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">
+                All Meter Makes
+            </option>
+        `);
+
+
+        const meterMakes = [
+            ...new Set(
+                allHesDownloadData
+                    .map(x =>
+                        String(
+                            x.meterType || ""
+                        ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+
+        meterMakes.sort(
+            (a, b) =>
+                a.localeCompare(b)
+        );
+
+
+        meterMakes.forEach(
+            make => {
+
+                ddl.append(
+                    $("<option>", {
+                        value: make,
+                        text: make
+                    })
+                );
+
+            }
+        );
+    }
+
+
+    // ============================================================
+    // FILTER EVENTS
+    // ============================================================
+
+    $("#hesDepartmentFilter")
+        .off("change")
+        .on(
+            "change",
+            applyHesFilters
+        );
+
 
     $("#hesDivisionFilter")
         .off("change")
-        .on("change", applyHesFilters);
+        .on(
+            "change",
+            applyHesFilters
+        );
+
+
+    $("#hesPhaseFilter")
+        .off("change")
+        .on(
+            "change",
+            applyHesFilters
+        );
+
+
+    $("#hesMeterMakeFilter")
+        .off("change")
+        .on(
+            "change",
+            applyHesFilters
+        );
+
+
+    // ============================================================
+    // CLEAR FILTER BUTTON
+    // ============================================================
+
+    $("#btnClearHesDownloadFilters")
+        .off("click")
+        .on(
+            "click",
+            function() {
+
+                clearHesFilters();
+
+
+                filteredHesDownloadData =
+                    [...allHesDownloadData];
+
+
+                renderHesDownloadTable(
+                    filteredHesDownloadData
+                );
+
+            }
+        );
+
+
+    // ============================================================
+    // CLEAR FILTERS
+    // ============================================================
+
+    function clearHesFilters() {
+
+        $("#hesDepartmentFilter")
+            .val("");
+
+
+        $("#hesDivisionFilter")
+            .val("");
+
+
+        $("#hesPhaseFilter")
+            .val("");
+
+
+        $("#hesMeterMakeFilter")
+            .val("");
+    }
+
+
+    // ============================================================
+    // APPLY FILTERS
+    // ============================================================
 
     function applyHesFilters() {
 
-        const department = (
-            $("#hesDepartmentFilter").val() || ""
-        ).toUpperCase();
+        const department =
+            String(
+                $("#hesDepartmentFilter")
+                    .val() || ""
+            )
+                .trim()
+                .toUpperCase();
 
-        const division = (
-            $("#hesDivisionFilter").val() || ""
-        ).toUpperCase();
+
+        const division =
+            String(
+                $("#hesDivisionFilter")
+                    .val() || ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        const phase =
+            String(
+                $("#hesPhaseFilter")
+                    .val() || ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        const meterMake =
+            String(
+                $("#hesMeterMakeFilter")
+                    .val() || ""
+            )
+                .trim()
+                .toUpperCase();
 
 
         filteredHesDownloadData =
-            allHesDownloadData.filter(item => {
-
-                const itemDepartment = (
-                    item.sapDepartment || ""
-                ).toUpperCase();
-
-                const itemDivision = (
-                    item.sapDivision || ""
-                ).toUpperCase();
+            allHesDownloadData.filter(
+                item => {
 
 
-                const departmentMatch =
-                    department === "" ||
-                    itemDepartment === department;
+                    // Department
+                    const itemDepartment =
+                        String(
+                            item.sapDepartment || ""
+                        )
+                            .trim()
+                            .toUpperCase();
 
 
-                const divisionMatch =
-                    division === "" ||
-                    itemDivision === division;
+                    const departmentMatch =
+                        department === "" ||
+                        itemDepartment ===
+                        department;
 
 
-                return departmentMatch && divisionMatch;
-            });
+                    // Division
+                    const itemDivision =
+                        String(
+                            item.sapDivision || ""
+                        )
+                            .trim()
+                            .toUpperCase();
+
+
+                    const divisionMatch =
+                        division === "" ||
+                        itemDivision ===
+                        division;
+
+
+                    // Phase
+                    const itemPhase =
+                        String(
+                            item.phase || ""
+                        )
+                            .trim()
+                            .toUpperCase();
+
+
+                    const phaseMatch =
+                        phase === "" ||
+                        itemPhase ===
+                        phase;
+
+
+                    // Meter Make
+                    const itemMeterMake =
+                        String(
+                            item.meterType || ""
+                        )
+                            .trim()
+                            .toUpperCase();
+
+
+                    const meterMakeMatch =
+                        meterMake === "" ||
+                        itemMeterMake ===
+                        meterMake;
+
+
+                    return (
+                        departmentMatch &&
+                        divisionMatch &&
+                        phaseMatch &&
+                        meterMakeMatch
+                    );
+                }
+            );
 
 
         renderHesDownloadTable(
@@ -1183,18 +2022,32 @@
         );
     }
 
+
+    // ============================================================
+    // RENDER TABLE
+    // ============================================================
+
     function renderHesDownloadTable(data) {
 
-        const tbody = $("#hesDownloadSummaryBody");
+        const tbody =
+            $("#hesDownloadSummaryBody");
+
 
         tbody.empty();
 
-        if (!data || data.length === 0) {
+
+        if (
+            !data ||
+            data.length === 0
+        ) {
 
             tbody.html(`
                 <tr>
-                    <td colspan="9" class="text-center py-4">
+                    <td colspan="9"
+                        class="text-center py-4">
+
                         No Records Found
+
                     </td>
                 </tr>
             `);
@@ -1203,94 +2056,133 @@
         }
 
 
-        data.forEach((x, index) => {
+        data.forEach(
+            (x, index) => {
 
-            tbody.append(`
-                <tr>
+                tbody.append(`
+                    <tr>
 
-                    <td class="text-center fw-semibold">
-                        ${index + 1}
-                    </td>
+                        <td class="text-center fw-semibold">
+                            ${index + 1}
+                        </td>
 
-                    <td>
-                        ${escapeHesHtml(x.consRef)}
-                    </td>
 
-                    <td>
-                        ${escapeHesHtml(x.meterNumber)}
-                    </td>
+                        <td>
+                            ${escapeHesHtml(
+                    x.consRef
+                )}
+                        </td>
 
-                    <td class="text-center">
-                        ${escapeHesHtml(x.phase)}
-                    </td>
 
-                    <td>
-                        ${escapeHesHtml(x.sapDepartment)}
-                    </td>
+                        <td>
+                            ${escapeHesHtml(
+                    x.meterNumber
+                )}
+                        </td>
 
-                    <td>
-                        ${escapeHesHtml(x.sapDivision)}
-                    </td>
 
-                    <td>
-                        ${escapeHesHtml(x.sapSeqNo)}
-                    </td>
+                        <td class="text-center">
+                            ${escapeHesHtml(
+                    x.phase
+                )}
+                        </td>
 
-                    <td class="address-cell">
-                        ${escapeHesHtml(x.address, "--")}
-                    </td>
 
-                    <td>
-                        ${escapeHesHtml(x.meterType)}
-                    </td>
+                        <td>
+                            ${escapeHesHtml(
+                    x.sapDepartment
+                )}
+                        </td>
 
-                </tr>
-            `);
-        });
+
+                        <td>
+                            ${escapeHesHtml(
+                    x.sapDivision
+                )}
+                        </td>
+
+
+                        <td>
+                            ${escapeHesHtml(
+                    x.sapSeqNo
+                )}
+                        </td>
+
+
+                        <td class="address-cell">
+                            ${escapeHesHtml(
+                    x.address,
+                    "--"
+                )}
+                        </td>
+
+
+                        <td>
+                            ${escapeHesHtml(
+                    x.meterType
+                )}
+                        </td>
+
+                    </tr>
+                `);
+
+            }
+        );
     }
 
 
     // ============================================================
-    // Excel Export - HES
+    // EXCEL EXPORT
     // ============================================================
+
     function exportHesDownloadBrplTableToExcel() {
 
-        const table = document.getElementById(
-            "hesDownloadSummaryTable"
-        );
+        const table =
+            document.getElementById(
+                "hesDownloadSummaryTable"
+            );
+
 
         if (!table) {
-            console.error("HES table not found");
+
+            console.error(
+                "HES table not found"
+            );
+
             return;
         }
 
 
-        const wb = XLSX.utils.book_new();
+        const wb =
+            XLSX.utils.book_new();
 
-        const ws = XLSX.utils.table_to_sheet(table);
+
+        const ws =
+            XLSX.utils.table_to_sheet(
+                table
+            );
 
 
-        // Column Widths
         ws["!cols"] = [
-            { wch: 7 },     // S.No
-            { wch: 15 },    // Cons Ref
-            { wch: 18 },    // Meter Number
-            { wch: 10 },    // Phase
-            { wch: 15 },    // Department
-            { wch: 15 },    // Division
-            { wch: 10 },    // Seq No
-            { wch: 45 },    // Address
-            { wch: 18 }     // Meter Make
+
+            { wch: 7 },
+            { wch: 15 },
+            { wch: 18 },
+            { wch: 10 },
+            { wch: 15 },
+            { wch: 15 },
+            { wch: 10 },
+            { wch: 45 },
+            { wch: 18 }
+
         ];
 
 
-        // Auto Filter
         ws["!autofilter"] = {
             ref: "A1:I1"
         };
 
 
-        // Freeze Header
         ws["!freeze"] = {
             xSplit: 0,
             ySplit: 1
@@ -1304,76 +2196,2207 @@
         );
 
 
+        const date =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
         XLSX.writeFile(
             wb,
             "HES_Download_Summary_BRPL_" +
-            new Date().toISOString().split("T")[0] +
+            date +
             ".xlsx"
         );
     }
 
+
+    // ============================================================
+    // CSV EXPORT
+    // ============================================================
+
     function exportHesDownloadBrplTableToCSV() {
 
-        const table = document.getElementById(
-            "hesDownloadSummaryTable"
-        );
+        const table =
+            document.getElementById(
+                "hesDownloadSummaryTable"
+            );
+
 
         if (!table) {
-            console.error("HES table not found");
+
+            console.error(
+                "HES table not found"
+            );
+
             return;
         }
 
 
-        let csv = [];
+        const csv = [];
 
 
-        table.querySelectorAll("tr").forEach(row => {
+        table
+            .querySelectorAll("tr")
+            .forEach(row => {
 
-            if (row.style.display === "none") {
+
+                if (
+                    row.style.display === "none"
+                ) {
+
+                    return;
+                }
+
+
+                const cols =
+                    row.querySelectorAll(
+                        "th, td"
+                    );
+
+
+                const data = [];
+
+
+                cols.forEach(col => {
+
+                    const value =
+                        (
+                            col.innerText || ""
+                        )
+                            .replace(
+                                /\r?\n|\r/g,
+                                " "
+                            )
+                            .trim()
+                            .replace(
+                                /"/g,
+                                '""'
+                            );
+
+
+                    data.push(
+                        `"${value}"`
+                    );
+
+                });
+
+
+                csv.push(
+                    data.join(",")
+                );
+
+            });
+
+
+        const blob =
+            new Blob(
+                [csv.join("\n")],
+                {
+                    type:
+                        "text/csv;charset=utf-8;"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        link.href = url;
+
+
+        const date =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
+        link.download =
+            "HES_Download_Summary_BRPL_" +
+            date +
+            ".csv";
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        document.body.removeChild(
+            link
+        );
+
+
+        URL.revokeObjectURL(
+            url
+        );
+    }
+
+
+    // ============================================================
+    // ESCAPE HTML
+    // ============================================================
+
+    function escapeHesHtml(
+        value,
+        fallback = ""
+    ) {
+
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+
+            return fallback;
+        }
+
+
+        return String(value)
+
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+
+            .replace(
+                /</g,
+                "&lt;"
+            )
+
+            .replace(
+                />/g,
+                "&gt;"
+            )
+
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+    }
+
+    // ============================================================
+    // BYPL HES DOWNLOAD DATA
+    // ============================================================
+
+    let allHesDownloadDataBypl = [];
+    let filteredHesDownloadDataBypl = [];
+
+
+    // ============================================================
+    // OPEN BYPL HES MODAL
+    // ============================================================
+
+    $("#byplHesDownload")
+        .off("click")
+        .on("click", function() {
+
+            const modalElement =
+                document.getElementById(
+                    "HesDownloadSummaryModalBypl"
+                );
+
+
+            if (!modalElement) {
+
+                console.error(
+                    "BYPL HES modal not found"
+                );
+
                 return;
             }
 
 
-            const cols = row.querySelectorAll(
-                "th, td"
-            );
-
-            const data = [];
-
-
-            cols.forEach(col => {
-
-                const value = (
-                    col.innerText || ""
-                )
-                    .replace(/\r?\n|\r/g, " ")
-                    .trim()
-                    .replace(/"/g, '""');
+            const modal =
+                bootstrap.Modal.getOrCreateInstance(
+                    modalElement
+                );
 
 
-                data.push(`"${value}"`);
-            });
+            modal.show();
 
 
-            csv.push(data.join(","));
+            loadHesDownloadSummaryBypl();
+
         });
 
 
-        const blob = new Blob(
-            [csv.join("\n")],
-            {
-                type: "text/csv;charset=utf-8;"
+    // ============================================================
+    // LOAD BYPL HES DOWNLOAD DATA
+    // ============================================================
+
+    async function loadHesDownloadSummaryBypl() {
+
+        try {
+
+            $("#hesDownloadSummaryBodyBypl").html(`
+                <tr>
+                    <td colspan="9"
+                        class="text-center py-4">
+
+                        <div class="spinner-border spinner-border-sm text-primary"></div>
+
+                        <span class="ms-2">
+                            Loading...
+                        </span>
+
+                    </td>
+                </tr>
+            `);
+
+
+            const readingMonth =
+                getReadingMonth();
+
+
+            const apiUrl =
+                `${getApiUrl("dashboardapi/hes-download-meters-details-bypl")}?ReadingMonth=${encodeURIComponent(readingMonth)}`;
+
+
+            console.log(
+                "BYPL HES API:",
+                apiUrl
+            );
+
+
+            const response =
+                await fetch(apiUrl);
+
+
+            if (!response.ok) {
+
+                const errorText =
+                    await response.text();
+
+
+                console.error(
+                    "BYPL HES API Error:",
+                    response.status,
+                    errorText
+                );
+
+
+                throw new Error(
+                    `Unable to load BYPL HES download data (${response.status})`
+                );
+            }
+
+
+            allHesDownloadDataBypl =
+                await response.json();
+
+
+            if (
+                !Array.isArray(
+                    allHesDownloadDataBypl
+                )
+            ) {
+
+                allHesDownloadDataBypl = [];
+
+            }
+
+
+            filteredHesDownloadDataBypl =
+                [...allHesDownloadDataBypl];
+
+
+            // Load dropdowns
+            loadHesDepartmentFilterBypl();
+
+            loadHesDivisionFilterBypl();
+
+            loadHesPhaseFilterBypl();
+
+            loadHesMeterMakeFilterBypl();
+
+
+            // Clear previous selections
+            clearHesFiltersBypl();
+
+
+            // Render
+            renderHesDownloadTableBypl(
+                filteredHesDownloadDataBypl
+            );
+
+        }
+        catch (err) {
+
+            console.error(
+                "BYPL HES Download Summary Error:",
+                err
+            );
+
+
+            $("#hesDownloadSummaryBodyBypl").html(`
+                <tr>
+                    <td colspan="9"
+                        class="text-center text-danger py-4">
+
+                        Failed to load data.
+
+                        Error:
+                        ${escapeHesHtmlBypl(
+                err.message
+            )}
+
+                    </td>
+                </tr>
+            `);
+        }
+    }
+
+
+    // ============================================================
+    // DEPARTMENT FILTER
+    // ============================================================
+
+    function loadHesDepartmentFilterBypl() {
+
+        const ddl =
+            $("#hesDepartmentFilterBypl");
+
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">
+                All Departments
+            </option>
+        `);
+
+
+        const departments = [
+            ...new Set(
+                allHesDownloadDataBypl
+                    .map(x =>
+                        String(
+                            x.sapDepartment || ""
+                        ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+
+        departments.sort(
+            (a, b) =>
+                a.localeCompare(b)
+        );
+
+
+        departments.forEach(
+            department => {
+
+                ddl.append(
+                    $("<option>", {
+                        value: department,
+                        text: department
+                    })
+                );
+
+            }
+        );
+    }
+
+
+    // ============================================================
+    // DIVISION FILTER
+    // ============================================================
+
+    function loadHesDivisionFilterBypl() {
+
+        const ddl =
+            $("#hesDivisionFilterBypl");
+
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">
+                All Divisions
+            </option>
+        `);
+
+
+        const divisions = [
+            ...new Set(
+                allHesDownloadDataBypl
+                    .map(x =>
+                        String(
+                            x.sapDivision || ""
+                        ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+
+        divisions.sort(
+            (a, b) =>
+                a.localeCompare(b)
+        );
+
+
+        divisions.forEach(
+            division => {
+
+                ddl.append(
+                    $("<option>", {
+                        value: division,
+                        text: division
+                    })
+                );
+
+            }
+        );
+    }
+
+
+    // ============================================================
+    // PHASE FILTER
+    // ============================================================
+
+    function loadHesPhaseFilterBypl() {
+
+        const ddl =
+            $("#hesPhaseFilterBypl");
+
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">
+                All Phases
+            </option>
+        `);
+
+
+        const phases = [
+            ...new Set(
+                allHesDownloadDataBypl
+                    .map(x =>
+                        String(
+                            x.phase || ""
+                        ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+
+        phases.sort(
+            (a, b) =>
+                a.localeCompare(
+                    b,
+                    undefined,
+                    {
+                        numeric: true
+                    }
+                )
+        );
+
+
+        phases.forEach(
+            phase => {
+
+                ddl.append(
+                    $("<option>", {
+                        value: phase,
+                        text: phase
+                    })
+                );
+
+            }
+        );
+    }
+
+
+    // ============================================================
+    // METER MAKE FILTER
+    // ============================================================
+
+    function loadHesMeterMakeFilterBypl() {
+
+        const ddl =
+            $("#hesMeterMakeFilterBypl");
+
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">
+                All Meter Makes
+            </option>
+        `);
+
+
+        const meterMakes = [
+            ...new Set(
+                allHesDownloadDataBypl
+                    .map(x =>
+                        String(
+                            x.meterType || ""
+                        ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+
+        meterMakes.sort(
+            (a, b) =>
+                a.localeCompare(b)
+        );
+
+
+        meterMakes.forEach(
+            meterMake => {
+
+                ddl.append(
+                    $("<option>", {
+                        value: meterMake,
+                        text: meterMake
+                    })
+                );
+
+            }
+        );
+    }
+
+
+    // ============================================================
+    // FILTER EVENTS
+    // ============================================================
+
+    $("#hesDepartmentFilterBypl")
+        .off("change")
+        .on(
+            "change",
+            applyHesFiltersBypl
+        );
+
+
+    $("#hesDivisionFilterBypl")
+        .off("change")
+        .on(
+            "change",
+            applyHesFiltersBypl
+        );
+
+
+    $("#hesPhaseFilterBypl")
+        .off("change")
+        .on(
+            "change",
+            applyHesFiltersBypl
+        );
+
+
+    $("#hesMeterMakeFilterBypl")
+        .off("change")
+        .on(
+            "change",
+            applyHesFiltersBypl
+        );
+
+
+    // ============================================================
+    // CLEAR FILTER BUTTON
+    // ============================================================
+
+    $("#btnClearHesDownloadFiltersBypl")
+        .off("click")
+        .on(
+            "click",
+            function() {
+
+                clearHesFiltersBypl();
+
+
+                filteredHesDownloadDataBypl =
+                    [...allHesDownloadDataBypl];
+
+
+                renderHesDownloadTableBypl(
+                    filteredHesDownloadDataBypl
+                );
+
             }
         );
 
 
-        const link = document.createElement("a");
+    // ============================================================
+    // CLEAR FILTERS
+    // ============================================================
 
-        link.href = URL.createObjectURL(blob);
+    function clearHesFiltersBypl() {
+
+        $("#hesDepartmentFilterBypl")
+            .val("");
+
+
+        $("#hesDivisionFilterBypl")
+            .val("");
+
+
+        $("#hesPhaseFilterBypl")
+            .val("");
+
+
+        $("#hesMeterMakeFilterBypl")
+            .val("");
+    }
+
+
+    // ============================================================
+    // APPLY FILTERS
+    // ============================================================
+
+    function applyHesFiltersBypl() {
+
+        const department =
+            String(
+                $("#hesDepartmentFilterBypl")
+                    .val() || ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        const division =
+            String(
+                $("#hesDivisionFilterBypl")
+                    .val() || ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        const phase =
+            String(
+                $("#hesPhaseFilterBypl")
+                    .val() || ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        const meterMake =
+            String(
+                $("#hesMeterMakeFilterBypl")
+                    .val() || ""
+            )
+                .trim()
+                .toUpperCase();
+
+
+        filteredHesDownloadDataBypl =
+            allHesDownloadDataBypl.filter(
+                item => {
+
+
+                    // ============================================
+                    // DEPARTMENT
+                    // ============================================
+
+                    const itemDepartment =
+                        String(
+                            item.sapDepartment || ""
+                        )
+                            .trim()
+                            .toUpperCase();
+
+
+                    const departmentMatch =
+                        department === "" ||
+                        itemDepartment ===
+                        department;
+
+
+                    // ============================================
+                    // DIVISION
+                    // ============================================
+
+                    const itemDivision =
+                        String(
+                            item.sapDivision || ""
+                        )
+                            .trim()
+                            .toUpperCase();
+
+
+                    const divisionMatch =
+                        division === "" ||
+                        itemDivision ===
+                        division;
+
+
+                    // ============================================
+                    // PHASE
+                    // ============================================
+
+                    const itemPhase =
+                        String(
+                            item.phase || ""
+                        )
+                            .trim()
+                            .toUpperCase();
+
+
+                    const phaseMatch =
+                        phase === "" ||
+                        itemPhase ===
+                        phase;
+
+
+                    // ============================================
+                    // METER MAKE
+                    // ============================================
+
+                    const itemMeterMake =
+                        String(
+                            item.meterType || ""
+                        )
+                            .trim()
+                            .toUpperCase();
+
+
+                    const meterMakeMatch =
+                        meterMake === "" ||
+                        itemMeterMake ===
+                        meterMake;
+
+
+                    // ============================================
+                    // FINAL RESULT
+                    // ============================================
+
+                    return (
+                        departmentMatch &&
+                        divisionMatch &&
+                        phaseMatch &&
+                        meterMakeMatch
+                    );
+
+                }
+            );
+
+
+        // Render filtered data
+        renderHesDownloadTableBypl(
+            filteredHesDownloadDataBypl
+        );
+    }
+
+
+    // ============================================================
+    // RENDER TABLE
+    // ============================================================
+
+    function renderHesDownloadTableBypl(data) {
+
+        const tbody =
+            $("#hesDownloadSummaryBodyBypl");
+
+
+        tbody.empty();
+
+
+        // No records
+        if (
+            !data ||
+            data.length === 0
+        ) {
+
+            tbody.html(`
+                <tr>
+                    <td colspan="9"
+                        class="text-center py-4">
+
+                        No Records Found
+
+                    </td>
+                </tr>
+            `);
+
+            return;
+        }
+
+
+        // Render rows
+        data.forEach(
+            (x, index) => {
+
+                tbody.append(`
+                    <tr>
+
+                        <!-- S.No -->
+                        <td class="text-center fw-semibold">
+                            ${index + 1}
+                        </td>
+
+
+                        <!-- Cons Ref -->
+                        <td>
+                            ${escapeHesHtmlBypl(
+                    x.consRef
+                )}
+                        </td>
+
+
+                        <!-- Meter Number -->
+                        <td>
+                            ${escapeHesHtmlBypl(
+                    x.meterNumber
+                )}
+                        </td>
+
+
+                        <!-- Phase -->
+                        <td class="text-center">
+                            ${escapeHesHtmlBypl(
+                    x.phase
+                )}
+                        </td>
+
+
+                        <!-- Department -->
+                        <td>
+                            ${escapeHesHtmlBypl(
+                    x.sapDepartment
+                )}
+                        </td>
+
+
+                        <!-- Division -->
+                        <td>
+                            ${escapeHesHtmlBypl(
+                    x.sapDivision
+                )}
+                        </td>
+
+
+                        <!-- Seq No -->
+                        <td>
+                            ${escapeHesHtmlBypl(
+                    x.sapSeqNo
+                )}
+                        </td>
+
+
+                        <!-- Address -->
+                        <td class="address-cell">
+                            ${escapeHesHtmlBypl(
+                    x.address,
+                    "--"
+                )}
+                        </td>
+
+
+                        <!-- Meter Make -->
+                        <td>
+                            ${escapeHesHtmlBypl(
+                    x.meterType
+                )}
+                        </td>
+
+                    </tr>
+                `);
+
+            }
+        );
+    }
+
+
+    // ============================================================
+    // EXCEL EXPORT - BYPL HES
+    // ============================================================
+
+    function exportHesDownloadByplTableToExcel() {
+
+        const table =
+            document.getElementById(
+                "hesDownloadSummaryTableBypl"
+            );
+
+
+        if (!table) {
+
+            console.error(
+                "BYPL HES table not found"
+            );
+
+            return;
+        }
+
+
+        const wb =
+            XLSX.utils.book_new();
+
+
+        const ws =
+            XLSX.utils.table_to_sheet(
+                table
+            );
+
+
+        // Column widths
+        ws["!cols"] = [
+
+            { wch: 7 },     // S.No
+            { wch: 15 },    // Cons Ref
+            { wch: 18 },    // Meter Number
+            { wch: 10 },    // Phase
+            { wch: 15 },    // Department
+            { wch: 15 },    // Division
+            { wch: 10 },    // Seq No
+            { wch: 45 },    // Address
+            { wch: 18 }     // Meter Make
+
+        ];
+
+
+        // Auto Filter
+        ws["!autofilter"] = {
+            ref: "A1:I1"
+        };
+
+
+        // Freeze header
+        ws["!freeze"] = {
+            xSplit: 0,
+            ySplit: 1
+        };
+
+
+        XLSX.utils.book_append_sheet(
+            wb,
+            ws,
+            "HES Download"
+        );
+
+
+        const date =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
+        XLSX.writeFile(
+            wb,
+            "HES_Download_Summary_BYPL_" +
+            date +
+            ".xlsx"
+        );
+    }
+
+
+    // ============================================================
+    // CSV EXPORT - BYPL HES
+    // ============================================================
+
+    function exportHesDownloadByplTableToCSV() {
+
+        const table =
+            document.getElementById(
+                "hesDownloadSummaryTableBypl"
+            );
+
+
+        if (!table) {
+
+            console.error(
+                "BYPL HES table not found"
+            );
+
+            return;
+        }
+
+
+        const csv = [];
+
+
+        table
+            .querySelectorAll("tr")
+            .forEach(row => {
+
+
+                if (
+                    row.style.display === "none"
+                ) {
+
+                    return;
+                }
+
+
+                const cols =
+                    row.querySelectorAll(
+                        "th, td"
+                    );
+
+
+                const data = [];
+
+
+                cols.forEach(col => {
+
+                    const value =
+                        (
+                            col.innerText || ""
+                        )
+                            .replace(
+                                /\r?\n|\r/g,
+                                " "
+                            )
+                            .trim()
+                            .replace(
+                                /"/g,
+                                '""'
+                            );
+
+
+                    data.push(
+                        `"${value}"`
+                    );
+
+                });
+
+
+                csv.push(
+                    data.join(",")
+                );
+
+            });
+
+
+        const blob =
+            new Blob(
+                [csv.join("\n")],
+                {
+                    type:
+                        "text/csv;charset=utf-8;"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        link.href = url;
+
+
+        const date =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
 
         link.download =
-            "HES_Download_Summary_BRPL_" +
-            new Date().toISOString().split("T")[0] +
+            "HES_Download_Summary_BYPL_" +
+            date +
+            ".csv";
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        document.body.removeChild(
+            link
+        );
+
+
+        URL.revokeObjectURL(
+            url
+        );
+    }
+
+
+    // ============================================================
+    // ESCAPE HTML
+    // ============================================================
+
+    function escapeHesHtmlBypl(
+        value,
+        fallback = ""
+    ) {
+
+        if (
+            value === null ||
+            value === undefined ||
+            value === ""
+        ) {
+
+            return fallback;
+        }
+
+
+        return String(value)
+
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+
+            .replace(
+                /</g,
+                "&lt;"
+            )
+
+            .replace(
+                />/g,
+                "&gt;"
+            )
+
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+    }
+
+    let allDownloadData = [];
+    let filteredData = [];
+
+
+    // ============================================================
+    // OPEN MODAL
+    // ============================================================
+
+    $("#btnViewDownloadDetails").on("click", function() {
+
+        const modal = new bootstrap.Modal(
+            document.getElementById("downloadSummaryModal")
+        );
+
+        modal.show();
+
+        loadDownloadSummary();
+    });
+
+
+    // ============================================================
+    // LOAD DOWNLOAD SUMMARY
+    // ============================================================
+
+    async function loadDownloadSummary() {
+
+        try {
+
+            $("#downloadSummaryBody").html(`
+                <tr>
+                    <td colspan="11" class="text-center py-4">
+                        <div class="spinner-border spinner-border-sm text-primary"></div>
+                        Loading...
+                    </td>
+                </tr>
+            `);
+
+
+            const readingMonth = getReadingMonth();
+
+            console.log("Reading Month:", readingMonth);
+
+
+            const apiUrl =
+                `${getApiUrl("dashboardapi/meter-download-detailed-summary")}?readingMonth=${encodeURIComponent(readingMonth)}`;
+
+
+            console.log("Download Summary API:", apiUrl);
+
+
+            const response = await fetch(apiUrl);
+
+
+            if (!response.ok) {
+
+                const errorText = await response.text();
+
+                console.error(
+                    "API Error:",
+                    response.status,
+                    errorText
+                );
+
+                throw new Error(
+                    `Unable to load data (${response.status})`
+                );
+            }
+
+
+            allDownloadData = await response.json();
+
+            filteredData = [...allDownloadData];
+
+
+            loadDepartmentFilter();
+
+            loadReasonFilter();
+
+            loadPhaseFilter();
+
+            loadMeterMakeFilter();
+
+
+            clearFilters();
+
+
+            renderTable(filteredData);
+
+        }
+        catch (err) {
+
+            console.error(
+                "loadDownloadSummary error:",
+                err
+            );
+
+
+            $("#downloadSummaryBody").html(`
+                <tr>
+                    <td colspan="11"
+                        class="text-center text-danger py-4">
+
+                        Failed to load data.
+
+                        Error:
+                        ${escapeHtml(err.message)}
+
+                    </td>
+                </tr>
+            `);
+        }
+    }
+
+
+    // ============================================================
+    // DEPARTMENT FILTER
+    // ============================================================
+
+    function loadDepartmentFilter() {
+
+        const ddl = $("#departmentFilter");
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">
+                All Departments
+            </option>
+        `);
+
+
+        const departments = [
+            ...new Set(
+                allDownloadData
+                    .map(x => x.sapDepartment)
+                    .filter(x =>
+                        x !== null &&
+                        x !== undefined &&
+                        x !== ""
+                    )
+            )
+        ];
+
+
+        departments.sort((a, b) =>
+            String(a).localeCompare(String(b))
+        );
+
+
+        departments.forEach(department => {
+
+            ddl.append(`
+                <option value="${escapeHtml(String(department))}">
+                    ${escapeHtml(String(department))}
+                </option>
+            `);
+
+        });
+    }
+
+
+    // ============================================================
+    // FAILED REASON FILTER
+    // ============================================================
+
+    function loadReasonFilter() {
+
+        const ddl = $("#reasonFilter");
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">All Reasons</option>
+
+            <option value="SYSTEM TITLE">
+                System Title Mismatch
+            </option>
+
+            <option value="TCP">
+                TCP Connection Failed
+            </option>
+
+            <option value="NO DATA">
+                No Data Found ODR
+            </option>
+
+            <option value="TIMEOUT">
+                Timeout
+            </option>
+
+            <option value="OTHER">
+                Other
+            </option>
+        `);
+    }
+
+
+    // ============================================================
+    // PHASE FILTER
+    // ============================================================
+
+    function loadPhaseFilter() {
+
+        const ddl = $("#phaseFilter");
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">
+                All Phases
+            </option>
+        `);
+
+
+        const phases = [
+            ...new Set(
+                allDownloadData
+                    .map(x => x.phase)
+                    .filter(x =>
+                        x !== null &&
+                        x !== undefined &&
+                        x !== ""
+                    )
+            )
+        ];
+
+
+        phases.sort((a, b) =>
+            String(a).localeCompare(
+                String(b),
+                undefined,
+                {
+                    numeric: true
+                }
+            )
+        );
+
+
+        phases.forEach(phase => {
+
+            ddl.append(`
+                <option value="${escapeHtml(String(phase))}">
+                    ${escapeHtml(String(phase))}
+                </option>
+            `);
+
+        });
+    }
+
+
+    // ============================================================
+    // METER MAKE FILTER
+    // ============================================================
+
+    function loadMeterMakeFilter() {
+
+        const ddl = $("#meterMakeFilter");
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">
+                All Meter Makes
+            </option>
+        `);
+
+
+        const meterMakes = [
+            ...new Set(
+                allDownloadData
+                    .map(x => x.meterType)
+                    .filter(x =>
+                        x !== null &&
+                        x !== undefined &&
+                        x !== ""
+                    )
+            )
+        ];
+
+
+        meterMakes.sort((a, b) =>
+            String(a).localeCompare(String(b))
+        );
+
+
+        meterMakes.forEach(make => {
+
+            ddl.append(`
+                <option value="${escapeHtml(String(make))}">
+                    ${escapeHtml(String(make))}
+                </option>
+            `);
+
+        });
+    }
+
+
+    // ============================================================
+    // FILTER EVENTS
+    // ============================================================
+
+    $("#departmentFilter").on(
+        "change",
+        applyFilters
+    );
+
+
+    $("#reasonFilter").on(
+        "change",
+        applyFilters
+    );
+
+
+    $("#phaseFilter").on(
+        "change",
+        applyFilters
+    );
+
+
+    $("#meterMakeFilter").on(
+        "change",
+        applyFilters
+    );
+
+
+    $("#entryDateFrom").on(
+        "change",
+        applyFilters
+    );
+
+
+    $("#entryDateTo").on(
+        "change",
+        applyFilters
+    );
+
+
+    // ============================================================
+    // CLEAR FILTER BUTTON
+    // ============================================================
+
+    $("#btnClearDownloadFilters").on(
+        "click",
+        function() {
+
+            clearFilters();
+
+            filteredData = [
+                ...allDownloadData
+            ];
+
+            renderTable(
+                filteredData
+            );
+        }
+    );
+
+
+    // ============================================================
+    // CLEAR FILTERS
+    // ============================================================
+
+    function clearFilters() {
+
+        $("#departmentFilter").val("");
+
+        $("#reasonFilter").val("");
+
+        $("#phaseFilter").val("");
+
+        $("#meterMakeFilter").val("");
+
+        $("#entryDateFrom").val("");
+
+        $("#entryDateTo").val("");
+
+        $("#entryDateTo").removeClass(
+            "is-invalid"
+        );
+    }
+
+
+    // ============================================================
+    // APPLY FILTERS
+    // ============================================================
+
+    function applyFilters() {
+
+        const department =
+            ($("#departmentFilter").val() || "")
+                .toUpperCase();
+
+
+        const reason =
+            ($("#reasonFilter").val() || "")
+                .toUpperCase();
+
+
+        const phase =
+            ($("#phaseFilter").val() || "")
+                .toUpperCase();
+
+
+        const meterMake =
+            ($("#meterMakeFilter").val() || "")
+                .toUpperCase();
+
+
+        const dateFrom =
+            $("#entryDateFrom").val();
+
+
+        const dateTo =
+            $("#entryDateTo").val();
+
+
+        // --------------------------------------------------------
+        // DATE VALIDATION
+        // --------------------------------------------------------
+
+        if (
+            dateFrom &&
+            dateTo &&
+            dateFrom > dateTo
+        ) {
+
+            $("#entryDateTo").addClass(
+                "is-invalid"
+            );
+
+
+            filteredData = [];
+
+
+            renderTable(
+                filteredData
+            );
+
+
+            return;
+        }
+
+
+        $("#entryDateTo").removeClass(
+            "is-invalid"
+        );
+
+
+        // --------------------------------------------------------
+        // FILTER DATA
+        // --------------------------------------------------------
+
+        filteredData =
+            allDownloadData.filter(item => {
+
+
+                // ==================================================
+                // DEPARTMENT
+                // ==================================================
+
+                const itemDepartment =
+                    (item.sapDepartment || "")
+                        .toUpperCase();
+
+
+                const departmentMatch =
+                    department === "" ||
+                    itemDepartment === department;
+
+
+                // ==================================================
+                // FAILED REASON
+                // ==================================================
+
+                const message =
+                    (item.schedulerMessage || "")
+                        .toUpperCase();
+
+
+                let reasonMatch = true;
+
+
+                if (reason !== "") {
+
+                    if (reason === "OTHER") {
+
+                        reasonMatch =
+                            !message.includes(
+                                "SYSTEM TITLE"
+                            ) &&
+                            !message.includes(
+                                "TCP"
+                            ) &&
+                            !message.includes(
+                                "NO DATA"
+                            ) &&
+                            !message.includes(
+                                "TIMEOUT"
+                            );
+
+                    }
+                    else {
+
+                        reasonMatch =
+                            message.includes(
+                                reason
+                            );
+                    }
+                }
+
+
+                // ==================================================
+                // PHASE
+                // ==================================================
+
+                const itemPhase =
+                    (item.phase || "")
+                        .toUpperCase();
+
+
+                const phaseMatch =
+                    phase === "" ||
+                    itemPhase === phase;
+
+
+                // ==================================================
+                // METER MAKE
+                // ==================================================
+
+                const itemMeterMake =
+                    (item.meterType || "")
+                        .toUpperCase();
+
+
+                const meterMakeMatch =
+                    meterMake === "" ||
+                    itemMeterMake === meterMake;
+
+
+                // ==================================================
+                // ENTRY DATE
+                // ==================================================
+
+                let dateMatch = true;
+
+
+                if (dateFrom || dateTo) {
+
+                    if (!item.entryDate) {
+
+                        dateMatch = false;
+
+                    }
+                    else {
+
+                        const entryDate =
+                            new Date(
+                                item.entryDate
+                            );
+
+
+                        if (
+                            isNaN(
+                                entryDate.getTime()
+                            )
+                        ) {
+
+                            dateMatch = false;
+
+                        }
+                        else {
+
+                            const entryDateString =
+                                entryDate
+                                    .toISOString()
+                                    .split("T")[0];
+
+
+                            if (
+                                dateFrom &&
+                                entryDateString < dateFrom
+                            ) {
+
+                                dateMatch = false;
+                            }
+
+
+                            if (
+                                dateTo &&
+                                entryDateString > dateTo
+                            ) {
+
+                                dateMatch = false;
+                            }
+                        }
+                    }
+                }
+
+
+                // ==================================================
+                // FINAL RESULT
+                // ==================================================
+
+                return (
+                    departmentMatch &&
+                    reasonMatch &&
+                    phaseMatch &&
+                    meterMakeMatch &&
+                    dateMatch
+                );
+
+            });
+
+
+        renderTable(
+            filteredData
+        );
+    }
+
+
+    // ============================================================
+    // RENDER TABLE
+    // ============================================================
+
+    function renderTable(data) {
+
+        const tbody =
+            $("#downloadSummaryBody");
+
+
+        tbody.empty();
+
+
+        if (
+            !data ||
+            data.length === 0
+        ) {
+
+            tbody.html(`
+                <tr>
+                    <td colspan="11"
+                        class="text-center py-4">
+
+                        No Records Found
+
+                    </td>
+                </tr>
+            `);
+
+            return;
+        }
+
+
+        data.forEach((x, index) => {
+
+            let badgeColor =
+                "#6c757d";
+
+
+            let textColor =
+                "#fff";
+
+
+            const message =
+                (x.schedulerMessage || "")
+                    .toUpperCase();
+
+
+            // ------------------------------------------------------
+            // STATUS COLORS
+            // ------------------------------------------------------
+
+            if (
+                message.includes(
+                    "SYSTEM TITLE"
+                )
+            ) {
+
+                badgeColor =
+                    "#dc3545";
+
+            }
+            else if (
+                message.includes(
+                    "TCP"
+                )
+            ) {
+
+                badgeColor =
+                    "#fd7e14";
+
+            }
+            else if (
+                message.includes(
+                    "NO DATA"
+                )
+            ) {
+
+                badgeColor =
+                    "#ffc107";
+
+                textColor =
+                    "#000";
+
+            }
+            else if (
+                message.includes(
+                    "TIMEOUT"
+                )
+            ) {
+
+                badgeColor =
+                    "#6c757d";
+            }
+
+
+            // ------------------------------------------------------
+            // ENTRY DATE
+            // ------------------------------------------------------
+
+            let entryDate =
+                "--";
+
+
+            if (x.entryDate) {
+
+                const parsedDate =
+                    new Date(
+                        x.entryDate
+                    );
+
+
+                if (
+                    !isNaN(
+                        parsedDate.getTime()
+                    )
+                ) {
+
+                    entryDate =
+                        parsedDate.toLocaleString(
+                            "en-GB"
+                        );
+                }
+            }
+
+
+            // ------------------------------------------------------
+            // TABLE ROW
+            // ------------------------------------------------------
+
+            tbody.append(`
+                <tr>
+
+                    <td class="text-center fw-semibold">
+                        ${index + 1}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.consRef ?? ""
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.meterNumber ?? ""
+            )}
+                    </td>
+
+                    <td class="text-center">
+                        ${escapeHtml(
+                x.phase ?? ""
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.sapDepartment ?? ""
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.sapDivision ?? ""
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.sapSeqNo ?? ""
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.address ?? "--"
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.meterType ?? ""
+            )}
+                    </td>
+
+                    <td>
+                        <span class="badge"
+                              style="
+                                  background:${badgeColor};
+                                  color:${textColor};
+                              ">
+
+                            ${escapeHtml(
+                x.schedulerMessage ?? "--"
+            )}
+
+                        </span>
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                entryDate
+            )}
+                    </td>
+
+                </tr>
+            `);
+
+        });
+    }
+
+
+    // ============================================================
+    // EXPORT TO EXCEL
+    // ============================================================
+
+    function exportTableToExcel() {
+
+        const table =
+            document.getElementById(
+                "downloadSummaryTable"
+            );
+
+
+        const wb =
+            XLSX.utils.book_new();
+
+
+        const ws =
+            XLSX.utils.table_to_sheet(
+                table
+            );
+
+
+        ws["!cols"] = [
+
+            { wch: 7 },     // S.No
+            { wch: 15 },    // Cons Ref
+            { wch: 18 },    // Meter Number
+            { wch: 10 },    // Phase
+            { wch: 15 },    // Department
+            { wch: 15 },    // Division
+            { wch: 10 },    // Seq No
+            { wch: 45 },    // Address
+            { wch: 15 },    // Meter Make
+            { wch: 40 },    // Status
+            { wch: 20 }     // Entry Date
+
+        ];
+
+
+        ws["!autofilter"] = {
+            ref: "A1:K1"
+        };
+
+
+        ws["!freeze"] = {
+            xSplit: 0,
+            ySplit: 1
+        };
+
+
+        XLSX.utils.book_append_sheet(
+            wb,
+            ws,
+            "Download Failed"
+        );
+
+
+        const today =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
+        XLSX.writeFile(
+            wb,
+            "Download_Failed_Summary_BRPL_" +
+            today +
+            ".xlsx"
+        );
+    }
+
+
+    // ============================================================
+    // EXPORT TO CSV
+    // ============================================================
+
+    function exportTableToCSV() {
+
+        let csv = [];
+
+
+        document
+            .querySelectorAll(
+                "#downloadSummaryTable tr"
+            )
+            .forEach(row => {
+
+                if (
+                    row.style.display === "none"
+                ) {
+                    return;
+                }
+
+
+                const cols =
+                    row.querySelectorAll(
+                        "th, td"
+                    );
+
+
+                let data = [];
+
+
+                cols.forEach(col => {
+
+                    const value =
+                        col.innerText
+                            .replace(
+                                /"/g,
+                                '""'
+                            )
+                            .replace(
+                                /\r?\n|\r/g,
+                                " "
+                            )
+                            .trim();
+
+
+                    data.push(
+                        `"${value}"`
+                    );
+
+                });
+
+
+                csv.push(
+                    data.join(",")
+                );
+
+            });
+
+
+        const blob =
+            new Blob(
+                [csv.join("\n")],
+                {
+                    type:
+                        "text/csv;charset=utf-8;"
+                }
+            );
+
+
+        const link =
+            document.createElement(
+                "a"
+            );
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        link.href = url;
+
+
+        const today =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
+        link.download =
+            "Download_Failed_Summary_BRPL_" +
+            today +
             ".csv";
 
 
@@ -1383,1067 +4406,589 @@
 
         document.body.removeChild(link);
 
-        URL.revokeObjectURL(link.href);
+
+        URL.revokeObjectURL(url);
     }
 
 
-    function escapeHesHtml(value, fallback = "") {
+    // ============================================================
+    // HTML ESCAPE
+    // ============================================================
 
-        if (
-            value === null ||
-            value === undefined ||
-            value === ""
-        ) {
-            return fallback;
-        }
-
+    function escapeHtml(value) {
 
         return String(value)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-let allHesDownloadDataBypl = [];
-let filteredHesDownloadDataBypl = [];
-
-
-$("#byplHesDownload").on("click", function () {
-
-    const modal = new bootstrap.Modal(
-        document.getElementById("HesDownloadSummaryModalBypl")
-    );
-
-    modal.show();
-
-    loadHesDownloadSummaryBypl();
-});
-
-async function loadHesDownloadSummaryBypl() {
-
-    try {
-
-        $("#hesDownloadSummaryBodyBypl").html(`
-            <tr>
-                <td colspan="9" class="text-center py-4">
-                    <div class="spinner-border spinner-border-sm text-primary"></div>
-                    Loading...
-                </td>
-            </tr>
-        `);
-
-
-        const response = await fetch(
-            `${getApiUrl("dashboardapi/hes-download-meters-details-bypl")}?ReadingMonth=${encodeURIComponent(getReadingMonth())}`
-        );
-
-
-        if (!response.ok) {
-            throw new Error(
-                "Unable to load BYPL HES download data"
-            );
-        }
-
-
-        allHesDownloadDataBypl =
-            await response.json();
-
-
-        filteredHesDownloadDataBypl =
-            [...allHesDownloadDataBypl];
-
-
-        loadHesDepartmentFilterBypl();
-
-        loadHesDivisionFilterBypl();
-
-
-        renderHesDownloadTableBypl(
-            filteredHesDownloadDataBypl
-        );
-
-    }
-    catch (err) {
-
-        console.error(
-            "BYPL HES Download Summary Error:",
-            err
-        );
-
-
-        $("#hesDownloadSummaryBodyBypl").html(`
-            <tr>
-                <td colspan="9"
-                    class="text-center text-danger py-4">
-
-                    Failed to load data.
-                    Error: ${escapeHesHtmlBypl(err.message)}
-
-                </td>
-            </tr>
-        `);
-    }
-}
-
-function loadHesDepartmentFilterBypl() {
-
-    const ddl =
-        $("#hesDepartmentFilterBypl");
-
-
-    ddl.empty();
-
-
-    ddl.append(`
-        <option value="">
-            All Departments
-        </option>
-    `);
-
-
-    const departments = [
-        ...new Set(
-            allHesDownloadDataBypl
-                .map(x => x.sapDepartment)
-                .filter(
-                    x =>
-                        x !== null &&
-                        x !== undefined &&
-                        x !== ""
-                )
-        )
-    ].sort();
-
-
-    departments.forEach(department => {
-
-        ddl.append(`
-            <option value="${escapeHesHtmlBypl(department)}">
-                ${escapeHesHtmlBypl(department)}
-            </option>
-        `);
-
-    });
-}
-
-
-function loadHesDivisionFilterBypl() {
-
-    const ddl =
-        $("#hesDivisionFilterBypl");
-
-
-    ddl.empty();
-
-
-    ddl.append(`
-        <option value="">
-            All Division
-        </option>
-    `);
-
-
-    const divisions = [
-        ...new Set(
-            allHesDownloadDataBypl
-                .map(x => x.sapDivision)
-                .filter(
-                    x =>
-                        x !== null &&
-                        x !== undefined &&
-                        x !== ""
-                )
-        )
-    ].sort();
-
-
-    divisions.forEach(division => {
-
-        ddl.append(`
-            <option value="${escapeHesHtmlBypl(division)}">
-                ${escapeHesHtmlBypl(division)}
-            </option>
-        `);
-
-    });
-}
-
-
-$("#hesDepartmentFilterBypl")
-    .off("change")
-    .on("change", applyHesFiltersBypl);
-
-
-$("#hesDivisionFilterBypl")
-    .off("change")
-    .on("change", applyHesFiltersBypl);
-
-
-function applyHesFiltersBypl() {
-
-    const department = (
-        $("#hesDepartmentFilterBypl").val() || ""
-    ).toUpperCase();
-
-
-    const division = (
-        $("#hesDivisionFilterBypl").val() || ""
-    ).toUpperCase();
-
-
-    filteredHesDownloadDataBypl =
-        allHesDownloadDataBypl.filter(item => {
-
-            const itemDepartment = (
-                item.sapDepartment || ""
-            ).toUpperCase();
-
-
-            const itemDivision = (
-                item.sapDivision || ""
-            ).toUpperCase();
-
-
-            const departmentMatch =
-                department === "" ||
-                itemDepartment === department;
-
-
-            const divisionMatch =
-                division === "" ||
-                itemDivision === division;
-
-
-            return (
-                departmentMatch &&
-                divisionMatch
-            );
-        });
-
-
-    renderHesDownloadTableBypl(
-        filteredHesDownloadDataBypl
-    );
-}
-
-function renderHesDownloadTableBypl(data) {
-
-    const tbody =
-        $("#hesDownloadSummaryBodyBypl");
-
-
-    tbody.empty();
-
-
-    if (!data || data.length === 0) {
-
-        tbody.html(`
-            <tr>
-                <td colspan="9"
-                    class="text-center py-4">
-
-                    No Records Found
-
-                </td>
-            </tr>
-        `);
-
-        return;
-    }
-
-
-    data.forEach((x, index) => {
-
-        tbody.append(`
-            <tr>
-
-                <td class="text-center fw-semibold">
-                    ${index + 1}
-                </td>
-
-                <td>
-                    ${escapeHesHtmlBypl(x.consRef)}
-                </td>
-
-                <td>
-                    ${escapeHesHtmlBypl(x.meterNumber)}
-                </td>
-
-                <td class="text-center">
-                    ${escapeHesHtmlBypl(x.phase)}
-                </td>
-
-                <td>
-                    ${escapeHesHtmlBypl(x.sapDepartment)}
-                </td>
-
-                <td>
-                    ${escapeHesHtmlBypl(x.sapDivision)}
-                </td>
-
-                <td>
-                    ${escapeHesHtmlBypl(x.sapSeqNo)}
-                </td>
-
-                <td class="address-cell">
-                    ${escapeHesHtmlBypl(x.address, "--")}
-                </td>
-
-                <td>
-                    ${escapeHesHtmlBypl(x.meterType)}
-                </td>
-
-            </tr>
-        `);
-
-    });
-}
-
-function exportHesDownloadByplTableToExcel() {
-
-    const table =
-        document.getElementById(
-            "hesDownloadSummaryTableBypl"
-        );
-
-
-    if (!table) {
-
-        console.error(
-            "BYPL HES table not found"
-        );
-
-        return;
-    }
-
-
-    const wb =
-        XLSX.utils.book_new();
-
-
-    const ws =
-        XLSX.utils.table_to_sheet(table);
-
-    ws["!cols"] = [
-
-        { wch: 7 },     // S.No
-        { wch: 15 },    // Cons Ref
-        { wch: 18 },    // Meter Number
-        { wch: 10 },    // Phase
-        { wch: 15 },    // Department
-        { wch: 15 },    // Division
-        { wch: 10 },    // Seq No
-        { wch: 45 },    // Address
-        { wch: 18 }     // Meter Make
-
-    ];
-
-
-    // --------------------------------------------------------
-    // Auto Filter
-    // --------------------------------------------------------
-
-    ws["!autofilter"] = {
-        ref: "A1:I1"
-    };
-
-
-    // --------------------------------------------------------
-    // Freeze Header
-    // --------------------------------------------------------
-
-    ws["!freeze"] = {
-        xSplit: 0,
-        ySplit: 1
-    };
-
-
-    XLSX.utils.book_append_sheet(
-        wb,
-        ws,
-        "HES Download"
-    );
-
-
-    XLSX.writeFile(
-        wb,
-        "HES_Download_Summary_BYPL_" +
-        new Date().toISOString().split("T")[0] +
-        ".xlsx"
-    );
-}
-
-
-// ============================================================
-// CSV Export - BYPL HES
-// ============================================================
-
-function exportHesDownloadByplTableToCSV() {
-
-    const table =
-        document.getElementById(
-            "hesDownloadSummaryTableBypl"
-        );
-
-
-    if (!table) {
-
-        console.error(
-            "BYPL HES table not found"
-        );
-
-        return;
-    }
-
-
-    let csv = [];
-
-
-    table.querySelectorAll("tr").forEach(row => {
-
-        if (row.style.display === "none") {
-            return;
-        }
-
-
-        const cols =
-            row.querySelectorAll("th, td");
-
-
-        const data = [];
-
-
-        cols.forEach(col => {
-
-            const value = (
-                col.innerText || ""
+            .replace(
+                /&/g,
+                "&amp;"
             )
-                .replace(/\r?\n|\r/g, " ")
-                .trim()
-                .replace(/"/g, '""');
-
-
-            data.push(`"${value}"`);
-
-        });
-
-
-        csv.push(
-            data.join(",")
-        );
-
-    });
-
-
-    const blob =
-        new Blob(
-            [csv.join("\n")],
-            {
-                type: "text/csv;charset=utf-8;"
-            }
-        );
-
-
-    const link =
-        document.createElement("a");
-
-
-    link.href =
-        URL.createObjectURL(blob);
-
-
-    link.download =
-        "HES_Download_Summary_BYPL_" +
-        new Date().toISOString().split("T")[0] +
-        ".csv";
-
-
-    document.body.appendChild(link);
-
-
-    link.click();
-
-
-    document.body.removeChild(link);
-
-
-    URL.revokeObjectURL(link.href);
-}
-
-
-function escapeHesHtmlBypl(
-    value,
-    fallback = ""
-) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-        return fallback;
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
     }
 
-
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-    let allDownloadData = [];
-    let filteredData = [];
-
-    // Open Modal
-    $("#btnViewDownloadDetails").on("click", function () {
-    const modal = new bootstrap.Modal(
-    document.getElementById("downloadSummaryModal")
-    );
-    modal.show();
-    loadDownloadSummary();
-    });
-
-    // Load Data from API
-    async function loadDownloadSummary() {
-    try {
-    $("#downloadSummaryBody").html(`
-    <tr>
-    <td colspan="9" class="text-center py-4">
-    <div class="spinner-border spinner-border-sm text-primary"></div>
-    Loading...
-    </td>
-    </tr>
-    `);
-
-      const response = await fetch(
-        `${getApiUrl("dashboardapi/meter-download-detailed-summary")}?readingMonth=${encodeURIComponent(getReadingMonth())}`
-      );
-
-    if (!response.ok) {
-    throw new Error("Unable to load data");
-    }
-
-    allDownloadData = await response.json();
-    filteredData = [...allDownloadData];
-
-    loadDepartmentFilter();
-    loadReasonFilter();
-    renderTable(filteredData);
-
-    } catch (err) {
-    console.error(err);
-    $("#downloadSummaryBody").html(`
-    <tr>
-    <td colspan="9" class="text-center text-danger">
-    Failed to load data. Error: ${err.message}
-    </td>
-    </tr>
-    `);
-    }
-    }
-
-    // Department Dropdown
-    function loadDepartmentFilter() {
-    const ddl = $("#departmentFilter");
-    ddl.empty();
-    ddl.append(`<option value="">All Departments</option>`);
-
-    const departments = [...new Set(
-    allDownloadData
-    .map(x => x.sapDepartment)
-    .filter(x => x)
-    )].sort();
-
-    departments.forEach(d => {
-    ddl.append(`<option value="${d}">${d}</option>`);
-    });
-    }
-
-    // Reason Dropdown
-    function loadReasonFilter() {
-    const ddl = $("#reasonFilter");
-    ddl.empty();
-    ddl.append(`<option value="">All Reasons</option>`);
-    ddl.append(`<option value="SYSTEM TITLE">System Title Mismatch</option>`);
-    ddl.append(`<option value="TCP">TCP Connection Failed</option>`);
-    ddl.append(`<option value="NO DATA">No Data Found ODR</option>`);
-    ddl.append(`<option value="TIMEOUT">Timeout</option>`);
-    ddl.append(`<option value="OTHER">Other</option>`);
-    }
-
-    // Filter Events
-    $("#departmentFilter").on("change", applyFilters);
-    $("#reasonFilter").on("change", applyFilters);
-
-    // Apply Filters
-    function applyFilters() {
-    const department = ($("#departmentFilter").val() || "").toUpperCase();
-    const reason = ($("#reasonFilter").val() || "").toUpperCase();
-
-    filteredData = allDownloadData.filter(item => {
-    const deptMatch =
-    department === "" ||
-    (item.sapDepartment || "").toUpperCase() === department;
-
-    let reasonMatch = true;
-    const msg = (item.schedulerMessage || "").toUpperCase();
-
-    if (reason !== "") {
-    if (reason === "OTHER") {
-    reasonMatch =
-    !msg.includes("SYSTEM TITLE") &&
-    !msg.includes("TCP") &&
-    !msg.includes("NO DATA") &&
-    !msg.includes("TIMEOUT");
-    } else {
-    reasonMatch = msg.includes(reason);
-    }
-    }
-
-    return deptMatch && reasonMatch;
-    });
-
-    renderTable(filteredData);
-    }
-
-    // Render Table
-    function renderTable(data) {
-    const tbody = $("#downloadSummaryBody");
-    tbody.empty();
-
-    if (data.length === 0) {
-    tbody.html(`
-    <tr>
-    <td colspan="11" class="text-center">
-    No Records Found
-    </td>
-    </tr>
-    `);
-    return;
-    }
-
-data.forEach((x, index) => {
-
-    let badgeColor = "#6c757d";
-    let textColor = "#fff";
-
-    const msg = (x.schedulerMessage || "").toUpperCase();
-
-    if (msg.includes("SYSTEM TITLE")) {
-        badgeColor = "#dc3545";
-    }
-    else if (msg.includes("TCP")) {
-        badgeColor = "#fd7e14";
-    }
-    else if (msg.includes("NO DATA")) {
-        badgeColor = "#ffc107";
-        textColor = "#000";
-    }
-    else if (msg.includes("TIMEOUT")) {
-        badgeColor = "#6c757d";
-    }
-
-    const entryDate = x.entryDate
-        ? new Date(x.entryDate).toLocaleString("en-GB")
-        : "--";
-
-    tbody.append(`
-        <tr>
-
-            <!-- S.No -->
-            <td class="text-center fw-semibold">
-                ${index + 1}
-            </td>
-
-            <td>${x.consRef ?? ""}</td>
-
-            <td>${x.meterNumber ?? ""}</td>
-
-            <td>${x.phase ?? ""}</td>
-
-            <td>${x.sapDepartment ?? ""}</td>
-
-            <td>${x.sapDivision ?? ""}</td>
-
-            <td>${x.sapSeqNo ?? ""}</td>
-
-            <td>${x.address ?? "--"}</td>
-
-            <td>${x.meterType ?? ""}</td>
-
-            <td>
-                <span class="badge"
-                    style="
-                        background:${badgeColor};
-                        color:${textColor};
-                    ">
-                    ${x.schedulerMessage ?? "--"}
-                </span>
-            </td>
-
-            <td>${entryDate}</td>
-
-        </tr>
-    `);
-});
-    }
-
-    // Export to Excel
-    function exportTableToExcel() {
-    const table = document.getElementById("downloadSummaryTable");
-
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-
-    // Convert table to worksheet
-    const ws = XLSX.utils.table_to_sheet(table);
-
-    // Column Width
-ws["!cols"] = [
-    { wch: 7 },    // S.No
-    { wch: 15 },   // Cons Ref
-    { wch: 18 },   // Meter Number
-    { wch: 10 },   // Phase
-    { wch: 15 },   // Department
-    { wch: 15 },   // Division
-    { wch: 10 },   // Seq No
-    { wch: 45 },   // Address
-    { wch: 15 },   // Meter Make
-    { wch: 40 },   // Status
-    { wch: 20 }    // Entry Date
-];
-
-    // Auto Filter
-  ws["!autofilter"] = {
-    ref: "A1:K1",
-};
-
-    // Freeze Header
-    ws["!freeze"] = {
-    xSplit: 0,
-    ySplit: 1,
-    };
-
-    XLSX.utils.book_append_sheet(wb, ws, "Download Failed");
-    XLSX.writeFile(wb, "Download_Failed_Summary_BRPL_" + new Date().toISOString().split('T')[0] + ".xlsx");
-    }
-
-    // Export to CSV
-    function exportTableToCSV() {
-    let csv = [];
-
-    document.querySelectorAll("#downloadSummaryTable tr").forEach((row) => {
-    if (row.style.display === "none") return;
-
-    let cols = row.querySelectorAll("th,td");
-    let data = [];
-
-    cols.forEach((col) => {
-    data.push('"' + col.innerText.replace(/"/g, '""') + '"');
-    });
-
-    csv.push(data.join(","));
-    });
-
-    let blob = new Blob([csv.join("\n")], {
-    type: "text/csv",
-    });
-
-    let link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "Download_Failed_Summary_BRPL_" + new Date().toISOString().split('T')[0] + ".csv";
-    link.click();
-    }
 
     //BYPL
 
     let allDownloadDataBypl = [];
     let filteredDataBypl = [];
 
+
+    // ============================================================
+    // OPEN BYPL MODAL
+    // ============================================================
+
     $("#btnViewHesFailedDetails")
-    .off("click")
-    .on("click", function () {
+        .off("click")
+        .on("click", function() {
 
-    const modalElement = document.getElementById(
-    "downloadSummaryModalBYPL"
-    );
+            const modalElement =
+                document.getElementById(
+                    "downloadSummaryModalBYPL"
+                );
 
-    if (!modalElement) {
-    console.error("BYPL modal not found.");
-    return;
-    }
+            if (!modalElement) {
 
-    const modal =
-    bootstrap.Modal.getOrCreateInstance(modalElement);
+                console.error(
+                    "BYPL modal not found."
+                );
 
-    modal.show();
+                return;
+            }
 
-    loadDownloadSummaryBYPL();
-    });
 
+            const modal =
+                bootstrap.Modal.getOrCreateInstance(
+                    modalElement
+                );
+
+
+            modal.show();
+
+
+            loadDownloadSummaryBYPL();
+
+        });
+
+
+    // ============================================================
+    // LOAD BYPL DATA
+    // ============================================================
 
     async function loadDownloadSummaryBYPL() {
 
-    try {
+        try {
 
-    $("#downloadSummaryBodyBYPL").html(`
-    <tr>
-    <td colspan="11" class="text-center py-4">
-    <div class="spinner-border spinner-border-sm text-primary"></div>
-    <span class="ms-2">Loading...</span>
-    </td>
-    </tr>
-    `);
+            $("#downloadSummaryBodyBYPL").html(`
+                <tr>
+                    <td colspan="11"
+                        class="text-center py-4">
 
-    const readingMonth = getReadingMonth();
+                        <div class="spinner-border spinner-border-sm text-primary"></div>
 
-     const response = await fetch(
-     `${getApiUrl("dashboardapi/meter-download-detailed-summary-bypl")}?readingMonth=${encodeURIComponent(readingMonth)}`
-       );
+                        <span class="ms-2">
+                            Loading...
+                        </span>
 
-    if (!response.ok) {
-    throw new Error(
-    "Unable to load data. HTTP " + response.status
-    );
+                    </td>
+                </tr>
+            `);
+
+
+            const readingMonth =
+                getReadingMonth();
+
+
+            console.log(
+                "BYPL Reading Month:",
+                readingMonth
+            );
+
+
+            const apiUrl =
+                `${getApiUrl("dashboardapi/meter-download-detailed-summary-bypl")}?readingMonth=${encodeURIComponent(readingMonth)}`;
+
+
+            console.log(
+                "BYPL Download Summary API:",
+                apiUrl
+            );
+
+
+            const response =
+                await fetch(apiUrl);
+
+
+            if (!response.ok) {
+
+                const errorText =
+                    await response.text();
+
+
+                console.error(
+                    "BYPL API Error:",
+                    response.status,
+                    errorText
+                );
+
+
+                throw new Error(
+                    "Unable to load data. HTTP " +
+                    response.status
+                );
+            }
+
+
+            const result =
+                await response.json();
+
+
+            allDownloadDataBypl =
+                Array.isArray(result)
+                    ? result
+                    : [];
+
+
+            filteredDataBypl =
+                [...allDownloadDataBypl];
+
+
+            // Load filters
+            loadDepartmentFilterBYPL();
+
+            loadReasonFilterBYPL();
+
+            loadPhaseFilterBYPL();
+
+            loadMeterMakeFilterBYPL();
+
+
+            // Clear date filters
+            clearFiltersBYPL();
+
+
+            // Render data
+            renderTableBYPL(
+                filteredDataBypl
+            );
+
+        }
+        catch (err) {
+
+            console.error(
+                "BYPL Download Summary Error:",
+                err
+            );
+
+
+            $("#downloadSummaryBodyBYPL").html(`
+                <tr>
+                    <td colspan="11"
+                        class="text-center text-danger py-4">
+
+                        Failed to load data:
+                        ${escapeHtml(err.message)}
+
+                    </td>
+                </tr>
+            `);
+        }
     }
 
-    const result = await response.json();
 
-    allDownloadDataBypl = Array.isArray(result)
-    ? result
-    : [];
-
-    filteredDataBypl = [...allDownloadDataBypl];
-
-    // Load filters
-    loadDepartmentFilterBYPL();
-    loadReasonFilterBYPL();
-
-    // Render all records
-    renderTableBYPL(filteredDataBypl);
-
-    }
-    catch (err) {
-
-    console.error(
-    "BYPL Download Summary Error:",
-    err
-    );
-
-
-    $("#downloadSummaryBodyBYPL").html(`
-    <tr>
-    <td colspan="11"
-    class="text-center text-danger py-4">
-    Failed to load data:
-    ${escapeHtml(err.message)}
-    </td>
-    </tr>
-    `);
-    }
-    }
+    // ============================================================
+    // DEPARTMENT FILTER
+    // ============================================================
 
     function loadDepartmentFilterBYPL() {
 
-    const ddl = $("#departmentFilterBYPL");
-
-    ddl.empty();
-
-    ddl.append(`
-    <option value="">
-    All Departments
-    </option>
-    `);
+        const ddl =
+            $("#departmentFilterBYPL");
 
 
-    const departments = [
-    ...new Set(
-    allDownloadDataBypl
-    .map(x =>
-    String(x.sapDepartment || "").trim()
-    )
-    .filter(Boolean)
-    )
-    ].sort();
+        ddl.empty();
 
 
-    departments.forEach(department => {
+        ddl.append(`
+            <option value="">
+                All Departments
+            </option>
+        `);
 
-    ddl.append(
-    $("<option>", {
-    value: department,
-    text: department
-    })
-    );
 
-    });
+        const departments = [
+            ...new Set(
+                allDownloadDataBypl
+                    .map(x =>
+                        String(
+                            x.sapDepartment || ""
+                        ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+
+        departments.sort(
+            (a, b) =>
+                a.localeCompare(b)
+        );
+
+
+        departments.forEach(
+            department => {
+
+                ddl.append(
+                    $("<option>", {
+                        value: department,
+                        text: department
+                    })
+                );
+
+            }
+        );
     }
 
+
+    // ============================================================
+    // FAILED REASON FILTER
+    // ============================================================
 
     function loadReasonFilterBYPL() {
 
-    const ddl = $("#reasonFilterBYPL");
-
-    ddl.empty();
-
-
-    ddl.append(`
-    <option value="">
-    All Reasons
-    </option>
-    `);
+        const ddl =
+            $("#reasonFilterBYPL");
 
 
-    ddl.append(`
-    <option value="SYSTEM_TITLE">
-    System Title Mismatch
-    </option>
-    `);
+        ddl.empty();
 
 
-    ddl.append(`
-    <option value="TCP">
-    TCP Connection Failed
-    </option>
-    `);
+        ddl.append(`
+            <option value="">
+                All Reasons
+            </option>
 
+            <option value="SYSTEM_TITLE">
+                System Title Mismatch
+            </option>
 
-    ddl.append(`
-    <option value="NO_DATA">
-    Data Not Found in HES
-    </option>
-    `);
+            <option value="TCP">
+                TCP Connection Failed
+            </option>
 
+            <option value="NO_DATA">
+                Data Not Found in HES
+            </option>
 
-    ddl.append(`
-    <option value="DATE_OLDER">
-    Date Older Then FormY
-    </option>
-    `);
+            <option value="DATE_OLDER">
+                Date Older Then FormY
+            </option>
 
+            <option value="TIMEOUT">
+                Timeout
+            </option>
 
-    ddl.append(`
-    <option value="TIMEOUT">
-    Timeout
-    </option>
-    `);
-
-
-    ddl.append(`
-    <option value="OTHER">
-    Other
-    </option>
-    `);
+            <option value="OTHER">
+                Other
+            </option>
+        `);
     }
 
+
+    // ============================================================
+    // PHASE FILTER
+    // ============================================================
+
+    function loadPhaseFilterBYPL() {
+
+        const ddl =
+            $("#phaseFilterBYPL");
+
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">
+                All Phases
+            </option>
+        `);
+
+
+        const phases = [
+            ...new Set(
+                allDownloadDataBypl
+                    .map(x => x.phase)
+                    .filter(x =>
+                        x !== null &&
+                        x !== undefined &&
+                        x !== ""
+                    )
+            )
+        ];
+
+
+        phases.sort(
+            (a, b) =>
+                String(a).localeCompare(
+                    String(b),
+                    undefined,
+                    {
+                        numeric: true
+                    }
+                )
+        );
+
+
+        phases.forEach(phase => {
+
+            ddl.append(
+                $("<option>", {
+                    value: String(phase),
+                    text: String(phase)
+                })
+            );
+
+        });
+    }
+
+
+    // ============================================================
+    // METER MAKE FILTER
+    // ============================================================
+
+    function loadMeterMakeFilterBYPL() {
+
+        const ddl =
+            $("#meterMakeFilterBYPL");
+
+
+        ddl.empty();
+
+
+        ddl.append(`
+            <option value="">
+                All Meter Makes
+            </option>
+        `);
+
+
+        const meterMakes = [
+            ...new Set(
+                allDownloadDataBypl
+                    .map(x => x.meterType)
+                    .filter(x =>
+                        x !== null &&
+                        x !== undefined &&
+                        x !== ""
+                    )
+            )
+        ];
+
+
+        meterMakes.sort(
+            (a, b) =>
+                String(a).localeCompare(
+                    String(b)
+                )
+        );
+
+
+        meterMakes.forEach(make => {
+
+            ddl.append(
+                $("<option>", {
+                    value: String(make),
+                    text: String(make)
+                })
+            );
+
+        });
+    }
+
+
+    // ============================================================
+    // FAILURE CATEGORY
+    // ============================================================
 
     function getFailureCategoryBYPL(reason) {
 
-    // Normalize message:
-    // Converts new lines / multiple spaces to single spaces
-    const message = String(reason || "")
-    .toUpperCase()
-    .replace(/\s+/g, " ")
-    .trim();
+        const message =
+            String(reason || "")
+                .toUpperCase()
+                .replace(/\s+/g, " ")
+                .trim();
 
 
-    // --------------------------------------------------------
-    // 1. SYSTEM TITLE MISMATCH
-    // --------------------------------------------------------
+        // SYSTEM TITLE
+        if (
+            message.includes(
+                "SYSTEM TITLE"
+            )
+        ) {
 
-    if (
-    message.includes("SYSTEM TITLE")
-    ) {
-    return "SYSTEM_TITLE";
+            return "SYSTEM_TITLE";
+        }
+
+
+        // TCP
+        if (
+            message.includes("TCP")
+        ) {
+
+            return "TCP";
+        }
+
+
+        // NO DATA
+        if (
+            message.includes("DATA NOT FOUND") ||
+            message.includes("NO DATA") ||
+            message.includes("DATA NOT AVAILABLE")
+        ) {
+
+            return "NO_DATA";
+        }
+
+
+        // DATE OLDER
+        if (
+            message.includes("DATE IS OLDER") ||
+
+            message.includes("DATE OLDER") ||
+
+            (
+                message.includes("SMART METER") &&
+                message.includes("OLDER") &&
+                message.includes("FORMY") &&
+                message.includes(
+                    "SAP_MRO_DOWNLOAD_DATE"
+                )
+            )
+        ) {
+
+            return "DATE_OLDER";
+        }
+
+
+        // TIMEOUT
+        if (
+            message.includes("TIMEOUT") ||
+            message.includes("TIME OUT")
+        ) {
+
+            return "TIMEOUT";
+        }
+
+
+        return "OTHER";
     }
 
 
-    // --------------------------------------------------------
-    // 2. TCP CONNECTION FAILED
-    // --------------------------------------------------------
-
-    if (
-    message.includes("TCP")
-    ) {
-    return "TCP";
-    }
-
-
-    if (
-    message.includes("DATA NOT FOUND")
-    ||
-    message.includes("NO DATA")
-    ||
-    message.includes("DATA NOT AVAILABLE")
-    ) {
-    return "NO_DATA";
-    }
-
-    if (
-
-    // Main exact pattern
-    message.includes("DATE IS OLDER")
-
-    ||
-
-    // Alternative wording
-    message.includes("DATE OLDER")
-
-    ||
-
-    // Additional protection for actual API error
-    (
-    message.includes("SMART METER")
-    &&
-    message.includes("OLDER")
-    &&
-    message.includes("FORMY")
-    &&
-    message.includes("SAP_MRO_DOWNLOAD_DATE")
-    )
-
-    ) {
-    return "DATE_OLDER";
-    }
-
-
-    if (
-    message.includes("TIMEOUT")
-    ||
-    message.includes("TIME OUT")
-    ) {
-    return "TIMEOUT";
-    }
-
-
-    // --------------------------------------------------------
-    // 6. EVERYTHING ELSE
-    // --------------------------------------------------------
-
-    return "OTHER";
-    }
-
+    // ============================================================
+    // FILTER EVENTS
+    // ============================================================
 
     $("#departmentFilterBYPL")
-    .off("change")
-    .on("change", function () {
-
-    applyFiltersBYPL();
-
-    });
+        .off("change")
+        .on("change", applyFiltersBYPL);
 
 
     $("#reasonFilterBYPL")
-    .off("change")
-    .on("change", function () {
+        .off("change")
+        .on("change", applyFiltersBYPL);
 
-    applyFiltersBYPL();
 
-    });
+    $("#phaseFilterBYPL")
+        .off("change")
+        .on("change", applyFiltersBYPL);
+
+
+    $("#meterMakeFilterBYPL")
+        .off("change")
+        .on("change", applyFiltersBYPL);
+
+
+    $("#entryDateFromBYPL")
+        .off("change")
+        .on("change", applyFiltersBYPL);
+
+
+    $("#entryDateToBYPL")
+        .off("change")
+        .on("change", applyFiltersBYPL);
+
+
+    // ============================================================
+    // CLEAR FILTERS BUTTON
+    // ============================================================
+
+    $("#btnClearDownloadFiltersBYPL")
+        .off("click")
+        .on("click", function() {
+
+            clearFiltersBYPL();
+
+
+            filteredDataBypl =
+                [...allDownloadDataBypl];
+
+
+            renderTableBYPL(
+                filteredDataBypl
+            );
+
+        });
+
+
+    // ============================================================
+    // CLEAR FILTERS
+    // ============================================================
+
+    function clearFiltersBYPL() {
+
+        $("#departmentFilterBYPL")
+            .val("");
+
+
+        $("#reasonFilterBYPL")
+            .val("");
+
+
+        $("#phaseFilterBYPL")
+            .val("");
+
+
+        $("#meterMakeFilterBYPL")
+            .val("");
+
+
+        $("#entryDateFromBYPL")
+            .val("");
+
+
+        $("#entryDateToBYPL")
+            .val("");
+
+
+        $("#entryDateToBYPL")
+            .removeClass(
+                "is-invalid"
+            );
+    }
 
 
     // ============================================================
@@ -2452,169 +4997,350 @@ ws["!cols"] = [
 
     function applyFiltersBYPL() {
 
-    const selectedDepartment = String(
-    $("#departmentFilterBYPL").val() || ""
-    )
-    .trim()
-    .toUpperCase();
+        const selectedDepartment =
+            String(
+                $("#departmentFilterBYPL").val() || ""
+            )
+                .trim()
+                .toUpperCase();
 
 
-    const selectedReason = String(
-    $("#reasonFilterBYPL").val() || ""
-    )
-    .trim()
-    .toUpperCase();
+        const selectedReason =
+            String(
+                $("#reasonFilterBYPL").val() || ""
+            )
+                .trim()
+                .toUpperCase();
 
 
-    filteredDataBypl = allDownloadDataBypl.filter(item => {
+        const selectedPhase =
+            String(
+                $("#phaseFilterBYPL").val() || ""
+            )
+                .trim()
+                .toUpperCase();
 
 
-    // ----------------------------------------------------
-    // DEPARTMENT FILTER
-    // ----------------------------------------------------
-
-    const itemDepartment = String(
-    item.sapDepartment || ""
-    )
-    .trim()
-    .toUpperCase();
+        const selectedMeterMake =
+            String(
+                $("#meterMakeFilterBYPL").val() || ""
+            )
+                .trim()
+                .toUpperCase();
 
 
-    const departmentMatch =
-
-    selectedDepartment === ""
-
-    ||
-
-    itemDepartment === selectedDepartment;
+        const dateFrom =
+            $("#entryDateFromBYPL").val();
 
 
-    // ----------------------------------------------------
-    // GET CATEGORY FOR THIS ROW
-    // ----------------------------------------------------
-
-    const itemCategory =
-    getFailureCategoryBYPL(
-    item.schedulerMessage
-    );
+        const dateTo =
+            $("#entryDateToBYPL").val();
 
 
-    // ----------------------------------------------------
-    // REASON FILTER
-    // ----------------------------------------------------
+        // ========================================================
+        // DATE VALIDATION
+        // ========================================================
 
-    const reasonMatch =
+        if (
+            dateFrom &&
+            dateTo &&
+            dateFrom > dateTo
+        ) {
 
-    selectedReason === ""
-
-    ||
-
-    itemCategory === selectedReason;
-
-
-    return (
-    departmentMatch
-    &&
-    reasonMatch
-    );
-
-    });
+            $("#entryDateToBYPL")
+                .addClass(
+                    "is-invalid"
+                );
 
 
-    // Debugging
-    console.log(
-    "BYPL Selected Department:",
-    selectedDepartment
-    );
-
-    console.log(
-    "BYPL Selected Reason:",
-    selectedReason
-    );
-
-    console.log(
-    "BYPL Total Records:",
-    allDownloadDataBypl.length
-    );
-
-    console.log(
-    "BYPL Filtered Records:",
-    filteredDataBypl.length
-    );
+            filteredDataBypl = [];
 
 
-    renderTableBYPL(filteredDataBypl);
+            renderTableBYPL(
+                filteredDataBypl
+            );
+
+
+            return;
+        }
+
+
+        $("#entryDateToBYPL")
+            .removeClass(
+                "is-invalid"
+            );
+
+
+        // ========================================================
+        // FILTER DATA
+        // ========================================================
+
+        filteredDataBypl =
+            allDownloadDataBypl.filter(item => {
+
+
+                // ==================================================
+                // DEPARTMENT
+                // ==================================================
+
+                const itemDepartment =
+                    String(
+                        item.sapDepartment || ""
+                    )
+                        .trim()
+                        .toUpperCase();
+
+
+                const departmentMatch =
+                    selectedDepartment === "" ||
+                    itemDepartment ===
+                    selectedDepartment;
+
+
+                // ==================================================
+                // FAILURE REASON
+                // ==================================================
+
+                const itemCategory =
+                    getFailureCategoryBYPL(
+                        item.schedulerMessage
+                    );
+
+
+                const reasonMatch =
+                    selectedReason === "" ||
+                    itemCategory ===
+                    selectedReason;
+
+
+                // ==================================================
+                // PHASE
+                // ==================================================
+
+                const itemPhase =
+                    String(
+                        item.phase || ""
+                    )
+                        .trim()
+                        .toUpperCase();
+
+
+                const phaseMatch =
+                    selectedPhase === "" ||
+                    itemPhase ===
+                    selectedPhase;
+
+
+                // ==================================================
+                // METER MAKE
+                // ==================================================
+
+                const itemMeterMake =
+                    String(
+                        item.meterType || ""
+                    )
+                        .trim()
+                        .toUpperCase();
+
+
+                const meterMakeMatch =
+                    selectedMeterMake === "" ||
+                    itemMeterMake ===
+                    selectedMeterMake;
+
+
+                // ==================================================
+                // ENTRY DATE
+                // ==================================================
+
+                let dateMatch = true;
+
+
+                if (
+                    dateFrom ||
+                    dateTo
+                ) {
+
+                    if (!item.entryDate) {
+
+                        dateMatch = false;
+
+                    }
+                    else {
+
+                        const entryDate =
+                            new Date(
+                                item.entryDate
+                            );
+
+
+                        if (
+                            isNaN(
+                                entryDate.getTime()
+                            )
+                        ) {
+
+                            dateMatch = false;
+
+                        }
+                        else {
+
+                            const entryDateString =
+                                entryDate
+                                    .toISOString()
+                                    .split("T")[0];
+
+
+                            if (
+                                dateFrom &&
+                                entryDateString <
+                                dateFrom
+                            ) {
+
+                                dateMatch = false;
+                            }
+
+
+                            if (
+                                dateTo &&
+                                entryDateString >
+                                dateTo
+                            ) {
+
+                                dateMatch = false;
+                            }
+                        }
+                    }
+                }
+
+
+                // ==================================================
+                // FINAL MATCH
+                // ==================================================
+
+                return (
+                    departmentMatch &&
+                    reasonMatch &&
+                    phaseMatch &&
+                    meterMakeMatch &&
+                    dateMatch
+                );
+
+            });
+
+
+        // ========================================================
+        // DEBUG
+        // ========================================================
+
+        console.log(
+            "BYPL Department:",
+            selectedDepartment
+        );
+
+        console.log(
+            "BYPL Reason:",
+            selectedReason
+        );
+
+        console.log(
+            "BYPL Phase:",
+            selectedPhase
+        );
+
+        console.log(
+            "BYPL Meter Make:",
+            selectedMeterMake
+        );
+
+        console.log(
+            "BYPL Date From:",
+            dateFrom
+        );
+
+        console.log(
+            "BYPL Date To:",
+            dateTo
+        );
+
+        console.log(
+            "BYPL Total Records:",
+            allDownloadDataBypl.length
+        );
+
+        console.log(
+            "BYPL Filtered Records:",
+            filteredDataBypl.length
+        );
+
+
+        renderTableBYPL(
+            filteredDataBypl
+        );
     }
 
 
     // ============================================================
-    // GET FAILURE BADGE STYLE
-    //
-    // SAME CATEGORY FUNCTION AS FILTER
+    // BADGE STYLE
     // ============================================================
 
     function getFailureBadgeStyleBYPL(reason) {
 
-    const category =
-    getFailureCategoryBYPL(reason);
+        const category =
+            getFailureCategoryBYPL(
+                reason
+            );
 
 
-    switch (category) {
+        switch (category) {
+
+            case "SYSTEM_TITLE":
+
+                return {
+                    background: "#dc3545",
+                    color: "#ffffff"
+                };
 
 
-    // SYSTEM TITLE = RED
-    case "SYSTEM_TITLE":
+            case "TCP":
 
-    return {
-    background: "#dc3545",
-    color: "#ffffff"
-    };
-
-
-    // TCP = ORANGE
-    case "TCP":
-
-    return {
-    background: "#fd7e14",
-    color: "#ffffff"
-    };
+                return {
+                    background: "#fd7e14",
+                    color: "#ffffff"
+                };
 
 
-    // NO DATA = YELLOW
-    case "NO_DATA":
+            case "NO_DATA":
 
-    return {
-    background: "#ffc107",
-    color: "#000000"
-    };
-
-
-    // DATE OLDER = TEAL
-    case "DATE_OLDER":
-
-    return {
-    background: "#20c997",
-    color: "#ffffff"
-    };
+                return {
+                    background: "#ffc107",
+                    color: "#000000"
+                };
 
 
-    // TIMEOUT = GRAY
-    case "TIMEOUT":
+            case "DATE_OLDER":
 
-    return {
-    background: "#6c757d",
-    color: "#ffffff"
-    };
+                return {
+                    background: "#20c997",
+                    color: "#ffffff"
+                };
 
 
-    // OTHER = GRAY
-    default:
+            case "TIMEOUT":
 
-    return {
-    background: "#6c757d",
-    color: "#ffffff"
-    };
-    }
+                return {
+                    background: "#6c757d",
+                    color: "#ffffff"
+                };
+
+
+            default:
+
+                return {
+                    background: "#6c757d",
+                    color: "#ffffff"
+                };
+        }
     }
 
 
@@ -2624,366 +5350,424 @@ ws["!cols"] = [
 
     function formatEntryDateBYPL(value) {
 
-    if (!value) {
-    return "--";
-    }
+        if (!value) {
+
+            return "--";
+        }
 
 
-    const date = new Date(value);
+        const date =
+            new Date(value);
 
 
-    if (isNaN(date.getTime())) {
-    return String(value);
-    }
+        if (
+            isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return String(value);
+        }
 
 
-    return date.toLocaleString(
-    "en-GB",
-    {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
-    }
-    );
+        return date.toLocaleString(
+            "en-GB",
+            {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            }
+        );
     }
 
 
     // ============================================================
-    // RENDER TABLE
+    // RENDER BYPL TABLE
     // ============================================================
 
     function renderTableBYPL(data) {
 
-    const tbody =
-    $("#downloadSummaryBodyBYPL");
+        const tbody =
+            $("#downloadSummaryBodyBYPL");
 
 
-    tbody.empty();
+        tbody.empty();
 
 
-    // --------------------------------------------------------
-    // NO RECORDS
-    // --------------------------------------------------------
+        // ========================================================
+        // NO RECORDS
+        // ========================================================
 
-    if (
-    !Array.isArray(data)
-    ||
-    data.length === 0
-    ) {
+        if (
+            !Array.isArray(data) ||
+            data.length === 0
+        ) {
 
-    tbody.html(`
-    <tr>
-    <td colspan="11"
-    class="text-center py-4 text-muted">
-    No Records Found
-    </td>
-    </tr>
-    `);
+            tbody.html(`
+                <tr>
+                    <td colspan="11"
+                        class="text-center py-4 text-muted">
 
-    return;
-    }
+                        No Records Found
 
+                    </td>
+                </tr>
+            `);
 
-    // --------------------------------------------------------
-    // RENDER ROWS
-    // --------------------------------------------------------
-
-    data.forEach((x, index) => {
+            return;
+        }
 
 
-    const badgeStyle =
-    getFailureBadgeStyleBYPL(
-    x.schedulerMessage
-    );
+        // ========================================================
+        // RENDER ROWS
+        // ========================================================
+
+        data.forEach((x, index) => {
+
+            const badgeStyle =
+                getFailureBadgeStyleBYPL(
+                    x.schedulerMessage
+                );
 
 
-    const entryDate =
-    formatEntryDateBYPL(
-    x.entryDate
-    );
+            const entryDate =
+                formatEntryDateBYPL(
+                    x.entryDate
+                );
 
 
-    tbody.append(`
+            tbody.append(`
+                <tr>
 
-    <tr>
+                    <td class="text-center">
+                        ${index + 1}
+                    </td>
 
-    <!-- S.NO -->
-    <td class="text-center">
-    ${index + 1}
-    </td>
+                    <td>
+                        ${escapeHtml(
+                x.consRef || ""
+            )}
+                    </td>
 
+                    <td>
+                        ${escapeHtml(
+                x.meterNumber || ""
+            )}
+                    </td>
 
-    <!-- CONS REF -->
-    <td>
-    ${escapeHtml(x.consRef || "")}
-    </td>
+                    <td class="text-center">
+                        ${escapeHtml(
+                x.phase || ""
+            )}
+                    </td>
 
+                    <td>
+                        ${escapeHtml(
+                x.sapDepartment || ""
+            )}
+                    </td>
 
-    <!-- METER NUMBER -->
-    <td>
-    ${escapeHtml(x.meterNumber || "")}
-    </td>
+                    <td>
+                        ${escapeHtml(
+                x.sapDivision || ""
+            )}
+                    </td>
 
+                    <td>
+                        ${escapeHtml(
+                x.sapSeqNo || ""
+            )}
+                    </td>
 
-    <!-- PHASE -->
-    <td class="text-center">
-    ${escapeHtml(x.phase || "")}
-    </td>
+                    <td class="address-cell">
+                        ${escapeHtml(
+                x.address || "--"
+            )}
+                    </td>
 
+                    <td class="text-center">
+                        ${escapeHtml(
+                x.meterType || ""
+            )}
+                    </td>
 
-    <!-- DEPARTMENT -->
-    <td>
-    ${escapeHtml(x.sapDepartment || "")}
-    </td>
+                    <td class="status-cell">
 
+                        <span class="badge"
+                              style="
+                                  background-color:${badgeStyle.background};
+                                  color:${badgeStyle.color};
+                                  white-space:normal;
+                                  display:inline-block;
+                                  line-height:1.35;
+                                  padding:6px 10px;
+                                  max-width:100%;
+                              ">
 
-    <!-- DIVISION -->
-    <td>
-    ${escapeHtml(x.sapDivision || "")}
-    </td>
+                            ${escapeHtml(
+                x.schedulerMessage || "--"
+            )}
 
+                        </span>
 
-    <!-- SEQ NO -->
-    <td>
-    ${escapeHtml(x.sapSeqNo || "")}
-    </td>
+                    </td>
 
+                    <td class="text-center">
+                        ${escapeHtml(
+                entryDate
+            )}
+                    </td>
 
-    <!-- ADDRESS -->
-    <td class="address-cell">
-    ${escapeHtml(x.address || "--")}
-    </td>
+                </tr>
+            `);
 
-
-    <!-- METER MAKE -->
-    <td class="text-center">
-    ${escapeHtml(x.meterType || "")}
-    </td>
-
-
-    <!-- FAILURE STATUS -->
-    <td class="status-cell">
-
-    <span
-    class="badge"
-    style="
-    background-color:${badgeStyle.background};
-    color:${badgeStyle.color};
-    white-space:normal;
-    display:inline-block;
-    line-height:1.35;
-    padding:6px 10px;
-    max-width:100%;
-    "
-    >
-    ${escapeHtml(
-    x.schedulerMessage || "--"
-    )}
-    </span>
-
-    </td>
-
-
-    <!-- ENTRY DATE -->
-    <td class="text-center">
-    ${escapeHtml(entryDate)}
-    </td>
-
-    </tr>
-
-    `);
-
-    });
-    }
-
-
-    function escapeHtml(value) {
-
-    if (
-    value === null
-    ||
-    value === undefined
-    ) {
-    return "";
-    }
-
-
-    return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+        });
     }
 
 
     // ============================================================
-    // EXPORT TO EXCEL
+    // ESCAPE HTML
+    // ============================================================
+
+    function escapeHtml(value) {
+
+        if (
+            value === null ||
+            value === undefined
+        ) {
+
+            return "";
+        }
+
+
+        return String(value)
+            .replace(
+                /&/g,
+                "&amp;"
+            )
+            .replace(
+                /</g,
+                "&lt;"
+            )
+            .replace(
+                />/g,
+                "&gt;"
+            )
+            .replace(
+                /"/g,
+                "&quot;"
+            )
+            .replace(
+                /'/g,
+                "&#039;"
+            );
+    }
+
+
+    // ============================================================
+    // EXPORT EXCEL
     // ============================================================
 
     function exportTableToExcelBYPL() {
 
-    const table =
-    document.getElementById(
-    "downloadSummaryTableBYPL"
-    );
+        const table =
+            document.getElementById(
+                "downloadSummaryTableBYPL"
+            );
 
 
-    if (!table) {
+        if (!table) {
 
-    console.error(
-    "BYPL download table not found."
-    );
+            console.error(
+                "BYPL download table not found."
+            );
 
-    return;
+            return;
+        }
+
+
+        const wb =
+            XLSX.utils.book_new();
+
+
+        const ws =
+            XLSX.utils.table_to_sheet(
+                table
+            );
+
+
+        ws["!cols"] = [
+
+            { wch: 7 },
+            { wch: 15 },
+            { wch: 18 },
+            { wch: 10 },
+            { wch: 15 },
+            { wch: 15 },
+            { wch: 18 },
+            { wch: 50 },
+            { wch: 15 },
+            { wch: 55 },
+            { wch: 22 }
+
+        ];
+
+
+        ws["!autofilter"] = {
+            ref: "A1:K1"
+        };
+
+
+        ws["!freeze"] = {
+            xSplit: 0,
+            ySplit: 1
+        };
+
+
+        XLSX.utils.book_append_sheet(
+            wb,
+            ws,
+            "Download Failed"
+        );
+
+
+        const fileDate =
+            new Date()
+                .toISOString()
+                .split("T")[0];
+
+
+        XLSX.writeFile(
+            wb,
+            "Download_Failed_Summary_BYPL_" +
+            fileDate +
+            ".xlsx"
+        );
     }
 
 
-    const wb =
-    XLSX.utils.book_new();
-
-
-    const ws =
-    XLSX.utils.table_to_sheet(table);
-
-
-    // Column widths
-    ws["!cols"] = [
-
-    { wch: 7 },   // S.No
-    { wch: 15 },  // Cons Ref
-    { wch: 18 },  // Meter Number
-    { wch: 10 },  // Phase
-    { wch: 15 },  // Department
-    { wch: 15 },  // Division
-    { wch: 18 },  // Seq No
-    { wch: 50 },  // Address
-    { wch: 15 },  // Meter Make
-    { wch: 55 },  // Status
-    { wch: 22 }   // Entry Date
-
-    ];
-
-
-    // Auto filter
-    ws["!autofilter"] = {
-    ref: "A1:K1"
-    };
-
-
-    XLSX.utils.book_append_sheet(
-    wb,
-    ws,
-    "Download Failed"
-    );
-
-
-    const fileDate =
-    new Date()
-    .toISOString()
-    .split("T")[0];
-
-
-    XLSX.writeFile(
-    wb,
-    "Download_Failed_Summary_BYPL_"
-    + fileDate
-    + ".xlsx"
-    );
-    }
+    // ============================================================
+    // EXPORT CSV
+    // ============================================================
 
     function exportTableToCSVBYPL() {
 
-    const table =
-    document.getElementById(
-    "downloadSummaryTableBYPL"
-    );
+        const table =
+            document.getElementById(
+                "downloadSummaryTableBYPL"
+            );
 
 
-    if (!table) {
+        if (!table) {
 
-    console.error(
-    "BYPL download table not found."
-    );
+            console.error(
+                "BYPL download table not found."
+            );
 
-    return;
-    }
-
-
-    const rows =
-    table.querySelectorAll("tr");
+            return;
+        }
 
 
-    const csv = [];
+        const rows =
+            table.querySelectorAll(
+                "tr"
+            );
 
 
-    rows.forEach(row => {
-
-    const columns =
-    row.querySelectorAll("th, td");
+        const csv = [];
 
 
-    const rowData = [];
+        rows.forEach(row => {
+
+            const columns =
+                row.querySelectorAll(
+                    "th, td"
+                );
 
 
-    columns.forEach(column => {
-
-    const value =
-    column.innerText
-    .replace(/"/g, '""')
-    .replace(/\r?\n|\r/g, " ")
-    .trim();
+            const rowData = [];
 
 
-    rowData.push(
-    `"${value}"`
-    );
+            columns.forEach(column => {
 
-    });
-
-
-    csv.push(
-    rowData.join(",")
-    );
-
-    });
-
-
-    const blob = new Blob(
-    [csv.join("\n")],
-    {
-    type: "text/csv;charset=utf-8;"
-    }
-    );
+                const value =
+                    column.innerText
+                        .replace(
+                            /"/g,
+                            '""'
+                        )
+                        .replace(
+                            /\r?\n|\r/g,
+                            " "
+                        )
+                        .trim();
 
 
-    const url =
-    URL.createObjectURL(blob);
+                rowData.push(
+                    `"${value}"`
+                );
+
+            });
 
 
-    const link =
-    document.createElement("a");
+            csv.push(
+                rowData.join(",")
+            );
+
+        });
 
 
-    link.href = url;
+        const blob =
+            new Blob(
+                [csv.join("\n")],
+                {
+                    type:
+                        "text/csv;charset=utf-8;"
+                }
+            );
 
-    link.download =
-    "Download_Failed_Summary_BYPL_"
-    + new Date()
-    .toISOString()
-    .split("T")[0]
-    + ".csv";
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
 
 
-    document.body.appendChild(link);
+        const link =
+            document.createElement(
+                "a"
+            );
 
-    link.click();
 
-    document.body.removeChild(link);
+        link.href = url;
 
-    URL.revokeObjectURL(url);
+
+        link.download =
+            "Download_Failed_Summary_BYPL_" +
+            new Date()
+                .toISOString()
+                .split("T")[0] +
+            ".csv";
+
+
+        document.body.appendChild(
+            link
+        );
+
+
+        link.click();
+
+
+        document.body.removeChild(
+            link
+        );
+
+
+        URL.revokeObjectURL(
+            url
+        );
     }
 </script>

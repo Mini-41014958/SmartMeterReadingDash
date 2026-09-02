@@ -1,6 +1,11 @@
 /* =========================================================
-   GLOBAL
-========================================================= */
+   RCM SMART METER READING DASHBOARD
+   CLEAN + COMPACT DASHBOARD CSS
+   ========================================================= */
+
+/* =========================================================
+   1. GLOBAL
+   ========================================================= */
 
 *,
 *::before,
@@ -16,6 +21,7 @@ body {
 }
 
 body {
+    margin: 0;
     background: #eef2f7;
     font-size: 15px;
 }
@@ -23,41 +29,73 @@ body {
 .container-fluid {
     width: 100%;
     max-width: 100%;
-    padding: 10px 15px !important;
+    padding: 8px 14px !important;
 }
 
 
 /* =========================================================
-   DASHBOARD CARD
-========================================================= */
+   2. DASHBOARD GRID / SPACING
+   Keeps the two dashboard rows close together.
+   ========================================================= */
+
+#dashboardContent {
+    padding-bottom: 4px;
+}
+
+    #dashboardContent > .row {
+        --bs-gutter-x: 0.75rem;
+        --bs-gutter-y: 0.55rem;
+    }
+
+        #dashboardContent > .row.mt-3 {
+            margin-top: 0.55rem !important;
+        }
+
+        #dashboardContent > .row.g-3 {
+            --bs-gutter-x: 0.75rem;
+            --bs-gutter-y: 0.55rem;
+        }
+
+        #dashboardContent > .row.g-2 {
+            --bs-gutter-x: 0.75rem;
+            --bs-gutter-y: 0.55rem;
+        }
+
+
+/* =========================================================
+   3. DASHBOARD CARDS
+   ========================================================= */
 
 .dashboard-card {
     height: 100%;
+    margin: 0 !important;
     border: none;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .08);
+    border-radius: 11px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, .07);
     overflow: hidden;
 }
 
     .dashboard-card .card-header {
+        min-height: 40px;
+        padding: 8px 15px !important;
         background: linear-gradient(90deg, #3b82f6, #2563eb);
         color: #fff;
         font-size: 15px;
         font-weight: 700;
-        padding: .65rem 1rem;
+        line-height: 1.4;
     }
 
     .dashboard-card .card-body {
-        padding: 1rem;
+        padding: 9px 12px !important;
     }
 
 
 /* =========================================================
-   FILTER
-========================================================= */
+   4. FILTER / TOOLBAR
+   ========================================================= */
 
 .filter-toolbar {
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
     .filter-toolbar .form-control,
@@ -66,15 +104,15 @@ body {
     }
 
     .filter-toolbar .btn {
-        border-radius: 8px;
         min-width: 90px;
+        border-radius: 8px;
         font-size: 14px;
         font-weight: 600;
     }
 
 .card-body.py-2 {
-    padding-top: .6rem !important;
-    padding-bottom: .6rem !important;
+    padding-top: .5rem !important;
+    padding-bottom: .5rem !important;
 }
 
 .form-select-sm,
@@ -84,21 +122,21 @@ body {
 }
 
 .form-label {
+    margin-bottom: 4px;
     font-size: 13px;
     font-weight: 600;
-    margin-bottom: 4px;
 }
 
 
 /* =========================================================
-   READING MONTH
-========================================================= */
+   5. READING MONTH
+   ========================================================= */
 
 .reading-month-strip {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 7px 14px;
+    padding: 6px 12px;
     background: #eef4ff;
     border: 1px solid #cfe0ff;
     border-radius: 6px;
@@ -110,8 +148,8 @@ body {
 
 
 /* =========================================================
-   METER SUMMARY
-========================================================= */
+   6. METER SUMMARY
+   ========================================================= */
 
 .meter-summary-card {
     height: 100% !important;
@@ -119,7 +157,7 @@ body {
 }
 
     .meter-summary-card .card-body {
-        padding: 16px;
+        padding: 8px 10px !important;
     }
 
 .meter-summary-table {
@@ -130,85 +168,86 @@ body {
     .meter-summary-table table {
         width: 100%;
         min-width: 0 !important;
-        margin-bottom: 0;
+        margin: 0;
         table-layout: fixed;
         border-collapse: collapse;
     }
 
     .meter-summary-table thead th {
-        font-size: 13px;
-        font-weight: 700;
-        color: #52606d;
-        text-transform: uppercase;
+        padding: 7px 7px;
         background: #f8fafc;
         border-bottom: 1px solid #dee2e6;
-        padding: 11px 10px;
-        white-space: normal;
+        color: #52606d;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.15;
         text-align: center;
-        line-height: 1.3;
+        text-transform: uppercase;
+        white-space: normal;
     }
 
         .meter-summary-table thead th:first-child {
+            padding-left: 10px;
             text-align: left;
-            padding-left: 14px;
         }
 
     .meter-summary-table tbody td {
-        font-size: 15px;
-        font-weight: 700;
-        padding: 12px 10px;
-        vertical-align: middle;
+        padding: 7px 7px;
         border-bottom: 0;
+        color: #1f2937;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.2;
+        text-align: center;
+        vertical-align: middle;
         white-space: nowrap;
-        line-height: 1.35;
+        font-variant-numeric: tabular-nums;
     }
 
         .meter-summary-table tbody td:first-child {
-            color: #1f2937;
-            font-weight: 700;
-            padding-left: 14px;
-        }
-
-        .meter-summary-table tbody td:not(:first-child) {
-            font-variant-numeric: tabular-nums;
-            text-align: center;
+            padding-left: 10px;
+            text-align: left;
         }
 
 
 /* =========================================================
-   METER CHARTS
-========================================================= */
+   7. METER PIE CHARTS
+   ========================================================= */
 
 .meter-charts-wrapper {
-    width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0;
+    width: 100%;
+    gap: 2px;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 .meter-chart-item {
     flex: 0 0 50%;
     width: 50%;
     min-width: 0;
-    text-align: center;
     margin: 0;
     padding: 0;
+    text-align: center;
 }
 
 .meter-chart-title {
-    font-size: 13px;
-    font-weight: 700;
+    margin-bottom: 2px;
     color: #52606d;
-    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.1;
 }
 
 .meter-chart-wrapper {
-    width: 160px;
-    height: 160px;
+    position: relative;
+    width: 145px;
+    height: 145px;
     max-width: 100%;
     margin: 0 auto;
-    position: relative;
+    padding: 0;
 }
 
     .meter-chart-wrapper canvas {
@@ -216,43 +255,27 @@ body {
         height: 100% !important;
     }
 
-.mro-failed-value {
-    color: #dc2626 !important;
-}
 
-    .mro-failed-value .mro-link {
-        color: #dc2626 !important;
-    }
-
-    .mro-failed-value small {
-        color: #dc2626 !important;
-    }
 /* =========================================================
-   MRO SUMMARY
-   FIXED:
-   6 ITEMS = 6 GRID COLUMNS
-========================================================= */
+   8. MRO SUMMARY
+   Company + 5 metrics = 6 columns.
+   ========================================================= */
 
 .mro-company-row {
     display: grid;
-    /* Company + 5 metrics */
     grid-template-columns: 58px repeat(5, minmax(0, 1fr));
     align-items: center;
     width: 100%;
     min-width: 0;
-    padding: 18px 6px;
-    column-gap: 4px;
+    margin: 0;
+    padding: 18px 5px !important;
+    column-gap: 3px;
     border-bottom: 1px solid #e5e7eb;
 }
 
     .mro-company-row:last-child {
         border-bottom: none;
     }
-
-
-/* =========================================================
-   MRO COMPANY
-========================================================= */
 
 .mro-company {
     display: flex;
@@ -265,10 +288,10 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 50px;
-    padding: 6px 8px;
+    min-width: 48px;
+    padding: 5px 7px;
     border-radius: 5px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     line-height: 1;
 }
@@ -283,28 +306,24 @@ body {
     color: #059669;
 }
 
-
-/* =========================================================
-   MRO METRIC
-========================================================= */
-
 .mro-metric {
-    min-width: 0;
     width: 100%;
-    text-align: center;
+    min-width: 0;
+    padding: 0 2px;
     overflow: hidden;
+    text-align: center;
 }
 
 .mro-label {
-    margin-bottom: 5px;
+    margin-bottom: 2px;
     color: #64748b;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 700;
+    line-height: 1.15;
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.2;
 }
 
 .mro-value {
@@ -312,9 +331,10 @@ body {
     align-items: baseline;
     justify-content: center;
     min-width: 0;
+    color: #111827;
     font-size: 16px;
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.15;
     white-space: nowrap;
 }
 
@@ -327,39 +347,36 @@ body {
         flex-shrink: 0;
         margin-left: 3px;
         color: inherit;
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 600;
         line-height: 1;
         white-space: nowrap;
     }
 
+.mro-failed-value {
+    color: #dc2626 !important;
+}
 
-/* =========================================================
-   MRO FAILED LINKS
-========================================================= */
+    .mro-failed-value .mro-link,
+    .mro-failed-value small {
+        color: #dc2626 !important;
+    }
 
 .mro-link {
-    font-size: 16px;
+    color: #dc2626;
+    font-size: 15px;
     font-weight: 700;
     text-decoration: none;
     cursor: pointer;
     transition: opacity .15s ease;
 }
 
-    .mro-link:hover {
-        color: #b91c1c !important;
-        opacity: .8;
-    }
-
+    .mro-link:hover,
     .mro-link:focus {
         color: #b91c1c !important;
-        outline: none;
+        opacity: .8;
+        text-decoration: none;
     }
-
-
-/* =========================================================
-   MRO COLORS
-========================================================= */
 
 .mro-value.text-success {
     color: #059669 !important;
@@ -371,8 +388,8 @@ body {
 
 
 /* =========================================================
-   DASHBOARD CHARTS
-========================================================= */
+   9. MAIN DASHBOARD CHARTS
+   ========================================================= */
 
 canvas {
     max-width: 100%;
@@ -381,7 +398,7 @@ canvas {
 #departmentChart,
 #readingTrendChart {
     width: 100% !important;
-    height: 340px !important;
+    height: 315px !important;
 }
 
 #readingTrendChart {
@@ -390,26 +407,36 @@ canvas {
 }
 
 
+/* If chart is wrapped in a fixed-height div, keep it compact. */
+#dashboardContent .card-body > div[style*="height: 420px"] {
+    height: 315px !important;
+}
+
+#dashboardContent .card-body > div[style*="height: 400px"] {
+    height: 315px !important;
+}
+
+
 /* =========================================================
-   MODAL
-========================================================= */
+   10. MODALS
+   ========================================================= */
 
 .modal-dialog {
-    max-width: 98vw;
     width: 98vw;
+    max-width: 98vw;
     height: 95vh;
     margin: 2.5vh auto;
 }
 
 .modal-content {
-    height: 100%;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .modal-header {
     flex-shrink: 0;
-    padding: 12px 16px;
+    padding: 10px 15px;
 }
 
     .modal-header .modal-title {
@@ -418,30 +445,30 @@ canvas {
     }
 
 .modal-body {
-    flex: 1 1 auto;
-    min-height: 0;
-    padding: 12px 15px;
-    overflow: hidden;
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
+    min-height: 0;
+    padding: 10px 12px;
+    overflow: hidden;
 }
 
 .modal-footer {
     flex-shrink: 0;
-    padding: 10px 15px;
+    padding: 8px 12px;
 }
 
 
 /* =========================================================
-   MODAL FILTER
-========================================================= */
+   11. MODAL FILTERS
+   ========================================================= */
 
 .filter-section {
     flex-shrink: 0;
+    margin-bottom: 8px;
+    padding: 9px 10px;
     background: #f8f9fa;
-    padding: 12px;
     border-radius: 7px;
-    margin-bottom: 10px;
 }
 
 .export-buttons {
@@ -456,16 +483,53 @@ canvas {
         font-weight: 600;
     }
 
+#downloadSummaryModal .filter-section .form-select,
+#downloadSummaryModal .filter-section .form-control,
+#downloadSummaryModalBYPL .filter-section .form-select,
+#downloadSummaryModalBYPL .filter-section .form-control {
+    height: 36px;
+    border-radius: 7px;
+    font-size: 13px;
+}
+
+    #downloadSummaryModal .filter-section .form-select:focus,
+    #downloadSummaryModal .filter-section .form-control:focus,
+    #downloadSummaryModalBYPL .filter-section .form-select:focus,
+    #downloadSummaryModalBYPL .filter-section .form-control:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 .15rem rgba(13, 110, 253, .15);
+    }
+
+#btnClearDownloadFilters,
+#btnClearDownloadFiltersBYPL {
+    min-width: 120px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+#entryDateTo.is-invalid,
+#entryDateToBYPL.is-invalid {
+    border-color: #dc3545;
+}
+
+    #entryDateTo.is-invalid:focus,
+    #entryDateToBYPL.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 .15rem rgba(220, 53, 69, .15);
+    }
+
 
 /* =========================================================
-   TABLE RESPONSIVE
-========================================================= */
+   12. TABLE WRAPPER
+   ========================================================= */
 
-.table-responsive {
+.table-responsive,
+.hes-download-table-wrapper {
     flex: 1 1 auto;
-    min-height: 0;
     width: 100%;
-    padding: 6px;
+    min-height: 0;
+    padding: 5px;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
@@ -475,66 +539,81 @@ canvas {
 
 
 /* =========================================================
-   DOWNLOAD TABLES
-========================================================= */
+   13. DOWNLOAD / HES TABLES
+   Consolidated selectors. No duplicate HES CSS.
+   ========================================================= */
 
 #downloadSummaryTable,
-#downloadSummaryTableBYPL {
+#downloadSummaryTableBYPL,
+#hesDownloadSummaryTable,
+#hesDownloadSummaryTableBypl {
     width: 100%;
     min-width: 1050px;
+    margin: 0;
     table-layout: fixed;
     border-collapse: collapse;
     font-size: 12px;
-    line-height: 1.35;
-    margin: 0;
+    line-height: 1.3;
 }
 
     #downloadSummaryTable thead th,
-    #downloadSummaryTableBYPL thead th {
+    #downloadSummaryTableBYPL thead th,
+    #hesDownloadSummaryTable thead th,
+    #hesDownloadSummaryTableBypl thead th {
         position: sticky;
         top: 0;
         z-index: 10;
+        padding: 8px 6px;
         background: #0d6efd;
-        color: #fff;
-        text-align: center;
-        vertical-align: middle;
-        padding: 9px 6px;
         border: 1px solid #dee2e6;
+        color: #fff;
         font-size: 12px;
         font-weight: 700;
+        text-align: center;
+        vertical-align: middle;
         white-space: nowrap;
     }
 
     #downloadSummaryTable tbody td,
-    #downloadSummaryTableBYPL tbody td {
-        padding: 8px 6px;
-        vertical-align: middle;
+    #downloadSummaryTableBYPL tbody td,
+    #hesDownloadSummaryTable tbody td,
+    #hesDownloadSummaryTableBypl tbody td {
+        padding: 7px 6px;
         border: 1px solid #dee2e6;
         font-size: 12px;
         font-weight: 500;
+        vertical-align: middle;
         word-break: break-word;
         overflow-wrap: anywhere;
     }
 
-    #downloadSummaryTable tbody tr:nth-child(even),
-    #downloadSummaryTableBYPL tbody tr:nth-child(even) {
+    #downloadSummaryTable tbody tr:nth-child(even) td,
+    #downloadSummaryTableBYPL tbody tr:nth-child(even) td,
+    #hesDownloadSummaryTable tbody tr:nth-child(even) td,
+    #hesDownloadSummaryTableBypl tbody tr:nth-child(even) td {
         background: #f8f9fa;
     }
 
-    #downloadSummaryTable tbody tr:hover,
-    #downloadSummaryTableBYPL tbody tr:hover {
+    #downloadSummaryTable tbody tr:hover td,
+    #downloadSummaryTableBYPL tbody tr:hover td,
+    #hesDownloadSummaryTable tbody tr:hover td,
+    #hesDownloadSummaryTableBypl tbody tr:hover td {
         background: #dbeafe;
     }
 
 
     /* =========================================================
-   DOWNLOAD TABLE COLUMN WIDTHS
-========================================================= */
+   14. DOWNLOAD / HES TABLE COLUMN WIDTHS
+   ========================================================= */
 
     #downloadSummaryTable th:nth-child(1),
     #downloadSummaryTable td:nth-child(1),
     #downloadSummaryTableBYPL th:nth-child(1),
-    #downloadSummaryTableBYPL td:nth-child(1) {
+    #downloadSummaryTableBYPL td:nth-child(1),
+    #hesDownloadSummaryTable th:nth-child(1),
+    #hesDownloadSummaryTable td:nth-child(1),
+    #hesDownloadSummaryTableBypl th:nth-child(1),
+    #hesDownloadSummaryTableBypl td:nth-child(1) {
         width: 55px;
         text-align: center;
     }
@@ -542,21 +621,33 @@ canvas {
     #downloadSummaryTable th:nth-child(2),
     #downloadSummaryTable td:nth-child(2),
     #downloadSummaryTableBYPL th:nth-child(2),
-    #downloadSummaryTableBYPL td:nth-child(2) {
+    #downloadSummaryTableBYPL td:nth-child(2),
+    #hesDownloadSummaryTable th:nth-child(2),
+    #hesDownloadSummaryTable td:nth-child(2),
+    #hesDownloadSummaryTableBypl th:nth-child(2),
+    #hesDownloadSummaryTableBypl td:nth-child(2) {
         width: 105px;
     }
 
     #downloadSummaryTable th:nth-child(3),
     #downloadSummaryTable td:nth-child(3),
     #downloadSummaryTableBYPL th:nth-child(3),
-    #downloadSummaryTableBYPL td:nth-child(3) {
+    #downloadSummaryTableBYPL td:nth-child(3),
+    #hesDownloadSummaryTable th:nth-child(3),
+    #hesDownloadSummaryTable td:nth-child(3),
+    #hesDownloadSummaryTableBypl th:nth-child(3),
+    #hesDownloadSummaryTableBypl td:nth-child(3) {
         width: 125px;
     }
 
     #downloadSummaryTable th:nth-child(4),
     #downloadSummaryTable td:nth-child(4),
     #downloadSummaryTableBYPL th:nth-child(4),
-    #downloadSummaryTableBYPL td:nth-child(4) {
+    #downloadSummaryTableBYPL td:nth-child(4),
+    #hesDownloadSummaryTable th:nth-child(4),
+    #hesDownloadSummaryTable td:nth-child(4),
+    #hesDownloadSummaryTableBypl th:nth-child(4),
+    #hesDownloadSummaryTableBypl td:nth-child(4) {
         width: 65px;
         text-align: center;
     }
@@ -564,35 +655,55 @@ canvas {
     #downloadSummaryTable th:nth-child(5),
     #downloadSummaryTable td:nth-child(5),
     #downloadSummaryTableBYPL th:nth-child(5),
-    #downloadSummaryTableBYPL td:nth-child(5) {
+    #downloadSummaryTableBYPL td:nth-child(5),
+    #hesDownloadSummaryTable th:nth-child(5),
+    #hesDownloadSummaryTable td:nth-child(5),
+    #hesDownloadSummaryTableBypl th:nth-child(5),
+    #hesDownloadSummaryTableBypl td:nth-child(5) {
         width: 100px;
     }
 
     #downloadSummaryTable th:nth-child(6),
     #downloadSummaryTable td:nth-child(6),
     #downloadSummaryTableBYPL th:nth-child(6),
-    #downloadSummaryTableBYPL td:nth-child(6) {
+    #downloadSummaryTableBYPL td:nth-child(6),
+    #hesDownloadSummaryTable th:nth-child(6),
+    #hesDownloadSummaryTable td:nth-child(6),
+    #hesDownloadSummaryTableBypl th:nth-child(6),
+    #hesDownloadSummaryTableBypl td:nth-child(6) {
         width: 100px;
     }
 
     #downloadSummaryTable th:nth-child(7),
     #downloadSummaryTable td:nth-child(7),
     #downloadSummaryTableBYPL th:nth-child(7),
-    #downloadSummaryTableBYPL td:nth-child(7) {
+    #downloadSummaryTableBYPL td:nth-child(7),
+    #hesDownloadSummaryTable th:nth-child(7),
+    #hesDownloadSummaryTable td:nth-child(7),
+    #hesDownloadSummaryTableBypl th:nth-child(7),
+    #hesDownloadSummaryTableBypl td:nth-child(7) {
         width: 80px;
     }
 
     #downloadSummaryTable th:nth-child(8),
     #downloadSummaryTable td:nth-child(8),
     #downloadSummaryTableBYPL th:nth-child(8),
-    #downloadSummaryTableBYPL td:nth-child(8) {
+    #downloadSummaryTableBYPL td:nth-child(8),
+    #hesDownloadSummaryTable th:nth-child(8),
+    #hesDownloadSummaryTable td:nth-child(8),
+    #hesDownloadSummaryTableBypl th:nth-child(8),
+    #hesDownloadSummaryTableBypl td:nth-child(8) {
         width: 200px;
     }
 
     #downloadSummaryTable th:nth-child(9),
     #downloadSummaryTable td:nth-child(9),
     #downloadSummaryTableBYPL th:nth-child(9),
-    #downloadSummaryTableBYPL td:nth-child(9) {
+    #downloadSummaryTableBYPL td:nth-child(9),
+    #hesDownloadSummaryTable th:nth-child(9),
+    #hesDownloadSummaryTable td:nth-child(9),
+    #hesDownloadSummaryTableBypl th:nth-child(9),
+    #hesDownloadSummaryTableBypl td:nth-child(9) {
         width: 100px;
     }
 
@@ -611,40 +722,52 @@ canvas {
     }
 
 
+    /* Address cells */
+    #hesDownloadSummaryTable td:nth-child(8),
+    #hesDownloadSummaryTableBypl td:nth-child(8),
+    #hesDownloadSummaryTable .address-cell,
+    #hesDownloadSummaryTableBypl .address-cell {
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+
+
+    /* Empty / loading rows */
+    #hesDownloadSummaryTable tbody td[colspan],
+    #hesDownloadSummaryTableBypl tbody td[colspan] {
+        padding: 20px 10px;
+        color: #6c757d;
+        text-align: center;
+    }
+
+
 /* =========================================================
-   STATUS BADGE
-========================================================= */
+   15. GENERAL TABLE / BADGES
+   ========================================================= */
+
+.table td,
+.table th,
+.table-sm td,
+.table-sm th {
+    padding: .4rem .5rem;
+}
 
 .badge {
     display: inline-block;
     max-width: 100%;
+    padding: 5px 7px;
     font-size: 11px;
     font-weight: 600;
-    line-height: 1.3;
-    padding: 6px 8px;
+    line-height: 1.25;
     white-space: normal;
     word-break: break-word;
 }
 
 
 /* =========================================================
-   GENERAL TABLE
-========================================================= */
-
-.table td,
-.table th {
-    padding: .45rem .55rem;
-}
-
-.table-sm td,
-.table-sm th {
-    padding: .45rem .55rem;
-}
-
-
-/* =========================================================
-   SKELETON
-========================================================= */
+   16. SKELETON LOADING
+   ========================================================= */
 
 .skeleton {
     position: relative;
@@ -663,58 +786,57 @@ canvas {
     }
 
 @keyframes shimmer {
-
     100% {
         transform: translateX(100%);
     }
 }
 
 .skeleton-title {
-    height: 22px;
     width: 40%;
+    height: 22px;
 }
 
 .skeleton-line {
     height: 18px;
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
 .skeleton-circle {
-    width: 150px;
-    height: 150px;
+    width: 145px;
+    height: 145px;
     border-radius: 50%;
 }
 
 .skeleton-chart {
-    height: 260px;
+    height: 240px;
 }
 
 .skeleton-table {
-    height: 180px;
+    height: 170px;
 }
 
 
 /* =========================================================
-   LARGE LAPTOP
-========================================================= */
+   17. LARGE LAPTOP
+   ========================================================= */
 
 @media (max-width: 1200px) {
 
     .mro-company-row {
         grid-template-columns: 54px repeat(5, minmax(0, 1fr));
         column-gap: 3px;
-        padding-left: 4px;
-        padding-right: 4px;
+        padding-right: 3px !important;
+        padding-left: 3px !important;
     }
 
     .company-badge {
-        min-width: 46px;
-        padding: 6px 6px;
+        min-width: 45px;
+        padding: 5px 6px;
         font-size: 10px;
     }
 
     .mro-label {
-        font-size: 9px;
+        font-size: 8.5px;
     }
 
     .mro-value {
@@ -728,62 +850,11 @@ canvas {
 
     .mro-link {
         font-size: 14px;
-        text-decoration: none;
     }
 
     .meter-chart-wrapper {
-        width: 145px;
-        height: 145px;
-    }
-}
-
-
-/* =========================================================
-   TABLET
-========================================================= */
-
-@media (max-width: 991.98px) {
-
-    .container-fluid {
-        padding: 10px !important;
-    }
-
-    .meter-summary-table thead th {
-        font-size: 13px;
-        padding: 10px 5px;
-    }
-
-    .meter-summary-table tbody td {
-        font-size: 13px;
-        padding: 10px 5px;
-    }
-
-    .meter-chart-wrapper {
-        width: 140px;
-        height: 140px;
-    }
-
-    .mro-company-row {
-        grid-template-columns: 65px repeat(5, minmax(0, 1fr));
-        column-gap: 5px;
-        padding: 16px 5px;
-    }
-
-    .mro-label {
-        font-size: 10px;
-    }
-
-    .mro-value {
-        font-size: 15px;
-    }
-
-        .mro-value small {
-            font-size: 10px;
-        }
-
-    .mro-link {
-        font-size: 15px;
-        text-decoration: none;
+        width: 135px;
+        height: 135px;
     }
 
     #departmentChart,
@@ -794,8 +865,79 @@ canvas {
 
 
 /* =========================================================
-   MOBILE / SMALL TABLET
-========================================================= */
+   18. TABLET
+   ========================================================= */
+
+@media (max-width: 991.98px) {
+
+    .container-fluid {
+        padding: 8px 10px !important;
+    }
+
+    #dashboardContent > .row {
+        --bs-gutter-x: 0.65rem;
+        --bs-gutter-y: 0.5rem;
+    }
+
+        #dashboardContent > .row.mt-3 {
+            margin-top: .5rem !important;
+        }
+
+    .dashboard-card .card-header {
+        padding: 8px 13px !important;
+    }
+
+    .dashboard-card .card-body {
+        padding: 8px 10px !important;
+    }
+
+    .meter-summary-table thead th {
+        padding: 6px 4px;
+        font-size: 11px;
+    }
+
+    .meter-summary-table tbody td {
+        padding: 7px 4px;
+        font-size: 13px;
+    }
+
+    .meter-chart-wrapper {
+        width: 130px;
+        height: 130px;
+    }
+
+    .mro-company-row {
+        grid-template-columns: 62px repeat(5, minmax(0, 1fr));
+        column-gap: 4px;
+        padding: 9px 3px !important;
+    }
+
+    .mro-label {
+        font-size: 9px;
+    }
+
+    .mro-value {
+        font-size: 14px;
+    }
+
+        .mro-value small {
+            font-size: 9px;
+        }
+
+    .mro-link {
+        font-size: 14px;
+    }
+
+    #departmentChart,
+    #readingTrendChart {
+        height: 285px !important;
+    }
+}
+
+
+/* =========================================================
+   19. MOBILE / SMALL TABLET
+   ========================================================= */
 
 @media (max-width: 767.98px) {
 
@@ -804,18 +946,29 @@ canvas {
     }
 
     .container-fluid {
-        padding: 8px !important;
+        padding: 7px 8px !important;
+    }
+
+    #dashboardContent > .row {
+        --bs-gutter-x: 0;
+        --bs-gutter-y: 7px;
+    }
+
+        #dashboardContent > .row.mt-3 {
+            margin-top: 7px !important;
+        }
+
+    .dashboard-card .card-header {
+        padding: 7px 11px !important;
+        font-size: 14px;
     }
 
     .dashboard-card .card-body {
-        padding: 10px;
+        padding: 8px !important;
     }
 
 
-    /* -----------------------------------------
-       FILTER
-    ----------------------------------------- */
-
+    /* Filter */
     .filter-toolbar .d-flex {
         align-items: stretch !important;
     }
@@ -835,165 +988,28 @@ canvas {
     }
 
 
-    /* -----------------------------------------
-       METER SUMMARY
-    ----------------------------------------- */
-
+    /* Meter summary */
     .meter-summary-card .card-body {
-        padding: 10px 6px;
+        padding: 8px 5px !important;
     }
 
     .meter-summary-table thead th {
-        font-size: 11px;
-        padding: 9px 3px;
+        padding: 6px 2px;
+        font-size: 10px;
     }
 
     .meter-summary-table tbody td {
+        padding: 7px 2px;
         font-size: 12px;
-        padding: 10px 3px;
     }
 
         .meter-summary-table thead th:first-child,
         .meter-summary-table tbody td:first-child {
-            padding-left: 5px;
+            padding-left: 4px;
         }
 
     .meter-charts-wrapper {
-        margin-top: 8px;
-        gap: 0;
-    }
-
-    .meter-chart-wrapper {
-        width: 140px;
-        height: 140px;
-    }
-
-
-    /* -----------------------------------------
-       MRO
-    ----------------------------------------- */
-
-    .mro-company-row {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 10px 6px;
-        padding: 14px 6px;
-    }
-
-    .mro-company {
-        grid-column: 1 / -1;
-        justify-content: flex-start;
-    }
-
-    .mro-metric {
-        padding: 5px 2px;
-    }
-
-    .mro-label {
-        font-size: 10px;
-        white-space: normal;
-    }
-
-    .mro-value {
-        font-size: 17px;
-    }
-
-        .mro-value small {
-            font-size: 10px;
-        }
-
-    .mro-link {
-        font-size: 17px;
-        text-decoration:none;
-    }
-
-
-    /* -----------------------------------------
-       CHARTS
-    ----------------------------------------- */
-
-    #departmentChart,
-    #readingTrendChart {
-        height: 260px !important;
-    }
-
-
-    /* -----------------------------------------
-       MODAL
-    ----------------------------------------- */
-
-    .modal-dialog {
-        max-width: 100%;
-        width: 100%;
-        height: 100vh;
-        margin: 0;
-    }
-
-    .modal-content {
-        border-radius: 0;
-    }
-
-    .modal-body {
-        padding: 8px;
-    }
-
-    .filter-section {
-        padding: 10px;
-    }
-
-    .export-buttons {
-        justify-content: flex-start;
-        margin-top: 10px;
-    }
-
-        .export-buttons .btn {
-            flex: 1;
-            min-width: 80px;
-        }
-}
-
-
-/* =========================================================
-   SMALL MOBILE
-========================================================= */
-
-@media (max-width: 575.98px) {
-
-    .dashboard-card {
-        border-radius: 10px;
-    }
-
-        .dashboard-card .card-header {
-            font-size: 14px;
-            padding: .6rem .75rem;
-        }
-
-
-    /* -----------------------------------------
-       METER SUMMARY
-    ----------------------------------------- */
-
-    .meter-summary-table thead th {
-        font-size: 9px;
-        padding: 8px 2px;
-        letter-spacing: 0;
-    }
-
-    .meter-summary-table tbody td {
-        font-size: 11px;
-        padding: 9px 2px;
-    }
-
-        .meter-summary-table tbody td:first-child {
-            font-size: 11px;
-        }
-
-
-    /* -----------------------------------------
-       PIE CHARTS
-    ----------------------------------------- */
-
-    .meter-charts-wrapper {
-        gap: 0;
+        margin-top: 4px !important;
     }
 
     .meter-chart-wrapper {
@@ -1006,13 +1022,170 @@ canvas {
     }
 
 
-    /* -----------------------------------------
-       MRO
-    ----------------------------------------- */
+    /* MRO */
+    .mro-company-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px 5px;
+        padding: 9px 5px !important;
+    }
+
+    .mro-company {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+    }
+
+    .mro-metric {
+        padding: 2px;
+    }
+
+    .mro-label {
+        font-size: 9px;
+        white-space: normal;
+    }
+
+    .mro-value {
+        font-size: 16px;
+    }
+
+        .mro-value small {
+            font-size: 9px;
+        }
+
+    .mro-link {
+        font-size: 16px;
+    }
+
+
+    /* Charts */
+    #departmentChart,
+    #readingTrendChart {
+        height: 250px !important;
+    }
+
+
+    /* Modals */
+    .modal-dialog {
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .modal-content {
+        border-radius: 0;
+    }
+
+    .modal-body {
+        padding: 7px;
+    }
+
+    .filter-section {
+        margin-bottom: 7px;
+        padding: 8px;
+    }
+
+    .export-buttons {
+        justify-content: flex-start;
+        margin-top: 8px;
+    }
+
+        .export-buttons .btn {
+            flex: 1;
+            min-width: 80px;
+        }
+
+    #downloadSummaryModal .filter-section .row,
+    #downloadSummaryModalBYPL .filter-section .row {
+        row-gap: 7px;
+    }
+
+    #downloadSummaryModal .filter-section .col-12,
+    #downloadSummaryModalBYPL .filter-section .col-12 {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 8px;
+    }
+
+    #downloadSummaryModal .export-buttons,
+    #downloadSummaryModalBYPL .export-buttons {
+        width: 100%;
+    }
+
+    #downloadSummaryModal #btnClearDownloadFilters,
+    #downloadSummaryModalBYPL #btnClearDownloadFiltersBYPL {
+        width: 100%;
+    }
+
+
+    /* Tables remain horizontally scrollable */
+    #downloadSummaryTable,
+    #downloadSummaryTableBYPL,
+    #hesDownloadSummaryTable,
+    #hesDownloadSummaryTableBypl {
+        min-width: 1050px;
+        font-size: 11px;
+    }
+
+        #downloadSummaryTable thead th,
+        #downloadSummaryTableBYPL thead th,
+        #hesDownloadSummaryTable thead th,
+        #hesDownloadSummaryTableBypl thead th {
+            padding: 7px 5px;
+            font-size: 11px;
+        }
+
+        #downloadSummaryTable tbody td,
+        #downloadSummaryTableBYPL tbody td,
+        #hesDownloadSummaryTable tbody td,
+        #hesDownloadSummaryTableBypl tbody td {
+            padding: 6px 5px;
+            font-size: 11px;
+        }
+}
+
+
+/* =========================================================
+   20. SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 575.98px) {
+
+    .dashboard-card {
+        border-radius: 9px;
+    }
+
+        .dashboard-card .card-header {
+            padding: 7px 10px !important;
+            font-size: 13px;
+        }
+
+    .meter-summary-table thead th {
+        padding: 5px 1px;
+        font-size: 8.5px;
+    }
+
+    .meter-summary-table tbody td {
+        padding: 6px 1px;
+        font-size: 11px;
+    }
+
+        .meter-summary-table tbody td:first-child {
+            font-size: 11px;
+        }
+
+    .meter-chart-wrapper {
+        width: 115px;
+        height: 115px;
+    }
+
+    .meter-chart-title {
+        font-size: 10px;
+    }
 
     .mro-company-row {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
+        gap: 7px 5px;
+        padding: 8px 4px !important;
     }
 
     .mro-company {
@@ -1020,63 +1193,7 @@ canvas {
     }
 
     .mro-label {
-        font-size: 9px;
-    }
-
-    .mro-value {
-        font-size: 17px;
-    }
-
-        .mro-value small {
-            font-size: 10px;
-        }
-
-    .mro-link {
-        font-size: 17px;
-    }
-
-
-    /* -----------------------------------------
-       CHARTS
-    ----------------------------------------- */
-
-    #departmentChart,
-    #readingTrendChart {
-        height: 230px !important;
-    }
-
-
-    /* -----------------------------------------
-       MODAL
-    ----------------------------------------- */
-
-    .modal-header .modal-title {
-        font-size: 15px;
-    }
-
-    .modal-footer .btn {
-        width: 100%;
-    }
-}
-
-
-/* =========================================================
-   VERY SMALL SCREEN
-========================================================= */
-
-@media (max-width: 380px) {
-
-    .meter-summary-table thead th {
-        font-size: 8px;
-    }
-
-    .meter-summary-table tbody td {
-        font-size: 10px;
-    }
-
-    .meter-chart-wrapper {
-        width: 110px;
-        height: 110px;
+        font-size: 8.5px;
     }
 
     .mro-value {
@@ -1093,7 +1210,53 @@ canvas {
 
     #departmentChart,
     #readingTrendChart {
-        height: 210px !important;
+        height: 225px !important;
+    }
+
+    .modal-header .modal-title {
+        font-size: 15px;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+}
+
+
+/* =========================================================
+   21. VERY SMALL SCREEN
+   ========================================================= */
+
+@media (max-width: 380px) {
+
+    .meter-summary-table thead th {
+        font-size: 8px;
+    }
+
+    .meter-summary-table tbody td {
+        font-size: 10px;
+    }
+
+    .meter-chart-wrapper {
+        width: 105px;
+        height: 105px;
+    }
+
+    .mro-value {
+        font-size: 15px;
+    }
+
+        .mro-value small {
+            font-size: 8px;
+        }
+
+    .mro-link {
+        font-size: 15px;
+    }
+
+    #departmentChart,
+    #readingTrendChart {
+        height: 205px !important;
     }
 
     .export-buttons .btn {
@@ -1103,8 +1266,8 @@ canvas {
 
 
 /* =========================================================
-   PRINT
-========================================================= */
+   22. PRINT
+   ========================================================= */
 
 @media print {
 
@@ -1116,481 +1279,29 @@ canvas {
     }
 
     .modal-dialog {
-        max-width: 100%;
         width: 100%;
+        max-width: 100%;
         height: auto;
         margin: 0;
     }
 
     .modal-body {
-        overflow: visible;
         padding: 0;
+        overflow: visible;
     }
 
-    .table-responsive {
-        overflow: visible;
-        box-shadow: none;
+    .table-responsive,
+    .hes-download-table-wrapper {
         padding: 0;
+        box-shadow: none;
+        overflow: visible;
     }
 
     #downloadSummaryTable,
-    #downloadSummaryTableBYPL {
+    #downloadSummaryTableBYPL,
+    #hesDownloadSummaryTable,
+    #hesDownloadSummaryTableBypl {
         min-width: 100%;
         font-size: 10px;
     }
-}
-/* =========================================================
-   HES DOWNLOAD TABLE
-   SAME UI AS BRPL / BYPL DOWNLOAD TABLE
-========================================================= */
-
-#hesDownloadSummaryTable {
-    width: 100%;
-    min-width: 1050px;
-    table-layout: fixed;
-    border-collapse: collapse;
-    font-size: 12px;
-    line-height: 1.35;
-    margin: 0;
-}
-
-
-    /* =========================================================
-   HES TABLE HEADER
-========================================================= */
-
-    #hesDownloadSummaryTable thead th {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background: #0d6efd;
-        color: #fff;
-        text-align: center;
-        vertical-align: middle;
-        padding: 9px 6px;
-        border: 1px solid #dee2e6;
-        font-size: 12px;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-
-    /* =========================================================
-   HES TABLE BODY
-========================================================= */
-
-    #hesDownloadSummaryTable tbody td {
-        padding: 8px 6px;
-        vertical-align: middle;
-        border: 1px solid #dee2e6;
-        font-size: 12px;
-        font-weight: 500;
-        word-break: break-word;
-        overflow-wrap: anywhere;
-    }
-
-
-    /* =========================================================
-   HES ZEBRA ROWS
-========================================================= */
-
-    #hesDownloadSummaryTable tbody tr:nth-child(even) {
-        background: #f8f9fa;
-    }
-
-
-    /* =========================================================
-   HES HOVER
-========================================================= */
-
-    #hesDownloadSummaryTable tbody tr:hover {
-        background: #dbeafe;
-    }
-
-
-    /* =========================================================
-   HES COLUMN WIDTHS
-========================================================= */
-
-    /* S.No */
-    #hesDownloadSummaryTable th:nth-child(1),
-    #hesDownloadSummaryTable td:nth-child(1) {
-        width: 55px;
-        text-align: center;
-    }
-
-
-    /* Cons Ref */
-    #hesDownloadSummaryTable th:nth-child(2),
-    #hesDownloadSummaryTable td:nth-child(2) {
-        width: 105px;
-    }
-
-
-    /* Meter Number */
-    #hesDownloadSummaryTable th:nth-child(3),
-    #hesDownloadSummaryTable td:nth-child(3) {
-        width: 125px;
-    }
-
-
-    /* Phase */
-    #hesDownloadSummaryTable th:nth-child(4),
-    #hesDownloadSummaryTable td:nth-child(4) {
-        width: 65px;
-        text-align: center;
-    }
-
-
-    /* Department */
-    #hesDownloadSummaryTable th:nth-child(5),
-    #hesDownloadSummaryTable td:nth-child(5) {
-        width: 100px;
-    }
-
-
-    /* Division */
-    #hesDownloadSummaryTable th:nth-child(6),
-    #hesDownloadSummaryTable td:nth-child(6) {
-        width: 100px;
-    }
-
-
-    /* Seq No */
-    #hesDownloadSummaryTable th:nth-child(7),
-    #hesDownloadSummaryTable td:nth-child(7) {
-        width: 80px;
-    }
-
-
-    /* Address */
-    #hesDownloadSummaryTable th:nth-child(8),
-    #hesDownloadSummaryTable td:nth-child(8) {
-        width: 200px;
-    }
-
-
-    /* Meter Make */
-    #hesDownloadSummaryTable th:nth-child(9),
-    #hesDownloadSummaryTable td:nth-child(9) {
-        width: 100px;
-    }
-
-
-/* =========================================================
-   HES TABLE WRAPPER
-========================================================= */
-
-.hes-download-table-wrapper {
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-    padding: 6px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-
-/* =========================================================
-   HES ADDRESS
-========================================================= */
-
-#hesDownloadSummaryTable .address-cell {
-    white-space: normal;
-    word-break: break-word;
-    overflow-wrap: anywhere;
-}
-
-
-/* =========================================================
-   HES EMPTY / LOADING ROW
-========================================================= */
-
-#hesDownloadSummaryTable tbody td[colspan] {
-    text-align: center;
-    padding: 25px 10px;
-    color: #6c757d;
-}
-
-
-/* =========================================================
-   HES MOBILE
-========================================================= */
-
-@media (max-width: 767.98px) {
-
-    #hesDownloadSummaryTable {
-        min-width: 1050px;
-        font-size: 11px;
-    }
-
-        #hesDownloadSummaryTable thead th {
-            font-size: 11px;
-            padding: 8px 5px;
-        }
-
-        #hesDownloadSummaryTable tbody td {
-            font-size: 11px;
-            padding: 7px 5px;
-        }
-}
-/* =========================================================
-   HES DOWNLOAD TABLE
-   BRPL + BYPL
-   SAME UI AS SCREENSHOT
-========================================================= */
-
-#hesDownloadSummaryTable,
-#hesDownloadSummaryTableBypl {
-    width: 100%;
-    min-width: 1050px;
-    table-layout: fixed;
-    border-collapse: collapse;
-    font-size: 12px;
-    line-height: 1.35;
-    margin: 0;
-}
-
-
-    /* =========================================================
-   TABLE HEADER
-========================================================= */
-
-    #hesDownloadSummaryTable thead th,
-    #hesDownloadSummaryTableBypl thead th {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background: #0d6efd;
-        color: #fff;
-        text-align: center;
-        vertical-align: middle;
-        padding: 9px 6px;
-        border: 1px solid #dee2e6;
-        font-size: 12px;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-
-    /* =========================================================
-   TABLE BODY
-========================================================= */
-
-    #hesDownloadSummaryTable tbody td,
-    #hesDownloadSummaryTableBypl tbody td {
-        padding: 8px 6px;
-        vertical-align: middle;
-        border: 1px solid #dee2e6;
-        font-size: 12px;
-        font-weight: 500;
-        word-break: break-word;
-        overflow-wrap: anywhere;
-        background: #fff;
-    }
-
-
-    /* =========================================================
-   ZEBRA ROWS
-========================================================= */
-
-    #hesDownloadSummaryTable tbody tr:nth-child(even) td,
-    #hesDownloadSummaryTableBypl tbody tr:nth-child(even) td {
-        background: #f8f9fa;
-    }
-
-
-    /* =========================================================
-   HOVER
-========================================================= */
-
-    #hesDownloadSummaryTable tbody tr:hover td,
-    #hesDownloadSummaryTableBypl tbody tr:hover td {
-        background: #dbeafe;
-    }
-
-
-    /* =========================================================
-   COLUMN WIDTHS
-========================================================= */
-
-    /* ---------------------------------------------------------
-   1. S.No.
---------------------------------------------------------- */
-
-    #hesDownloadSummaryTable th:nth-child(1),
-    #hesDownloadSummaryTable td:nth-child(1),
-    #hesDownloadSummaryTableBypl th:nth-child(1),
-    #hesDownloadSummaryTableBypl td:nth-child(1) {
-        width: 55px;
-        text-align: center;
-    }
-
-
-    /* ---------------------------------------------------------
-   2. Cons Ref
---------------------------------------------------------- */
-
-    #hesDownloadSummaryTable th:nth-child(2),
-    #hesDownloadSummaryTable td:nth-child(2),
-    #hesDownloadSummaryTableBypl th:nth-child(2),
-    #hesDownloadSummaryTableBypl td:nth-child(2) {
-        width: 105px;
-    }
-
-
-    /* ---------------------------------------------------------
-   3. Meter Number
---------------------------------------------------------- */
-
-    #hesDownloadSummaryTable th:nth-child(3),
-    #hesDownloadSummaryTable td:nth-child(3),
-    #hesDownloadSummaryTableBypl th:nth-child(3),
-    #hesDownloadSummaryTableBypl td:nth-child(3) {
-        width: 125px;
-    }
-
-
-    /* ---------------------------------------------------------
-   4. Phase
---------------------------------------------------------- */
-
-    #hesDownloadSummaryTable th:nth-child(4),
-    #hesDownloadSummaryTable td:nth-child(4),
-    #hesDownloadSummaryTableBypl th:nth-child(4),
-    #hesDownloadSummaryTableBypl td:nth-child(4) {
-        width: 65px;
-        text-align: center;
-    }
-
-
-    /* ---------------------------------------------------------
-   5. Department
---------------------------------------------------------- */
-
-    #hesDownloadSummaryTable th:nth-child(5),
-    #hesDownloadSummaryTable td:nth-child(5),
-    #hesDownloadSummaryTableBypl th:nth-child(5),
-    #hesDownloadSummaryTableBypl td:nth-child(5) {
-        width: 100px;
-    }
-
-
-    /* ---------------------------------------------------------
-   6. Division
---------------------------------------------------------- */
-
-    #hesDownloadSummaryTable th:nth-child(6),
-    #hesDownloadSummaryTable td:nth-child(6),
-    #hesDownloadSummaryTableBypl th:nth-child(6),
-    #hesDownloadSummaryTableBypl td:nth-child(6) {
-        width: 100px;
-    }
-
-
-    /* ---------------------------------------------------------
-   7. Seq No
---------------------------------------------------------- */
-
-    #hesDownloadSummaryTable th:nth-child(7),
-    #hesDownloadSummaryTable td:nth-child(7),
-    #hesDownloadSummaryTableBypl th:nth-child(7),
-    #hesDownloadSummaryTableBypl td:nth-child(7) {
-        width: 80px;
-    }
-
-
-    /* ---------------------------------------------------------
-   8. Address
---------------------------------------------------------- */
-
-    #hesDownloadSummaryTable th:nth-child(8),
-    #hesDownloadSummaryTable td:nth-child(8),
-    #hesDownloadSummaryTableBypl th:nth-child(8),
-    #hesDownloadSummaryTableBypl td:nth-child(8) {
-        width: 200px;
-    }
-
-
-    /* ---------------------------------------------------------
-   9. Meter Make
---------------------------------------------------------- */
-
-    #hesDownloadSummaryTable th:nth-child(9),
-    #hesDownloadSummaryTable td:nth-child(9),
-    #hesDownloadSummaryTableBypl th:nth-child(9),
-    #hesDownloadSummaryTableBypl td:nth-child(9) {
-        width: 100px;
-    }
-
-
-    /* =========================================================
-   ADDRESS COLUMN
-========================================================= */
-
-    #hesDownloadSummaryTable td:nth-child(8),
-    #hesDownloadSummaryTableBypl td:nth-child(8) {
-        white-space: normal;
-        word-break: break-word;
-        overflow-wrap: anywhere;
-    }
-
-
-/* =========================================================
-   TABLE WRAPPER
-========================================================= */
-
-.hes-download-table-wrapper {
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-    padding: 6px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-
-/* =========================================================
-   EMPTY / LOADING ROW
-========================================================= */
-
-#hesDownloadSummaryTable tbody td[colspan],
-#hesDownloadSummaryTableBypl tbody td[colspan] {
-    text-align: center;
-    padding: 25px 10px;
-    color: #6c757d;
-}
-
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 767.98px) {
-
-    #hesDownloadSummaryTable,
-    #hesDownloadSummaryTableBypl {
-        min-width: 1050px;
-        font-size: 11px;
-    }
-
-
-        #hesDownloadSummaryTable thead th,
-        #hesDownloadSummaryTableBypl thead th {
-            font-size: 11px;
-            padding: 8px 5px;
-        }
-
-
-        #hesDownloadSummaryTable tbody td,
-        #hesDownloadSummaryTableBypl tbody td {
-            font-size: 11px;
-            padding: 7px 5px;
-        }
 }
