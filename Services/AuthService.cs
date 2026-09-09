@@ -24,46 +24,39 @@ namespace SmartMeterReadingDash.Services
 
         public async Task<bool> TestConnectionAsync()
         {
-            await using var connection =
-                new OracleConnection(GetConnectionString());
+            await using var connection = new OracleConnection(GetConnectionString());
 
             await connection.OpenAsync();
 
             return connection.State == ConnectionState.Open;
         }
 
-        public async Task<DashboardUser?> GetUserByUsernameAsync(
-            string username)
+        public async Task<DashboardUser?> GetUserByUsernameAsync( string username)
         {
             const string sql = @"
-                SELECT
-                    USER_ID,
-                    USERNAME,
-                    PASSWORD,
-                    FULL_NAME,
-                    ROLE,
-                    IS_ACTIVE,
-                    CREATED_DATE,
-                    LAST_LOGIN_DATE
-                FROM SMART_METER_DASHBOARD_USERS
-                WHERE UPPER(USERNAME) = UPPER(:USERNAME)
-            ";
+                    SELECT
+                        USER_ID,
+                        USERNAME,
+                        PASSWORD,
+                        FULL_NAME,
+                        ROLE,
+                        IS_ACTIVE,
+                        CREATED_DATE,
+                        LAST_LOGIN_DATE,
+                        COMPANY,
+                        DEPARTMENT
+                    FROM SMART_METER_DASHBOARD_USERS
+                    WHERE UPPER(USERNAME) = UPPER(:USERNAME) ";
 
-            await using var connection =
-                new OracleConnection(GetConnectionString());
+            await using var connection = new OracleConnection(GetConnectionString());
 
             await connection.OpenAsync();
 
-            await using var command =
-                new OracleCommand(sql, connection);
+            await using var command = new OracleCommand(sql, connection);
 
-            command.Parameters.Add(
-                "USERNAME",
-                OracleDbType.Varchar2
-            ).Value = username.Trim();
+            command.Parameters.Add( "USERNAME", OracleDbType.Varchar2 ).Value = username.Trim();
 
-            await using var reader =
-                await command.ExecuteReaderAsync();
+            await using var reader = await command.ExecuteReaderAsync();
 
             if (!await reader.ReadAsync())
             {
@@ -72,37 +65,29 @@ namespace SmartMeterReadingDash.Services
 
             return new DashboardUser
             {
-                UserId = Convert.ToInt32(
-                    reader["USER_ID"]
-                ),
+                UserId = Convert.ToInt32( reader["USER_ID"] ),
+                Username =  reader["USERNAME"]?.ToString() ?? string.Empty,
 
-                Username = reader["USERNAME"]?.ToString()
-                           ?? string.Empty,
-
-                Password = reader["PASSWORD"]?.ToString()
-                           ?? string.Empty,
+                Password = reader["PASSWORD"]?.ToString() ?? string.Empty,
 
                 FullName = reader["FULL_NAME"] == DBNull.Value
-                    ? null
-                    : reader["FULL_NAME"].ToString(),
-
-                Role = reader["ROLE"]?.ToString()
-                       ?? "USER",
-
-                IsActive = Convert.ToInt32(
-                    reader["IS_ACTIVE"]
-                ),
-
-                CreatedDate = Convert.ToDateTime(
-                    reader["CREATED_DATE"]
-                ),
-
-                LastLoginDate =
-                    reader["LAST_LOGIN_DATE"] == DBNull.Value
                         ? null
-                        : Convert.ToDateTime(
-                            reader["LAST_LOGIN_DATE"]
-                        )
+                        : reader["FULL_NAME"].ToString(),
+
+                Role =  reader["ROLE"]?.ToString() ?? "USER", 
+
+                IsActive = Convert.ToInt32(reader["IS_ACTIVE"]),
+
+                CreatedDate = Convert.ToDateTime(reader["CREATED_DATE"]),
+
+                LastLoginDate =  reader["LAST_LOGIN_DATE"] == DBNull.Value ? null
+                        : Convert.ToDateTime(reader["LAST_LOGIN_DATE"] ),
+
+                Company = reader["COMPANY"] == DBNull.Value ? null
+                        : reader["COMPANY"].ToString(),
+
+                Department = reader["DEPARTMENT"] == DBNull.Value ? null
+                        : reader["DEPARTMENT"].ToString()
             };
         }
 
@@ -114,13 +99,11 @@ namespace SmartMeterReadingDash.Services
                 WHERE USER_ID = :USER_ID
             ";
 
-            await using var connection =
-                new OracleConnection(GetConnectionString());
+            await using var connection = new OracleConnection(GetConnectionString());
 
             await connection.OpenAsync();
 
-            await using var command =
-                new OracleCommand(sql, connection);
+            await using var command = new OracleCommand(sql, connection);
 
             command.Parameters.Add(
                 "USER_ID",
@@ -139,13 +122,11 @@ namespace SmartMeterReadingDash.Services
                 WHERE UPPER(USERNAME) = UPPER(:USERNAME)
             ";
 
-            await using var connection =
-                new OracleConnection(GetConnectionString());
+            await using var connection =  new OracleConnection(GetConnectionString());
 
             await connection.OpenAsync();
 
-            await using var command =
-                new OracleCommand(sql, connection);
+            await using var command = new OracleCommand(sql, connection);
 
             command.Parameters.Add(
                 "USERNAME",
@@ -181,8 +162,7 @@ namespace SmartMeterReadingDash.Services
             return Convert.ToInt32(result);
         }
 
-        public async Task<int> CreateUserAsync(
-            DashboardUser user)
+        public async Task<int> CreateUserAsync( DashboardUser user)
         {
             const string sql = @"
                 INSERT INTO SMART_METER_DASHBOARD_USERS
@@ -192,7 +172,9 @@ namespace SmartMeterReadingDash.Services
                     FULL_NAME,
                     ROLE,
                     IS_ACTIVE,
-                    CREATED_DATE
+                    CREATED_DATE,
+                    COMPANY,
+                    DEPARTMENT
                 )
                 VALUES
                 (
@@ -201,7 +183,9 @@ namespace SmartMeterReadingDash.Services
                     :FULL_NAME,
                     :ROLE,
                     :IS_ACTIVE,
-                    SYSDATE
+                    SYSDATE,
+                    :COMPANY,
+                    :DEPARTMENT
                 )
                 RETURNING USER_ID INTO :USER_ID
             ";
@@ -234,31 +218,43 @@ namespace SmartMeterReadingDash.Services
             command.Parameters.Add(
                 "ROLE",
                 OracleDbType.Varchar2
-            ).Value = user.Role;
+            ).Value =
+                user.Role.Trim().ToUpperInvariant();
 
             command.Parameters.Add(
                 "IS_ACTIVE",
                 OracleDbType.Int32
             ).Value = user.IsActive;
 
+            command.Parameters.Add(
+                "COMPANY",
+                OracleDbType.Varchar2
+            ).Value =
+                string.IsNullOrWhiteSpace(user.Company)
+                    ? DBNull.Value
+                    : user.Company.Trim().ToUpperInvariant();
+
+            command.Parameters.Add(
+                "DEPARTMENT",
+                OracleDbType.Varchar2
+            ).Value =
+                string.IsNullOrWhiteSpace(user.Department)
+                    ? DBNull.Value
+                    : user.Department.Trim().ToUpperInvariant();
+
             var userIdParameter =
                 new OracleParameter(
                     "USER_ID",
-                    OracleDbType.Int32
-                )
+                    OracleDbType.Int32)
                 {
-                    Direction =
-                        ParameterDirection.Output
+                    Direction = ParameterDirection.Output
                 };
 
-            command.Parameters.Add(
-                userIdParameter
-            );
+            command.Parameters.Add(userIdParameter);
 
             await command.ExecuteNonQueryAsync();
 
-            return Convert.ToInt32(
-                userIdParameter.Value.ToString()
+            return Convert.ToInt32( userIdParameter.Value.ToString()
             );
         }
     }

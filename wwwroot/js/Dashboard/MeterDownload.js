@@ -8,253 +8,204 @@
 
     return `${basePath}/api/${endpoint}`;
 }
-
 async function loadMeterDownloadSummary() {
 
-    const month = getReadingMonth();
+    const month =
+        getReadingMonth();
+
 
     try {
 
-        const [
-            brplResponse,
-            byplResponse
-        ] = await Promise.all([
+        // =====================================================
+        // BRPL
+        // =====================================================
 
-            fetch(
-                `${getApiUrl(
-                    "dashboardapi/meter-download-summary"
-                )}?readingMonth=${encodeURIComponent(month)}`
-            ),
+        if (
+            canAccessCompany("BRPL")
+        ) {
 
-            fetch(
-                `${getApiUrl(
-                    "dashboardapi/meter-download-summary-bypl"
-                )}?readingMonth=${encodeURIComponent(month)}`
-            )
-
-        ]);
-
-
-        if (!brplResponse.ok) {
-
-            throw new Error(
-                `Failed to load BRPL Meter Summary. Status: ${brplResponse.status}`
-            );
-
-        }
-
-
-        if (!byplResponse.ok) {
-
-            throw new Error(
-                `Failed to load BYPL Meter Summary. Status: ${byplResponse.status}`
-            );
-
-        }
-
-
-        const brplResult =
-            await brplResponse.json();
-
-        const byplResult =
-            await byplResponse.json();
-
-
-        const brplData =
-            Array.isArray(brplResult)
-                ? brplResult[0] || {}
-                : brplResult || {};
-
-
-        const byplData =
-            Array.isArray(byplResult)
-                ? byplResult[0] || {}
-                : byplResult || {};
-
-        function setValue(id, value) {
-
-            const element =
-                document.getElementById(id);
-
-            if (!element) {
-
-                console.warn(
-                    `Missing HTML element: #${id}`
+            const response =
+                await fetch(
+                    `${getApiUrl(
+                        "dashboardapi/meter-download-summary"
+                    )}?readingMonth=${encodeURIComponent(month)}`,
+                    {
+                        cache: "no-store"
+                    }
                 );
 
-                return;
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Failed to load BRPL Meter Summary. Status: ${response.status}`
+                );
             }
 
-            element.textContent = value;
-        }
+
+            const result =
+                await response.json();
 
 
-        const brplFailed =
-            Number(brplData?.manualForwardinCount || 0) +
-            Number(brplData?.pendingCount || 0) +
-            Number(brplData?.mismatchCount || 0);
+            const data =
+                Array.isArray(result)
+                    ? result[0] || {}
+                    : result || {};
 
 
-        setValue(
-            "hesDownload",
-            Number(
-                brplData?.hesDownloadCount || 0
-            ).toLocaleString()
-        );
+            const failed =
+                Number(
+                    data.manualForwardinCount || 0
+                ) +
+                Number(
+                    data.pendingCount || 0
+                ) +
+                Number(
+                    data.mismatchCount || 0
+                );
 
 
-        setValue(
-            "downloadPercentage",
-            "(" +
-            Number(
-                brplData?.hesDownloadPercentage || 0
-            ).toFixed(2) +
-            "%)"
-        );
-
-
-        setValue(
-            "downloadFailed",
-            brplFailed.toLocaleString()
-        );
-
-
-        setValue(
-            "failedPercentage",
-            "(" +
-            Number(
-                brplData?.hesFailedPercentage || 0
-            ).toFixed(2) +
-            "%)"
-        );
-
-
-        setValue(
-            "totalMeters",
-            Number(
-                brplData?.totalMetersCount || 0
-            ).toLocaleString()
-        );
-
-
-        setValue(
-            "billedMeters",
-            Number(
-                brplData?.billedCount || 0
-            ).toLocaleString()
-        );
-
-
-        setValue(
-            "billedPercentage",
-            "(" +
-            Number(
-                brplData?.billedPercentage || 0
-            ).toFixed(2) +
-            "%)"
-        );
-
-
-        setValue(
-            "billedFailed",
-            Number(
-                brplData?.billedFailedCount || 0
-            ).toLocaleString()
-        );
-
-
-        setValue(
-            "billedFailedPercentage",
-            "(" +
-            Number(
-                brplData?.billedFailedPercentage || 0
-            ).toFixed(2) +
-            "%)"
-        );
-
-
-        const byplFailed =
-            Number(
-                byplData?.hesFailedCount || 0
+            setMroValue(
+                "hesDownload",
+                data.hesDownloadCount
             );
 
 
-        setValue(
-            "byplHesDownload",
-            Number(
-                byplData?.hesDownloadCount || 0
-            ).toLocaleString()
-        );
+            setMroPercentage(
+                "downloadPercentage",
+                data.hesDownloadPercentage
+            );
 
 
-        setValue(
-            "byplDownloadPercentage",
-            "(" +
-            Number(
-                byplData?.hesDownloadPercentage || 0
-            ).toFixed(2) +
-            "%)"
-        );
+            setMroValue(
+                "downloadFailed",
+                failed
+            );
 
 
-        setValue(
-            "byplDownloadFailed",
-            byplFailed.toLocaleString()
-        );
+            setMroPercentage(
+                "failedPercentage",
+                data.hesFailedPercentage
+            );
 
 
-        setValue(
-            "byplFailedPercentage",
-            "(" +
-            Number(
-                byplData?.hesFailedPercentage || 0
-            ).toFixed(2) +
-            "%)"
-        );
+            setMroValue(
+                "totalMeters",
+                data.totalMetersCount
+            );
 
 
-        setValue(
-            "byplTotalMeters",
-            Number(
-                byplData?.totalMetersCount || 0
-            ).toLocaleString()
-        );
+            setMroValue(
+                "billedMeters",
+                data.billedCount
+            );
 
 
-        setValue(
-            "byplBilledMeters",
-            Number(
-                byplData?.billedCount || 0
-            ).toLocaleString()
-        );
+            setMroPercentage(
+                "billedPercentage",
+                data.billedPercentage
+            );
 
 
-        setValue(
-            "byplBilledPercentage",
-            "(" +
-            Number(
-                byplData?.billedPercentage || 0
-            ).toFixed(2) +
-            "%)"
-        );
+            setMroValue(
+                "billedFailed",
+                data.billedFailedCount
+            );
 
 
-        setValue(
-            "byplBilledFailed",
-            Number(
-                byplData?.billedFailedCount || 0
-            ).toLocaleString()
-        );
+            setMroPercentage(
+                "billedFailedPercentage",
+                data.billedFailedPercentage
+            );
+        }
 
 
-        setValue(
-            "byplBilledFailedPercentage",
-            "(" +
-            Number(
-                byplData?.billedFailedPercentage || 0
-            ).toFixed(2) +
-            "%)"
-        );
+        if (
+            canAccessCompany("BYPL")
+        ) {
+
+            const response =
+                await fetch(
+                    `${getApiUrl(
+                        "dashboardapi/meter-download-summary-bypl"
+                    )}?readingMonth=${encodeURIComponent(month)}`,
+                    {
+                        cache: "no-store"
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Failed to load BYPL Meter Summary. Status: ${response.status}`
+                );
+            }
+
+
+            const result =
+                await response.json();
+
+
+            const data =
+                Array.isArray(result)
+                    ? result[0] || {}
+                    : result || {};
+
+
+            setMroValue(
+                "byplHesDownload",
+                data.hesDownloadCount
+            );
+
+
+            setMroPercentage(
+                "byplDownloadPercentage",
+                data.hesDownloadPercentage
+            );
+
+
+            setMroValue(
+                "byplDownloadFailed",
+                data.hesFailedCount
+            );
+
+
+            setMroPercentage(
+                "byplFailedPercentage",
+                data.hesFailedPercentage
+            );
+
+
+            setMroValue(
+                "byplTotalMeters",
+                data.totalMetersCount
+            );
+
+
+            setMroValue(
+                "byplBilledMeters",
+                data.billedCount
+            );
+
+
+            setMroPercentage(
+                "byplBilledPercentage",
+                data.billedPercentage
+            );
+
+
+            setMroValue(
+                "byplBilledFailed",
+                data.billedFailedCount
+            );
+
+
+            setMroPercentage(
+                "byplBilledFailedPercentage",
+                data.billedFailedPercentage
+            );
+        }
 
     }
     catch (error) {
@@ -265,6 +216,43 @@ async function loadMeterDownloadSummary() {
         );
 
     }
+}
+
+
+// =============================================================
+// MRO VALUE HELPER
+// =============================================================
+
+function setMroValue(id, value) {
+
+    const element =
+        document.getElementById(id);
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent =
+        Number(value || 0)
+            .toLocaleString();
+}
+
+
+// =============================================================
+// MRO PERCENTAGE HELPER
+// =============================================================
+
+function setMroPercentage(id, value) {
+
+    const element =
+        document.getElementById(id);
+
+    if (!element) {
+        return;
+    }
+
+    element.textContent =
+        `(${Number(value || 0).toFixed(2)}%)`;
 }
 
 $(document)

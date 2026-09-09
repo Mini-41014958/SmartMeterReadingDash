@@ -19,46 +19,35 @@ namespace SmartMeterReadingDash.Services
 
         public string GenerateToken(DashboardUser user)
         {
-            var claims = new List<Claim>
-            {
-                new Claim(
-                    ClaimTypes.NameIdentifier,
-                    user.UserId.ToString()
-                ),
+         var claims = new List<Claim>
+         {
+         new Claim( ClaimTypes.NameIdentifier, user.UserId.ToString()),
 
-                new Claim(
-                    ClaimTypes.Name,
-                    user.Username
-                ),
+         new Claim( ClaimTypes.Name, user.Username),
 
-                new Claim(
-                    ClaimTypes.Role,
-                    user.Role
-                )
-            };
+         new Claim( ClaimTypes.Role, user.Role.ToUpperInvariant())
+        };
 
             if (!string.IsNullOrWhiteSpace(user.FullName))
             {
-                claims.Add(
-                    new Claim(
-                        "fullName",
-                        user.FullName
-                    )
-                );
+                claims.Add( new Claim( "fullName",  user.FullName));
             }
 
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_jwtSettings.Key)
-            );
+            if (!string.IsNullOrWhiteSpace(user.Company))
+            {
+                claims.Add( new Claim( "company", user.Company.Trim().ToUpperInvariant()));
+            }
 
-            var credentials = new SigningCredentials(
-                key,
-                SecurityAlgorithms.HmacSha256
-            );
+            if (!string.IsNullOrWhiteSpace(user.Department))
+            {
+                claims.Add( new Claim( "department",user.Department.Trim().ToUpperInvariant()));
+            }
 
-            var expires = DateTime.UtcNow.AddMinutes(
-                _jwtSettings.ExpiryMinutes
-            );
+            var key = new SymmetricSecurityKey( Encoding.UTF8.GetBytes(_jwtSettings.Key) );
+
+            var credentials = new SigningCredentials( key,  SecurityAlgorithms.HmacSha256);
+
+            var expires =  DateTime.UtcNow.AddMinutes( _jwtSettings.ExpiryMinutes );
 
             var token = new JwtSecurityToken(
                 issuer: _jwtSettings.Issuer,
@@ -68,8 +57,7 @@ namespace SmartMeterReadingDash.Services
                 signingCredentials: credentials
             );
 
-            return new JwtSecurityTokenHandler()
-                .WriteToken(token);
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

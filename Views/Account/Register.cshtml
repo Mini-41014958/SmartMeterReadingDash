@@ -2,7 +2,6 @@
     ViewData["Title"] = "Register User";
     Layout = null;
 }
-<link href="~/css/Auth.css" rel="stylesheet" asp-append-version="true" />
 
 <!DOCTYPE html>
 <html lang="en">
@@ -14,9 +13,11 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0" />
 
-    <title>Register User - Smart Meter Dashboard</title>
+    <title>
+        Register User - Smart Meter Dashboard
+    </title>
 
-    <link rel="stylesheet" href="~/css/auth.css" />
+    <link rel="stylesheet" href="~/css/Auth.css" asp-append-version="true" />
 
 </head>
 
@@ -25,6 +26,10 @@
     <div class="auth-page">
 
         <div class="auth-card register-card">
+
+            <!-- ================================================= -->
+            <!-- BRAND -->
+            <!-- ================================================= -->
 
             <div class="auth-brand">
 
@@ -38,105 +43,330 @@
 
             </div>
 
+
+            <!-- ================================================= -->
+            <!-- CONTENT -->
+            <!-- ================================================= -->
+
             <div class="auth-content">
 
-                <h2>Create User</h2>
+                <div class="register-heading">
 
-                <p class="auth-subtitle">
-                    Add a new dashboard user
-                </p>
+                    <div>
+                        <h2>Create User</h2>
 
-                <form id="registerForm">
-
-                    <div class="form-group">
-
-                        <label for="username">
-                            Username
-                        </label>
-
-                        <input type="text"
-                               id="registerUsername"
-                               placeholder="Enter username"
-                               autocomplete="username"
-                               required />
-
+                        <p class="auth-subtitle">
+                            Create an account and assign dashboard access.
+                        </p>
                     </div>
 
-                    <div class="form-group">
-
-                        <label for="fullName">
-                            Full Name
-                        </label>
-
-                        <input type="text"
-                               id="fullName"
-                               placeholder="Enter full name"
-                               required />
-
+                    <div class="security-badge">
+                        <span class="security-dot"></span>
+                        Secure
                     </div>
 
-                    <div class="form-group">
+                </div>
 
-                        <label for="registerPassword">
-                            Password
-                        </label>
 
-                        <div class="password-wrapper">
+                <form id="registerForm"
+                      autocomplete="off">
 
-                            <input type="password"
-                                   id="registerPassword"
-                                   placeholder="Enter password"
-                                   autocomplete="new-password"
-                                   required />
 
-                            <button type="button"
-                                    class="password-toggle"
-                                    onclick="toggleRegisterPassword()">
-                                Show
-                            </button>
+                    <!-- ========================================= -->
+                    <!-- USER INFORMATION -->
+                    <!-- ========================================= -->
+
+                    <div class="section-title">
+                        <span class="section-number">01</span>
+                        User Information
+                    </div>
+
+
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="registerUsername">
+                                Username
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">
+                                    👤
+                                </span>
+
+                                <input type="text"
+                                       id="registerUsername"
+                                       placeholder="Enter username"
+                                       autocomplete="username"
+                                       maxlength="50"
+                                       required />
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="fullName">
+                                Full Name
+                            </label>
+
+                            <div class="input-wrapper">
+
+                                <span class="input-icon">
+                                    ◉
+                                </span>
+
+                                <input type="text"
+                                       id="fullName"
+                                       placeholder="Enter full name"
+                                       maxlength="100"
+                                       required />
+
+                            </div>
 
                         </div>
 
                     </div>
 
-                    <div class="form-group">
 
-                        <label for="confirmPassword">
-                            Confirm Password
-                        </label>
+                    <!-- ========================================= -->
+                    <!-- PASSWORD -->
+                    <!-- ========================================= -->
 
-                        <input type="password"
-                               id="confirmPassword"
-                               placeholder="Confirm password"
-                               autocomplete="new-password"
-                               required />
+                    <div class="section-title section-spaced">
+                        <span class="section-number">02</span>
+                        Password
+                    </div>
+
+
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="registerPassword">
+                                Password
+                            </label>
+
+                            <div class="password-wrapper">
+
+                                <span class="input-icon">
+                                    🔒
+                                </span>
+
+                                <input type="password"
+                                       id="registerPassword"
+                                       placeholder="Minimum 8 characters"
+                                       autocomplete="new-password"
+                                       maxlength="100"
+                                       required />
+
+                                <button type="button"
+                                        class="password-toggle"
+                                        onclick="toggleRegisterPassword()"
+                                        aria-label="Show password">
+                                    Show
+                                </button>
+
+                            </div>
+
+                            <div class="password-strength">
+
+                                <div class="strength-bars">
+
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+
+                                </div>
+
+                                <span id="passwordStrengthText">
+                                    Enter a password
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="confirmPassword">
+                                Confirm Password
+                            </label>
+
+                            <div class="password-wrapper">
+
+                                <span class="input-icon">
+                                    🔐
+                                </span>
+
+                                <input type="password"
+                                       id="confirmPassword"
+                                       placeholder="Confirm password"
+                                       autocomplete="new-password"
+                                       maxlength="100"
+                                       required />
+
+                                <span id="passwordMatchIcon"
+                                      class="password-match-icon">
+                                </span>
+
+                            </div>
+
+                            <div id="passwordMatchText"
+                                 class="field-hint">
+                            </div>
+
+                        </div>
 
                     </div>
 
-                    @* <div class="form-group">
 
-                        <label for="role">
-                            Role
+                    <!-- ========================================= -->
+                    <!-- ACCESS -->
+                    <!-- ========================================= -->
+
+                    <div class="section-title section-spaced">
+                        <span class="section-number">03</span>
+                        Access & Scope
+                    </div>
+
+
+                    <div class="access-info">
+
+                        <div class="info-icon">
+                            🔐
+                        </div>
+
+                        <div>
+                            <strong>Dashboard Access</strong>
+
+                            <p>
+                                Select the user's role, company and
+                                optional department scope.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-row">
+
+                        <!-- ROLE -->
+
+                        <div class="form-group">
+
+                            <label for="registerRole">
+                                Role
+                            </label>
+
+                            <div class="select-wrapper">
+
+                                <select id="registerRole"
+                                        required>
+
+                                    <option value="USER">
+                                        User
+                                    </option>
+
+                                    <option value="ADMIN">
+                                        Administrator
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- COMPANY -->
+
+                        <div class="form-group">
+
+                            <label for="registerCompany">
+                                Company
+                            </label>
+
+                            <div class="select-wrapper">
+
+                                <select id="registerCompany"
+                                        required>
+
+                                    <option value="">
+                                        Select company
+                                    </option>
+
+                                    <option value="BRPL">
+                                        BRPL
+                                    </option>
+
+                                    <option value="BYPL">
+                                        BYPL
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- DEPARTMENT -->
+
+                    <div class="form-group">
+
+                        <label for="registerDepartment">
+
+                            Department
+
+                            <span class="optional-label">
+                                Optional
+                            </span>
+
                         </label>
 
-                        <select id="role">
+                        <div class="select-wrapper">
 
-                            <option value="USER">
-                                User
-                            </option>
+                            <select id="registerDepartment"
+                                    disabled>
 
-                            <option value="ADMIN">
-                                Administrator
-                            </option>
+                                <option value="">
+                                    All Departments
+                                </option>
 
-                        </select>
+                            </select>
 
-                    </div> *@
+                        </div>
+
+                        <div class="field-hint">
+                            Leave as "All Departments" for
+                            company-wide access.
+                        </div>
+
+                    </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- MESSAGE -->
+                    <!-- ========================================= -->
 
                     <div id="registerMessage"
                          class="auth-message"
                          style="display:none;">
                     </div>
+
+
+                    <!-- ========================================= -->
+                    <!-- SUBMIT -->
+                    <!-- ========================================= -->
 
                     <button type="submit"
                             id="registerButton"
@@ -153,7 +383,13 @@
 
                     </button>
 
+
                 </form>
+
+
+                <!-- ============================================= -->
+                <!-- BACK -->
+                <!-- ============================================= -->
 
                 <div class="back-login">
 
@@ -165,6 +401,11 @@
 
             </div>
 
+
+            <!-- ================================================= -->
+            <!-- FOOTER -->
+            <!-- ================================================= -->
+
             <div class="auth-footer">
                 Smart Meter Reading Dashboard
             </div>
@@ -173,7 +414,8 @@
 
     </div>
 
-    <script src="~/js/auth.js"></script>
+
+    <script src="~/js/Auth.js" asp-append-version="true"> </script>
 
 </body>
 </html>

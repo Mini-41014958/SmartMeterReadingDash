@@ -14,11 +14,11 @@ builder.Services.AddScoped<Dashboard>();
 builder.Services.AddScoped<AuthRepository>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<JwtService>();
-
+builder.Services.AddScoped<UserAccess>();
 
 var jwtSettings = builder.Configuration
     .GetSection("Jwt")
-    .Get<JWTSettings>();
+    .Get<JWTSettings>(); 
 
 if (jwtSettings == null ||
     string.IsNullOrWhiteSpace(jwtSettings.Key) ||

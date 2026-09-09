@@ -11,7 +11,6 @@ namespace SmartMeterReadingDash.Services
         public Dashboard(OracleCon oracleCon)
         {
             _db = oracleCon;
-
         }
         //Test connection to the database
         public string Testconnection()
@@ -23,7 +22,7 @@ namespace SmartMeterReadingDash.Services
             return connection.State.ToString();
         }
 
-        public TotalMeterSummary GetMeterSummary(string ReadingMonth)
+        public TotalMeterSummary GetMeterSummary(string ReadingMonth, UserAccessScope scope)
         {
             TotalMeterSummary Summary = new TotalMeterSummary();
 
@@ -286,7 +285,7 @@ namespace SmartMeterReadingDash.Services
             return Summary;
         }
         //BYPL
-        public TotalMeterSummaryBypl GetByplTotalMeterSummary(string ReadingMonth)
+        public TotalMeterSummaryBypl GetByplTotalMeterSummary(string ReadingMonth, UserAccessScope scope)
         {
             TotalMeterSummaryBypl totalMeterSummary = new TotalMeterSummaryBypl();
             using (OracleConnection con = _db.GetConnection())
@@ -536,7 +535,7 @@ namespace SmartMeterReadingDash.Services
 
 
         // Get Meter Download Summary Allied + Kimbal including all department for the current month till day - 1
-        public MeterReceivedSummary GetMeterReceivedDownloadSummary(string ReadingMonth)
+        public MeterReceivedSummary GetMeterReceivedDownloadSummary(string ReadingMonth, UserAccessScope scope)
         {
             MeterReceivedSummary Summary = new MeterReceivedSummary();
 
@@ -642,7 +641,7 @@ namespace SmartMeterReadingDash.Services
             return Summary;
         }
         //BYPL
-        public List<MeterReceivedSummaryBypl> GetMeterReceivedSummaryBypl(string readingMonth)
+        public List<MeterReceivedSummaryBypl> GetMeterReceivedSummaryBypl(string readingMonth, UserAccessScope scope)
         {
             List<MeterReceivedSummaryBypl> meterReceivedSummaryBypl = new List<MeterReceivedSummaryBypl>();
             using (OracleConnection con = _db.GetConnection())
@@ -787,7 +786,7 @@ namespace SmartMeterReadingDash.Services
             }
         }
 
-        public List<MeterDownloadDetailedSummary> MeterDetailedSummary(string ReadingMonth)
+        public List<MeterDownloadDetailedSummary> MeterDetailedSummary(string ReadingMonth, UserAccessScope scope)
         {
             List<MeterDownloadDetailedSummary> SummaryList = new List<MeterDownloadDetailedSummary>();
             using (OracleConnection con = _db.GetConnection())
@@ -957,7 +956,7 @@ namespace SmartMeterReadingDash.Services
             }
         }
 
-        public List<MeterDownloadDetailedSummaryBypl> GetMeterDownloadDetailedSummaryBypl(string readingMonth)
+        public List<MeterDownloadDetailedSummaryBypl> GetMeterDownloadDetailedSummaryBypl(string readingMonth, UserAccessScope scope)
         {
             List<MeterDownloadDetailedSummaryBypl> summaryList = new List<MeterDownloadDetailedSummaryBypl>();
             using (OracleConnection con = _db.GetConnection())
@@ -1322,7 +1321,7 @@ namespace SmartMeterReadingDash.Services
 
 
         // get reading trend date wise for the current month till day - 1
-        public List<ReadingTrendDateWise> GetReadingTrend(string ReadingMonth)
+        public List<ReadingTrendDateWise> GetReadingTrend(string ReadingMonth, UserAccessScope scope)
         {
             List<ReadingTrendDateWise> ReadingList = new List<ReadingTrendDateWise>();
             using (OracleConnection con = _db.GetConnection())
@@ -1381,7 +1380,7 @@ namespace SmartMeterReadingDash.Services
             }
             return ReadingList;
         }
-        public List<DepartmentWiseSummary> GetDepartmentSummary(string ReadingMonth)
+        public List<DepartmentWiseSummary> GetDepartmentSummary(string ReadingMonth, UserAccessScope scope)
         {
             List<DepartmentWiseSummary> departmentWiseData = new List<DepartmentWiseSummary>();
             using (OracleConnection conn = _db.GetConnection())
@@ -1510,7 +1509,7 @@ namespace SmartMeterReadingDash.Services
         }
 
         //BYPL
-        public List<DepartmentWiseSummaryBypl> GetDepartmentWiseSummaryBypl(string ReadingMonth)
+        public List<DepartmentWiseSummaryBypl> GetDepartmentWiseSummaryBypl(string ReadingMonth, UserAccessScope scope)
         {
             List<DepartmentWiseSummaryBypl> departmentWiseSummarieBypl = new List<DepartmentWiseSummaryBypl>();
             using (OracleConnection con = _db.GetConnection())
@@ -1618,7 +1617,7 @@ namespace SmartMeterReadingDash.Services
         }
 
 
-        public List<FailureReasonCount> FailureReasonCounts(string ReadingMonth)
+        public List<FailureReasonCount> FailureReasonCounts(string ReadingMonth, UserAccessScope scope)
         {
             List<FailureReasonCount> failureReasonCounts = new List<FailureReasonCount>();
             using (OracleConnection con = _db.GetConnection())
@@ -1692,7 +1691,7 @@ namespace SmartMeterReadingDash.Services
         }
 
 
-        public List<FailureReasonCountBypl> FailureReasonCountsBYPL(string ReadingMonth)
+        public List<FailureReasonCountBypl> FailureReasonCountsBYPL(string ReadingMonth, UserAccessScope scope)
         {
             List<FailureReasonCountBypl> failureReasonCounts = new List<FailureReasonCountBypl>();
             using (OracleConnection con = _db.GetConnection())
@@ -1805,7 +1804,7 @@ namespace SmartMeterReadingDash.Services
 
 
         //BRP HES DOWNLOAD METERS
-        public List<HesDownloadMeter> HesDownloadMeterList(string readingMonth)
+        public List<HesDownloadMeter> HesDownloadMeterList(string readingMonth, UserAccessScope scope)
         {
             List<HesDownloadMeter> hesDownloadMeters = new List<HesDownloadMeter>();
             using (OracleConnection con = _db.GetConnection())
@@ -1917,7 +1916,7 @@ namespace SmartMeterReadingDash.Services
 
         }
 
-        public List<HesDownloadMeterBypl> GetHesDownloadBypl(string readingMonth)
+        public List<HesDownloadMeterBypl> GetHesDownloadBypl(string readingMonth, UserAccessScope scope)
         {
             List<HesDownloadMeterBypl> hesDownloadMetersBypl = new List<HesDownloadMeterBypl>();
             using (OracleConnection con = _db.GetConnection())

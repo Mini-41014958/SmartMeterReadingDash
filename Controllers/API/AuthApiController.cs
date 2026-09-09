@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SmartMeterReadingDash.Models.Dashboard;
 using SmartMeterReadingDash.Services;
+using System.Security.Claims;
 
 namespace SmartMeterReadingDash.Controllers.API
 {
@@ -121,21 +122,18 @@ namespace SmartMeterReadingDash.Controllers.API
             });
         }
 
-
+        [AllowAnonymous]
         [HttpPost("register")]
-        public async Task<IActionResult> Register(
-            [FromBody] RegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
 
-            if (request == null ||
-                string.IsNullOrWhiteSpace(request.Username) ||
-                string.IsNullOrWhiteSpace(request.Password))
+
+            if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
             {
                 return BadRequest(new
                 {
                     success = false,
-                    message =
-                        "Username and password are required."
+                    message = "Username and password are required."
                 });
             }
 
@@ -144,45 +142,143 @@ namespace SmartMeterReadingDash.Controllers.API
                 return BadRequest(new
                 {
                     success = false,
-                    message =
-                        "Password must contain at least 8 characters."
+                    message = "Password must contain at least 8 characters."
                 });
             }
 
+            var username = request.Username.Trim();
 
-            var userCount =
-                await _authRepository.GetUserCountAsync();
+            var userCount = await _authRepository.GetUserCountAsync();
 
-            if (userCount > 0)
+            var isInitialRegistration = userCount == 0;
+
+            if (isInitialRegistration)
+            {
+                var usernameExists =
+                    await _authRepository.UsernameExistsAsync(
+                        username
+                    );
+
+                if (usernameExists)
+                {
+                    return Conflict(new
+                    {
+                        success = false,
+                        message = "Username already exists."
+                    });
+                }
+
+                var superAdmin = new DashboardUser
+                {
+                    Username = username,
+
+                    Password = request.Password,
+
+                    FullName =
+                        string.IsNullOrWhiteSpace(request.FullName)
+                            ? null
+                            : request.FullName.Trim(),
+
+                    Role = "SUPERADMIN",
+
+                    IsActive = 1,
+
+                    Company = null,
+
+                    Department = null
+                };
+
+                var userId = await _authRepository.CreateUserAsync(superAdmin);
+
+                return Ok(new
+                {
+                    success = true,
+
+                    message = "Initial SUPERADMIN created successfully.",
+
+                    userId = userId,
+
+                    username = superAdmin.Username,
+
+                    fullName = superAdmin.FullName ?? "",
+
+                    role = superAdmin.Role,
+
+                    company = (string?)null,
+
+                    department = (string?)null
+                });
+            }
+
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
             {
                 return Unauthorized(new
                 {
                     success = false,
+                    message = "Only SUPERADMIN can create new users."
+                });
+            }
 
+            if (!User.IsInRole("SUPERADMIN"))
+            {
+                return Forbid();
+            }
+
+            var requestedRole = string.IsNullOrWhiteSpace(request.Role)
+                    ? "USER"
+                    : request.Role.Trim().ToUpperInvariant();
+
+            if (requestedRole != "ADMIN" && requestedRole != "USER")
+            {
+                return BadRequest(new
+                {
+                    success = false,
                     message =
-                        "Registration is restricted to administrators."
+                        "Only ADMIN or USER accounts can be created."
                 });
             }
 
 
-            var username =
-                request.Username.Trim();
+            if (string.IsNullOrWhiteSpace(request.Company))
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message =
+                        "Company is required for ADMIN and USER accounts."
+                });
+            }
 
-            var usernameExists =
-                await _authRepository.UsernameExistsAsync(
-                    username
-                );
+            var company = request.Company.Trim().ToUpperInvariant();
 
-            if (usernameExists)
+
+            if (company != "BRPL" && company != "BYPL")
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message =
+                        "Company must be either BRPL or BYPL."
+                });
+            }
+
+
+            var department = string.IsNullOrWhiteSpace(request.Department)
+                    ? null
+                    : request.Department.Trim().ToUpperInvariant();
+
+
+            var exists = await _authRepository.UsernameExistsAsync(username);
+
+            if (exists)
             {
                 return Conflict(new
                 {
                     success = false,
-
-                    message =
-                        "Username already exists."
+                    message = "Username already exists."
                 });
             }
+
 
             var user = new DashboardUser
             {
@@ -191,37 +287,76 @@ namespace SmartMeterReadingDash.Controllers.API
                 Password = request.Password,
 
                 FullName =
-                    string.IsNullOrWhiteSpace(
-                        request.FullName)
+                    string.IsNullOrWhiteSpace(request.FullName)
                         ? null
                         : request.FullName.Trim(),
 
-                Role = "ADMIN",
+                Role = requestedRole,
 
-                IsActive = 1
+                IsActive = 1,
+
+                Company = company,
+
+                Department = department
             };
 
-            var userId =
-                await _authRepository.CreateUserAsync(
-                    user
-                );
+            var newUserId = await _authRepository.CreateUserAsync(user);
 
             return Ok(new
             {
                 success = true,
 
-                message =
-                    "Initial administrator created successfully.",
+                message = $"{requestedRole} user created successfully.",
 
-                userId = userId,
+                userId = newUserId,
 
-                username = username,
+                username = user.Username,
 
-                fullName =
-                    user.FullName ?? "",
+                fullName = user.FullName ?? "",
 
-                role = "ADMIN"
+                role = user.Role,
+
+                company = user.Company,
+
+                department = user.Department
             });
         }
+        [Authorize]
+        [HttpGet("my-access")]
+        public IActionResult GetMyAccess()
+        {
+            return Ok(new
+            {
+                authenticated = User.Identity?.IsAuthenticated,
+
+                userId =
+                    User.FindFirst(
+                        ClaimTypes.NameIdentifier
+                    )?.Value,
+
+                username =
+                    User.FindFirst(
+                        ClaimTypes.Name
+                    )?.Value,
+
+                role =
+                    User.FindFirst(
+                        ClaimTypes.Role
+                    )?.Value,
+
+                company =
+                    User.FindFirst("company")?.Value,
+
+                department =
+                    User.FindFirst("department")?.Value,
+
+                isSuperAdmin =
+                    User.IsInRole("SUPERADMIN"),
+
+                isAdmin =
+                    User.IsInRole("ADMIN")
+            });
+        }
+
     }
 }

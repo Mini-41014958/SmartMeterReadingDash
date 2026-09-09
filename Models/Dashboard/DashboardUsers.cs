@@ -17,5 +17,7 @@
         public DateTime CreatedDate { get; set; }
 
         public DateTime? LastLoginDate { get; set; }
+        public string? Company { get; set; }
+        public string? Department { get; set; }
     }
 }

@@ -12,167 +12,164 @@ function getApiUrl(endpoint) {
 let brplMeterTypeChart = null;
 let byplMeterTypeChart = null;
 
-
 async function loadMeterSummary() {
 
-    const month = getReadingMonth();
+    const month =
+        getReadingMonth();
+
 
     try {
 
         // =====================================================
-        // LOAD BRPL + BYPL
+        // BRPL
         // =====================================================
 
-        const [
-            brplResponse,
-            byplResponse
-        ] = await Promise.all([
+        if (
+            canAccessCompany("BRPL")
+        ) {
 
-            fetch(
-                `${getApiUrl("DashboardApi/meter-type-wise-summary")}?readingMonth=${encodeURIComponent(month)}`
-            ),
+            const response =
+                await fetch(
+                    `${getApiUrl(
+                        "DashboardApi/meter-type-wise-summary"
+                    )}?readingMonth=${encodeURIComponent(month)}`,
+                    {
+                        cache: "no-store"
+                    }
+                );
 
-            fetch(
-                `${getApiUrl("DashboardApi/meter-type-wise-summary-bypl")}?readingMonth=${encodeURIComponent(month)}`
-            )
 
-        ]);
+            if (!response.ok) {
+
+                throw new Error(
+                    `Failed to load BRPL Meter Summary. Status: ${response.status}`
+                );
+            }
 
 
-        if (!brplResponse.ok) {
-            throw new Error(
-                `Failed to load BRPL Meter Summary. Status: ${brplResponse.status}`
+            const brplData =
+                await response.json();
+
+
+            // BRPL TABLE
+
+            $("#brplAllied1Ph").text(
+                Number(
+                    brplData.allied_1PhCount || 0
+                ).toLocaleString()
+            );
+
+
+            $("#brplAllied3Ph").text(
+                Number(
+                    brplData.allied_3PhCount || 0
+                ).toLocaleString()
+            );
+
+
+            $("#brplKimbal1Ph").text(
+                Number(
+                    brplData.kimbal_1PhCount || 0
+                ).toLocaleString()
+            );
+
+
+            $("#brplKimbal3Ph").text(
+                Number(
+                    brplData.kimbal_3PhCount || 0
+                ).toLocaleString()
+            );
+
+
+            $("#brplTotalMeter").text(
+                Number(
+                    brplData.totalMeter || 0
+                ).toLocaleString()
+            );
+
+
+            drawMeterTypeChart(
+                brplData,
+                "brplMeterTypeChart",
+                "BRPL"
             );
         }
 
-        if (!byplResponse.ok) {
-            throw new Error(
-                `Failed to load BYPL Meter Summary. Status: ${byplResponse.status}`
+
+        // =====================================================
+        // BYPL
+        // =====================================================
+
+        if (
+            canAccessCompany("BYPL")
+        ) {
+
+            const response =
+                await fetch(
+                    `${getApiUrl(
+                        "DashboardApi/meter-type-wise-summary-bypl"
+                    )}?readingMonth=${encodeURIComponent(month)}`,
+                    {
+                        cache: "no-store"
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Failed to load BYPL Meter Summary. Status: ${response.status}`
+                );
+            }
+
+
+            const byplData =
+                await response.json();
+
+
+            // BYPL TABLE
+
+            $("#byplAllied1Ph").text(
+                Number(
+                    byplData.allied_1PhCount || 0
+                ).toLocaleString()
+            );
+
+
+            $("#byplAllied3Ph").text(
+                Number(
+                    byplData.allied_3PhCount || 0
+                ).toLocaleString()
+            );
+
+
+            $("#byplKimbal1Ph").text(
+                Number(
+                    byplData.kimbal_1PhCount || 0
+                ).toLocaleString()
+            );
+
+
+            $("#byplKimbal3Ph").text(
+                Number(
+                    byplData.kimbal_3PhCount || 0
+                ).toLocaleString()
+            );
+
+
+            $("#byplTotalMeter").text(
+                Number(
+                    byplData.totalMeter || 0
+                ).toLocaleString()
+            );
+
+
+            drawMeterTypeChart(
+                byplData,
+                "byplMeterTypeChart",
+                "BYPL"
             );
         }
-
-
-        const brplData =
-            await brplResponse.json();
-
-        const byplData =
-            await byplResponse.json();
-
-
-        // =====================================================
-        // BRPL TABLE
-        // =====================================================
-
-        $("#brplAlliedCount").text(
-            Number(
-                brplData.alliedCount || 0
-            ).toLocaleString()
-        );
-
-        $("#brplAllied1Ph").text(
-            Number(
-                brplData.allied_1PhCount || 0
-            ).toLocaleString()
-        );
-
-        $("#brplAllied3Ph").text(
-            Number(
-                brplData.allied_3PhCount || 0
-            ).toLocaleString()
-        );
-
-        $("#brplKimbalCount").text(
-            Number(
-                brplData.kimbalCount || 0
-            ).toLocaleString()
-        );
-
-        $("#brplKimbal1Ph").text(
-            Number(
-                brplData.kimbal_1PhCount || 0
-            ).toLocaleString()
-        );
-
-        $("#brplKimbal3Ph").text(
-            Number(
-                brplData.kimbal_3PhCount || 0
-            ).toLocaleString()
-        );
-
-        $("#brplTotalMeter").text(
-            Number(
-                brplData.totalMeter || 0
-            ).toLocaleString()
-        );
-
-
-        // =====================================================
-        // BYPL TABLE
-        // =====================================================
-
-        $("#byplAlliedCount").text(
-            Number(
-                byplData.alliedCount || 0
-            ).toLocaleString()
-        );
-
-        $("#byplAllied1Ph").text(
-            Number(
-                byplData.allied_1PhCount || 0
-            ).toLocaleString()
-        );
-
-        $("#byplAllied3Ph").text(
-            Number(
-                byplData.allied_3PhCount || 0
-            ).toLocaleString()
-        );
-
-        $("#byplKimbalCount").text(
-            Number(
-                byplData.kimbalCount || 0
-            ).toLocaleString()
-        );
-
-        $("#byplKimbal1Ph").text(
-            Number(
-                byplData.kimbal_1PhCount || 0
-            ).toLocaleString()
-        );
-
-        $("#byplKimbal3Ph").text(
-            Number(
-                byplData.kimbal_3PhCount || 0
-            ).toLocaleString()
-        );
-
-        $("#byplTotalMeter").text(
-            Number(
-                byplData.totalMeter || 0
-            ).toLocaleString()
-        );
-
-
-        // =====================================================
-        // DRAW BRPL PIE CHART
-        // =====================================================
-
-        drawMeterTypeChart(
-            brplData,
-            "brplMeterTypeChart",
-            "BRPL"
-        );
-
-
-        // =====================================================
-        // DRAW BYPL PIE CHART
-        // =====================================================
-
-        drawMeterTypeChart(
-            byplData,
-            "byplMeterTypeChart",
-            "BYPL"
-        );
 
     }
     catch (error) {
