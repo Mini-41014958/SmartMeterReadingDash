@@ -70,9 +70,7 @@ namespace SmartMeterReadingDash.Services
 
                 Password = reader["PASSWORD"]?.ToString() ?? string.Empty,
 
-                FullName = reader["FULL_NAME"] == DBNull.Value
-                        ? null
-                        : reader["FULL_NAME"].ToString(),
+                FullName = reader["FULL_NAME"] == DBNull.Value ? null : reader["FULL_NAME"].ToString(),
 
                 Role =  reader["ROLE"]?.ToString() ?? "USER", 
 
@@ -80,14 +78,11 @@ namespace SmartMeterReadingDash.Services
 
                 CreatedDate = Convert.ToDateTime(reader["CREATED_DATE"]),
 
-                LastLoginDate =  reader["LAST_LOGIN_DATE"] == DBNull.Value ? null
-                        : Convert.ToDateTime(reader["LAST_LOGIN_DATE"] ),
+                LastLoginDate =  reader["LAST_LOGIN_DATE"] == DBNull.Value ? null : Convert.ToDateTime(reader["LAST_LOGIN_DATE"] ),
 
-                Company = reader["COMPANY"] == DBNull.Value ? null
-                        : reader["COMPANY"].ToString(),
+                Company = reader["COMPANY"] == DBNull.Value ? null : reader["COMPANY"].ToString(),
 
-                Department = reader["DEPARTMENT"] == DBNull.Value ? null
-                        : reader["DEPARTMENT"].ToString()
+                Department = reader["DEPARTMENT"] == DBNull.Value ? null : reader["DEPARTMENT"].ToString()
             };
         }
 
@@ -105,10 +100,7 @@ namespace SmartMeterReadingDash.Services
 
             await using var command = new OracleCommand(sql, connection);
 
-            command.Parameters.Add(
-                "USER_ID",
-                OracleDbType.Int32
-            ).Value = userId;
+            command.Parameters.Add( "USER_ID",OracleDbType.Int32).Value = userId;
 
             await command.ExecuteNonQueryAsync();
         }
@@ -128,15 +120,9 @@ namespace SmartMeterReadingDash.Services
 
             await using var command = new OracleCommand(sql, connection);
 
-            command.Parameters.Add(
-                "USERNAME",
-                OracleDbType.Varchar2
-            ).Value = username.Trim();
+            command.Parameters.Add("USERNAME", OracleDbType.Varchar2).Value = username.Trim();
 
-            var count =
-                Convert.ToInt32(
-                    await command.ExecuteScalarAsync()
-                );
+            var count = Convert.ToInt32(await command.ExecuteScalarAsync());
 
             return count > 0;
         }
@@ -148,16 +134,13 @@ namespace SmartMeterReadingDash.Services
                 FROM SMART_METER_DASHBOARD_USERS
             ";
 
-            await using var connection =
-                new OracleConnection(GetConnectionString());
+            await using var connection = new OracleConnection(GetConnectionString());
 
             await connection.OpenAsync();
 
-            await using var command =
-                new OracleCommand(sql, connection);
+            await using var command =  new OracleCommand(sql, connection);
 
-            var result =
-                await command.ExecuteScalarAsync();
+            var result = await command.ExecuteScalarAsync();
 
             return Convert.ToInt32(result);
         }
@@ -195,57 +178,25 @@ namespace SmartMeterReadingDash.Services
 
             await connection.OpenAsync();
 
-            await using var command =
-                new OracleCommand(sql, connection);
+            await using var command = new OracleCommand(sql, connection);
 
-            command.Parameters.Add(
-                "USERNAME",
-                OracleDbType.Varchar2
-            ).Value = user.Username.Trim();
+            command.Parameters.Add("USERNAME", OracleDbType.Varchar2 ).Value = user.Username.Trim();
 
-            command.Parameters.Add(
-                "PASSWORD",
-                OracleDbType.Varchar2
-            ).Value = user.Password;
+            command.Parameters.Add("PASSWORD",OracleDbType.Varchar2).Value = user.Password;
 
-            command.Parameters.Add(
-                "FULL_NAME",
-                OracleDbType.Varchar2
-            ).Value =
-                (object?)user.FullName
-                ?? DBNull.Value;
+            command.Parameters.Add("FULL_NAME",OracleDbType.Varchar2).Value = (object?)user.FullName ?? DBNull.Value;
 
-            command.Parameters.Add(
-                "ROLE",
-                OracleDbType.Varchar2
-            ).Value =
-                user.Role.Trim().ToUpperInvariant();
+            command.Parameters.Add("ROLE", OracleDbType.Varchar2).Value = user.Role.Trim().ToUpperInvariant();
 
-            command.Parameters.Add(
-                "IS_ACTIVE",
-                OracleDbType.Int32
-            ).Value = user.IsActive;
+            command.Parameters.Add("IS_ACTIVE", OracleDbType.Int32 ).Value = user.IsActive;
 
-            command.Parameters.Add(
-                "COMPANY",
-                OracleDbType.Varchar2
-            ).Value =
-                string.IsNullOrWhiteSpace(user.Company)
-                    ? DBNull.Value
+            command.Parameters.Add("COMPANY",OracleDbType.Varchar2).Value = string.IsNullOrWhiteSpace(user.Company) ? DBNull.Value
                     : user.Company.Trim().ToUpperInvariant();
 
-            command.Parameters.Add(
-                "DEPARTMENT",
-                OracleDbType.Varchar2
-            ).Value =
-                string.IsNullOrWhiteSpace(user.Department)
-                    ? DBNull.Value
+            command.Parameters.Add( "DEPARTMENT", OracleDbType.Varchar2).Value = string.IsNullOrWhiteSpace(user.Department) ? DBNull.Value
                     : user.Department.Trim().ToUpperInvariant();
 
-            var userIdParameter =
-                new OracleParameter(
-                    "USER_ID",
-                    OracleDbType.Int32)
+            var userIdParameter =  new OracleParameter("USER_ID",OracleDbType.Int32)
                 {
                     Direction = ParameterDirection.Output
                 };
