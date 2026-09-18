@@ -308,9 +308,6 @@ function getReadingMonth() {
 }
 
 
-// ============================================================
-// GET PREVIOUS READING MONTH
-// ============================================================
 
 function getPreviousReadingMonth() {
 
@@ -336,11 +333,6 @@ function getPreviousReadingMonth() {
 
 }
 
-
-// ============================================================
-// FORMAT READING MONTH
-// Example: 202608 -> August, 2026
-// ============================================================
 
 function formatReadingMonth(month) {
 
@@ -487,177 +479,113 @@ function normalizeFailureData(data) {
 // SAFE JSON FETCH
 // ============================================================
 
-async function fetchDashboardApi(
-    endpoint,
-    readingMonth
-) {
+async function fetchDashboardApi(endpoint, readingMonth) {
 
     const url =
         `${getApiUrl(endpoint)}` +
         `?ReadingMonth=${encodeURIComponent(readingMonth)}`;
 
-    console.log(
-        "Dashboard API:",
-        url
-    );
+    console.log("Dashboard API:", url);
 
-    const response =
-        await fetch(
-            url,
-            {
-                method: "GET",
-                credentials: "same-origin",
-                headers: {
-                    "Accept": "application/json"
-                },
-                cache: "no-store"
-            }
-        );
-
-
-    // --------------------------------------------------------
-    // AUTHORIZATION FAILURE
-    // --------------------------------------------------------
+    const response = await fetch(url, {
+        method: "GET",
+        credentials: "same-origin",
+        headers: {
+            "Accept": "application/json"
+        },
+        cache: "no-store"
+    });
 
     if (response.status === 401) {
-
         throw new Error(
             "Session expired. Please login again."
         );
-
     }
 
-
-    // --------------------------------------------------------
-    // FORBIDDEN
-    // --------------------------------------------------------
-
     if (response.status === 403) {
-
         throw new Error(
             "Access denied for this company."
         );
-
     }
 
-
-    // --------------------------------------------------------
-    // OTHER HTTP ERRORS
-    // --------------------------------------------------------
-
     if (!response.ok) {
-
         throw new Error(
             `Dashboard API failed. HTTP ${response.status}`
         );
-
     }
 
+    const data = await response.json();
 
-    return await response.json();
+    if (data && data.success === false) {
+        throw new Error(
+            data.message ||
+            "Dashboard API returned success=false."
+        );
+    }
 
+    return data;
 }
 
 
 // ============================================================
 // LOAD DASHBOARD
 // ============================================================
+let dashboardLoading = false;
 
 async function loadDashboard() {
 
+    if (dashboardLoading) {
+        console.warn(
+            "Dashboard load already in progress."
+        );
+        return;
+    }
+
+    dashboardLoading = true;
+
     $("#dashboardSkeleton").show();
-
     $("#dashboardContent").hide();
-
 
     try {
 
-        // ----------------------------------------------------
-        // STEP 1
-        // Load authorization FIRST
-        // ----------------------------------------------------
-
         await loadCurrentUserAccess();
-
-
-        // ----------------------------------------------------
-        // STEP 2
-        // Apply UI authorization
-        // ----------------------------------------------------
 
         applyDashboardAccess();
 
-
-        // ----------------------------------------------------
-        // STEP 3
-        // Validate reading month
-        // ----------------------------------------------------
-
         if (!currentReadingMonth) {
-
             currentReadingMonth =
                 getPreviousReadingMonth();
-
         }
-
 
         updateReadingMonthDisplay();
 
+        const results = await Promise.allSettled([
 
-        // ----------------------------------------------------
-        // STEP 4
-        // Load only authorized dashboard data
-        //
-        // Each individual loader is responsible for checking
-        // BRPL/BYPL access.
-        // ----------------------------------------------------
+            loadMeterSummary(),
+            loadMeterDownloadSummary(),
+            loadDepartmentDistribution(),
+            loadFailureReasonChart()
 
-        const results =
-            await Promise.allSettled([
+        ]);
 
-                loadMeterSummary(),
+        results.forEach(function (result, index) {
 
-                loadMeterDownloadSummary(),
+            if (result.status === "rejected") {
 
-                loadDepartmentDistribution(),
+                const names = [
+                    "Meter Summary",
+                    "Meter MRO Summary",
+                    "Department Distribution",
+                    "Failure Reason Chart"
+                ];
 
-                loadFailureReasonChart()
-
-            ]);
-
-
-        // ----------------------------------------------------
-        // LOG FAILED COMPONENTS
-        // ----------------------------------------------------
-
-        results.forEach(
-            function (result, index) {
-
-                if (
-                    result.status === "rejected"
-                ) {
-
-                    const names = [
-
-                        "Meter Summary",
-
-                        "Meter MRO Summary",
-
-                        "Department Distribution",
-
-                        "Failure Reason Chart"
-
-                    ];
-
-                    console.error(
-                        `${names[index]} Error:`,
-                        result.reason
-                    );
-
-                }
-
+                console.error(
+                    `${names[index]} Error:`,
+                    result.reason
+                );
             }
-        );
+
+        });
 
     }
     catch (err) {
@@ -667,20 +595,11 @@ async function loadDashboard() {
             err
         );
 
-
-        // ----------------------------------------------------
-        // Session/authentication failure
-        // ----------------------------------------------------
-
         if (
             err.message &&
             (
-                err.message.includes(
-                    "Session expired"
-                ) ||
-                err.message.includes(
-                    "Unable to load user access"
-                )
+                err.message.includes("Session expired") ||
+                err.message.includes("Unable to load user access")
             )
         ) {
 
@@ -688,25 +607,24 @@ async function loadDashboard() {
                 "/Account/Login";
 
             return;
-
         }
 
     }
     finally {
 
-        $("#dashboardSkeleton")
-            .fadeOut(
-                300,
-                function () {
+        dashboardLoading = false;
 
-                    $("#dashboardContent")
-                        .fadeIn(300);
+        $("#dashboardSkeleton").fadeOut(
+            300,
+            function () {
 
-                }
-            );
+                $("#dashboardContent")
+                    .fadeIn(300);
+
+            }
+        );
 
     }
-
 }
 
 

@@ -864,7 +864,6 @@ function exportTableToCSVBYPL() {
 
 // FORMAT DATE FOR FILTER
 
-
 function formatDateForFilterBYPL(value) {
 
     if (!value) {

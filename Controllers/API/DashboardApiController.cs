@@ -28,19 +28,16 @@ namespace SmartMeterReadingDash.Controllers.API
 
         private IActionResult? CheckCompanyAccess( UserAccessScope scope,string company)
         {
-            // SUPERADMIN can access everything
             if (scope.IsSuperAdmin)
             {
                 return null;
             }
 
-            // Non-superadmin must have a company
             if (string.IsNullOrWhiteSpace(scope.Company))
             {
                 return Forbid();
             }
 
-            // Company mismatch
             if (!string.Equals(scope.Company, company,StringComparison.OrdinalIgnoreCase))
             {
                 return Forbid();
@@ -75,37 +72,31 @@ namespace SmartMeterReadingDash.Controllers.API
                     message = "Invalid user authentication."
                 });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode( StatusCodes.Status500InternalServerError,
-                    new
-                    {
-                        success = false,
-                        message = "Internal Server Error"
-                    });
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
+                });
             }
         }
 
         // BYPL
 
         [HttpGet("meter-type-wise-summary-bypl")]
-        public IActionResult GetMeterSummaryBypl(
-            string ReadingMonth)
+        public IActionResult GetMeterSummaryBypl(string ReadingMonth)
         {
             try
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BYPL");
+                var access = CheckCompanyAccess(scope, "BYPL");
 
-                if (access != null)
-                    return access;
+                if (access != null) return access;
 
-                var summary =
-                    _dashboard.GetByplTotalMeterSummary(
-                        ReadingMonth,
-                        scope);
+                var summary = _dashboard.GetByplTotalMeterSummary( ReadingMonth, scope);
 
                 return Ok(summary);
             }
@@ -113,20 +104,20 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 return Unauthorized();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Internal Server Error"
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
                 });
             }
         }
 
 
-        // ============================================================
         // BRPL DOWNLOAD SUMMARY
-        // ============================================================
+
 
         [HttpGet("meter-download-summary")]
         public IActionResult GetMeterDownloadSummary(
@@ -153,12 +144,13 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 return Unauthorized();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Internal Server Error"
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
                 });
             }
         }
@@ -193,12 +185,13 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 return Unauthorized();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Internal Server Error"
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
                 });
             }
         }
@@ -233,12 +226,13 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 return Unauthorized();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Internal Server Error"
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
                 });
             }
         }
@@ -273,12 +267,13 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 return Unauthorized();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Internal Server Error"
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
                 });
             }
         }
@@ -313,12 +308,13 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 return Unauthorized();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Internal Server Error"
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
                 });
             }
         }
@@ -329,15 +325,13 @@ namespace SmartMeterReadingDash.Controllers.API
         // ============================================================
 
         [HttpGet("department-wise-data")]
-        public IActionResult GetDepartmentWiseData(
-            string ReadingMonth)
+        public IActionResult GetDepartmentWiseData(string ReadingMonth)
         {
             try
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BRPL");
+                var access = CheckCompanyAccess(scope, "BRPL");
 
                 if (access != null)
                     return access;
@@ -351,18 +345,22 @@ namespace SmartMeterReadingDash.Controllers.API
             }
             catch (UnauthorizedAccessException)
             {
-                return Unauthorized();
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = "Unauthorized"
+                });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = "Internal Server Error"
+                    message = ex.Message,
+                    innerException = ex.InnerException?.Message
                 });
             }
         }
-
 
         // ============================================================
         // BYPL DEPARTMENT

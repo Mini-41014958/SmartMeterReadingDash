@@ -3,7 +3,6 @@
 // =============================================================
 
 function getApiUrl(endpoint) {
-
     const basePath = window.location.pathname
         .toLowerCase()
         .startsWith("/smartmeter/")
@@ -22,54 +21,41 @@ let departmentChart = null;
 
 async function loadDepartmentDistribution() {
 
-    const month =
-        getReadingMonth();
-
+    const month = getReadingMonth();
 
     try {
 
-        // =====================================================
-        // DATA CONTAINERS
-        // =====================================================
-
         let brplData = [];
-
         let byplData = [];
 
+        const brplAllowed = canAccessCompany("BRPL");
+        const byplAllowed = canAccessCompany("BYPL");
 
-        // =====================================================
-        // CHECK COMPANY ACCESS
-        // =====================================================
-
-        const brplAllowed =
-            canAccessCompany("BRPL");
-
-
-        const byplAllowed =
-            canAccessCompany("BYPL");
-
-
-        console.log(
-            "Department Distribution Access:",
-            {
-                BRPL: brplAllowed,
-                BYPL: byplAllowed,
-                ReadingMonth: month
-            }
-        );
+        console.log("Department Distribution Access:", {
+            BRPL: brplAllowed,
+            BYPL: byplAllowed,
+            ReadingMonth: month
+        });
 
 
         // =====================================================
-        // LOAD BRPL DATA ONLY IF AUTHORIZED
+        // BRPL
         // =====================================================
 
         if (brplAllowed) {
 
+            const brplUrl =
+                `${getApiUrl("DashboardApi/department-wise-data")}` +
+                `?readingMonth=${encodeURIComponent(month)}`;
+
+            console.log(
+                "BRPL Department API URL:",
+                brplUrl
+            );
+
             const brplResponse =
                 await fetch(
-                    `${getApiUrl(
-                        "DashboardApi/department-wise-data"
-                    )}?readingMonth=${encodeURIComponent(month)}`,
+                    brplUrl,
                     {
                         method: "GET",
                         credentials: "same-origin",
@@ -79,7 +65,6 @@ async function loadDepartmentDistribution() {
                         }
                     }
                 );
-
 
             if (!brplResponse.ok) {
 
@@ -87,52 +72,48 @@ async function loadDepartmentDistribution() {
                     await brplResponse.text()
                         .catch(() => "");
 
-
                 console.error(
                     "BRPL Department API Error:",
                     {
-                        status:
-                            brplResponse.status,
-
-                        response:
-                            errorText
+                        status: brplResponse.status,
+                        url: brplUrl,
+                        response: errorText
                     }
                 );
 
-
                 throw new Error(
-                    `Failed to load BRPL Department Distribution. Status: ${brplResponse.status}`
+                    `Failed to load BRPL Department Distribution. ` +
+                    `Status: ${brplResponse.status}. ${errorText}`
                 );
             }
-
 
             brplData =
                 await brplResponse.json();
 
-
-            // Make sure API returned an array
-
-            if (
-                !Array.isArray(brplData)
-            ) {
-
+            if (!Array.isArray(brplData)) {
                 brplData = [];
-
             }
         }
 
 
         // =====================================================
-        // LOAD BYPL DATA ONLY IF AUTHORIZED
+        // BYPL
         // =====================================================
 
         if (byplAllowed) {
 
+            const byplUrl =
+                `${getApiUrl("DashboardApi/department-wise-data-bypl")}` +
+                `?readingMonth=${encodeURIComponent(month)}`;
+
+            console.log(
+                "BYPL Department API URL:",
+                byplUrl
+            );
+
             const byplResponse =
                 await fetch(
-                    `${getApiUrl(
-                        "DashboardApi/department-wise-data-bypl"
-                    )}?readingMonth=${encodeURIComponent(month)}`,
+                    byplUrl,
                     {
                         method: "GET",
                         credentials: "same-origin",
@@ -143,44 +124,32 @@ async function loadDepartmentDistribution() {
                     }
                 );
 
-
             if (!byplResponse.ok) {
 
                 const errorText =
                     await byplResponse.text()
                         .catch(() => "");
 
-
                 console.error(
                     "BYPL Department API Error:",
                     {
-                        status:
-                            byplResponse.status,
-
-                        response:
-                            errorText
+                        status: byplResponse.status,
+                        url: byplUrl,
+                        response: errorText
                     }
                 );
 
-
                 throw new Error(
-                    `Failed to load BYPL Department Distribution. Status: ${byplResponse.status}`
+                    `Failed to load BYPL Department Distribution. ` +
+                    `Status: ${byplResponse.status}. ${errorText}`
                 );
             }
-
 
             byplData =
                 await byplResponse.json();
 
-
-            // Make sure API returned an array
-
-            if (
-                !Array.isArray(byplData)
-            ) {
-
+            if (!Array.isArray(byplData)) {
                 byplData = [];
-
             }
         }
 
@@ -194,7 +163,6 @@ async function loadDepartmentDistribution() {
             brplData.length
         );
 
-
         console.log(
             "BYPL Department Records:",
             byplData.length
@@ -206,7 +174,6 @@ async function loadDepartmentDistribution() {
         // =====================================================
 
         const departments = [
-
             ...new Set([
 
                 ...brplData
@@ -218,7 +185,6 @@ async function loadDepartmentDistribution() {
                     )
                     .filter(Boolean),
 
-
                 ...byplData
                     .map(
                         x =>
@@ -229,7 +195,6 @@ async function loadDepartmentDistribution() {
                     .filter(Boolean)
 
             ])
-
         ];
 
 
@@ -305,7 +270,6 @@ async function loadDepartmentDistribution() {
                         return 0;
                     }
 
-
                     return Number(
                         brplMap[
                             department
@@ -328,7 +292,6 @@ async function loadDepartmentDistribution() {
                         return 0;
                     }
 
-
                     return Number(
                         brplMap[
                             department
@@ -338,11 +301,6 @@ async function loadDepartmentDistribution() {
                 }
             );
 
-
-        // =====================================================
-        // BYPL HES DOWNLOAD
-        // =====================================================
-
         const byplHes =
             departments.map(
                 department => {
@@ -350,7 +308,6 @@ async function loadDepartmentDistribution() {
                     if (!byplAllowed) {
                         return 0;
                     }
-
 
                     return Number(
                         byplMap[
@@ -361,11 +318,6 @@ async function loadDepartmentDistribution() {
                 }
             );
 
-
-        // =====================================================
-        // BYPL FAILED
-        // =====================================================
-
         const byplFailed =
             departments.map(
                 department => {
@@ -373,7 +325,6 @@ async function loadDepartmentDistribution() {
                     if (!byplAllowed) {
                         return 0;
                     }
-
 
                     return Number(
                         byplMap[
@@ -385,15 +336,10 @@ async function loadDepartmentDistribution() {
             );
 
 
-        // =====================================================
-        // GET CANVAS
-        // =====================================================
-
         const ctx =
             document.getElementById(
                 "departmentChart"
             );
-
 
         if (!ctx) {
 
@@ -404,31 +350,18 @@ async function loadDepartmentDistribution() {
             return;
         }
 
-
-        // =====================================================
-        // DESTROY EXISTING CHART
-        // =====================================================
-
         if (departmentChart) {
 
             departmentChart.destroy();
 
             departmentChart = null;
-
         }
 
 
-        // =====================================================
-        // NO DATA
-        // =====================================================
-
-        if (
-            departments.length === 0
-        ) {
+        if (departments.length === 0) {
 
             const context =
                 ctx.getContext("2d");
-
 
             context.clearRect(
                 0,
@@ -437,18 +370,81 @@ async function loadDepartmentDistribution() {
                 ctx.height
             );
 
-
             console.warn(
                 "No department distribution data available."
             );
 
-
             return;
         }
 
+        const departmentCount = departments.length;
+
+        const visibleDatasetCount =
+            (brplAllowed ? 2 : 0) +
+            (byplAllowed ? 2 : 0);
+
+        let BAR_THICKNESS;
+        let BAR_PERCENTAGE;
+        let CATEGORY_PERCENTAGE;
+
+        if (departmentCount <= 2) {
+
+            // One company = 2 bars
+            if (visibleDatasetCount <= 2) {
+
+                BAR_THICKNESS = 12;
+                BAR_PERCENTAGE = 0.55;
+                CATEGORY_PERCENTAGE = 0.60;
+
+            }
+
+            // BRPL + BYPL = 4 bars
+            else {
+
+                BAR_THICKNESS = 10;
+                BAR_PERCENTAGE = 0.65;
+                CATEGORY_PERCENTAGE = 0.75;
+
+            }
+
+        }
+
+        else {
+
+            BAR_THICKNESS = 13;
+            BAR_PERCENTAGE = 0.65;
+            CATEGORY_PERCENTAGE = 0.70;
+
+        }
+
+
+
+        const getBarOptions = () => ({
+
+            barPercentage:
+                BAR_PERCENTAGE,
+
+            categoryPercentage:
+                CATEGORY_PERCENTAGE,
+
+            ...(BAR_THICKNESS !== undefined
+                ? {
+                    barThickness:
+                        BAR_THICKNESS,
+
+                    maxBarThickness:
+                        BAR_THICKNESS
+                }
+                : {
+                    maxBarThickness:
+                        18
+                })
+
+        });
+
 
         // =====================================================
-        // BUILD DATASETS DYNAMICALLY
+        // DATASETS
         // =====================================================
 
         const datasets = [];
@@ -480,11 +476,7 @@ async function loadDepartmentDistribution() {
                 borderRadius:
                     4,
 
-                barPercentage:
-                    0.95,
-
-                categoryPercentage:
-                    0.85
+                ...getBarOptions()
 
             });
 
@@ -509,11 +501,7 @@ async function loadDepartmentDistribution() {
                 borderRadius:
                     4,
 
-                barPercentage:
-                    0.95,
-
-                categoryPercentage:
-                    0.85
+                ...getBarOptions()
 
             });
 
@@ -546,11 +534,7 @@ async function loadDepartmentDistribution() {
                 borderRadius:
                     4,
 
-                barPercentage:
-                    0.95,
-
-                categoryPercentage:
-                    0.85
+                ...getBarOptions()
 
             });
 
@@ -575,11 +559,7 @@ async function loadDepartmentDistribution() {
                 borderRadius:
                     4,
 
-                barPercentage:
-                    0.95,
-
-                categoryPercentage:
-                    0.85
+                ...getBarOptions()
 
             });
 
@@ -645,7 +625,6 @@ async function loadDepartmentDistribution() {
 
                         plugins: {
 
-
                             // =============================================
                             // LEGEND
                             // =============================================
@@ -654,7 +633,6 @@ async function loadDepartmentDistribution() {
 
                                 position:
                                     "top",
-
 
                                 labels: {
 
@@ -678,45 +656,31 @@ async function loadDepartmentDistribution() {
                                 enabled:
                                     true,
 
-
                                 mode:
                                     "nearest",
-
 
                                 intersect:
                                     true,
 
-
                                 displayColors:
                                     true,
-
 
                                 backgroundColor:
                                     "rgba(33, 37, 41, 0.95)",
 
-
                                 titleColor:
                                     "#ffffff",
-
 
                                 bodyColor:
                                     "#ffffff",
 
-
                                 padding:
                                     12,
-
 
                                 cornerRadius:
                                     8,
 
-
                                 callbacks: {
-
-
-                                    // =====================================
-                                    // TITLE
-                                    // =====================================
 
                                     title:
                                         function (
@@ -732,10 +696,6 @@ async function loadDepartmentDistribution() {
                                         },
 
 
-                                    // =====================================
-                                    // LABEL
-                                    // =====================================
-
                                     label:
                                         function (
                                             context
@@ -745,7 +705,6 @@ async function loadDepartmentDistribution() {
                                                 Number(
                                                     context.raw || 0
                                                 );
-
 
                                             return (
                                                 `${context.dataset.label}: ` +
@@ -761,28 +720,17 @@ async function loadDepartmentDistribution() {
                         },
 
 
-                        // =================================================
-                        // SCALES
-                        // =================================================
-
                         scales: {
-
-
-                            // =============================================
-                            // X AXIS
-                            // =============================================
 
                             x: {
 
                                 beginAtZero:
                                     true,
 
-
                                 ticks: {
 
                                     precision:
                                         0,
-
 
                                     callback:
                                         function (
@@ -791,8 +739,7 @@ async function loadDepartmentDistribution() {
 
                                             return Number(
                                                 value
-                                            )
-                                                .toLocaleString();
+                                            ).toLocaleString();
 
                                         }
 
@@ -801,15 +748,10 @@ async function loadDepartmentDistribution() {
                             },
 
 
-                            // =============================================
-                            // Y AXIS
-                            // =============================================
-
                             y: {
 
                                 stacked:
                                     false,
-
 
                                 ticks: {
 
@@ -824,7 +766,6 @@ async function loadDepartmentDistribution() {
                                     }
 
                                 },
-
 
                                 grid: {
 
@@ -843,20 +784,37 @@ async function loadDepartmentDistribution() {
             );
 
 
-        // =====================================================
-        // FINAL DEBUG
-        // =====================================================
-
         console.log(
             "Department Chart Created:",
             {
+
                 departments:
                     departments,
+
+                departmentCount:
+                    departmentCount,
 
                 datasets:
                     datasets.map(
                         x => x.label
-                    )
+                    ),
+
+                barSettings: {
+
+                    barPercentage:
+                        BAR_PERCENTAGE,
+
+                    categoryPercentage:
+                        CATEGORY_PERCENTAGE,
+
+                    maxBarThickness:
+                        MAX_BAR_THICKNESS,
+
+                    barThickness:
+                        FIXED_BAR_THICKNESS
+
+                }
+
             }
         );
 
@@ -869,5 +827,4 @@ async function loadDepartmentDistribution() {
         );
 
     }
-
 }

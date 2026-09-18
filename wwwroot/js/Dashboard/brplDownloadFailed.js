@@ -51,6 +51,7 @@ async function loadDownloadSummary()
         filteredData = [...allDownloadData];
 
         loadDepartmentFilter();
+        loadDivisionFilter();
 
         loadReasonFilter();
 
@@ -106,7 +107,52 @@ function loadDepartmentFilter()
 
     });
 }
+// ============================================================
+// DIVISION FILTER
+// ============================================================
 
+function loadDivisionFilter() {
+    const ddl = $("#divisionFilter");
+
+    ddl.empty();
+
+    ddl.append(`
+        <option value="">
+            All Divisions
+        </option>
+    `);
+
+    const divisions = [
+        ...new Set(
+            allDownloadData
+                .map(x => x.sapDivision)
+                .filter(x =>
+                    x !== null &&
+                    x !== undefined &&
+                    String(x).trim() !== ""
+                )
+                .map(x => String(x).trim())
+        )
+    ];
+
+    divisions.sort((a, b) =>
+        a.localeCompare(
+            b,
+            undefined,
+            {
+                numeric: true
+            }
+        )
+    );
+
+    divisions.forEach(division => {
+        ddl.append(`
+            <option value="${escapeHtml(division)}">
+                ${escapeHtml(division)}
+            </option>
+        `);
+    });
+}
 
 function loadReasonFilter()
 {
@@ -220,6 +266,8 @@ function loadMeterMakeFilter() {
 
 $("#departmentFilter").on("change", applyFilters);
 
+$("#divisionFilter").on("change", applyFilters);
+
 $("#reasonFilter").on("change",applyFilters);
 
 $("#phaseFilter").on("change",applyFilters);
@@ -252,6 +300,8 @@ function clearFilters() {
 
     $("#departmentFilter").val("");
 
+    $("#divisionFilter").val("");
+
     $("#reasonFilter").val("");
 
     $("#phaseFilter").val("");
@@ -276,6 +326,8 @@ function applyFilters()
 {
 
     const department = ($("#departmentFilter").val() || "").toUpperCase();
+
+    const division = ($("#divisionFilter").val() || "").toUpperCase();
 
     const reason = ($("#reasonFilter").val() || "").toUpperCase();
 
@@ -318,6 +370,11 @@ function applyFilters()
             const itemDepartment =(item.sapDepartment || "").toUpperCase();
 
             const departmentMatch = department === "" || itemDepartment === department;
+
+        // DIVISION
+
+            const itemDivision = (item.sapDivision || "").toUpperCase();
+            const divisionMatch =  division === "" || itemDivision === division;
 
             // FAILED REASON
 
@@ -390,7 +447,7 @@ function applyFilters()
                 }
             }
 
-            return (departmentMatch && reasonMatch && phaseMatch && meterMakeMatch && dateMatch);
+        return ( departmentMatch && divisionMatch && reasonMatch && phaseMatch && meterMakeMatch &&dateMatch );
 
         });
 

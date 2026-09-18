@@ -260,7 +260,7 @@ namespace SmartMeterReadingDash.Controllers.API
 
             // COMPANY PERFORMANCE
 
-            WriteDashboardBanner(ws, 12, isSuperAdmin ? "COMPANY PERFORMANCE – BRPL + BYPL" : $"COMPANY PERFORMANCE – {company}", Palette.Navy, Palette.White);
+            WriteDashboardBanner(ws, 12, isSuperAdmin ? "COMPANY PERFORMANCE " : $"COMPANY PERFORMANCE – {company}", Palette.Navy, Palette.White);
 
             if (isSuperAdmin)
             {
