@@ -164,7 +164,6 @@ namespace SmartMeterReadingDash.Controllers.API
             string company = scope.Company?.Trim().ToUpperInvariant() ?? "";
             bool showBrpl = isSuperAdmin || company == "BRPL";
             bool showBypl = isSuperAdmin || company == "BYPL";
-
             var brplDepartment = showBrpl ? _dashboard.GetDepartmentSummary(readingMonth, scope) ?? new() : new();
             var byplDepartment = showBypl ? _dashboard.GetDepartmentWiseSummaryBypl(readingMonth, scope) ?? new() : new();
             var brplFailureReasons = showBrpl ? _dashboard.FailureReasonCounts(readingMonth, scope) ?? new() : new();
@@ -194,7 +193,6 @@ namespace SmartMeterReadingDash.Controllers.API
 
             ws.Range("B1:K200").Style.Font.FontColor = Palette.Dark;
 
-            // TITLE BANNER
             ws.Range("B2:K4").Merge();
             ws.Cell("B2").Value = isSuperAdmin  ? "SMART METER READING DASHBOARD – BRPL & BYPL" : $"SMART METER READING DASHBOARD – {company}";
 
@@ -541,7 +539,6 @@ namespace SmartMeterReadingDash.Controllers.API
             footer.Style.Border.OutsideBorderColor = Palette.Border;
 
             ws.Row(footerRow).Height = 28;
-
 
             // FINAL FORMATTING
 

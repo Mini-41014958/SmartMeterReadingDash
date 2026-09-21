@@ -11,8 +11,7 @@ namespace SmartMeterReadingDash.Services
     {
         private readonly JWTSettings _jwtSettings;
 
-        public JwtService(
-            IOptions<JWTSettings> jwtSettings)
+        public JwtService(IOptions<JWTSettings> jwtSettings)
         {
             _jwtSettings = jwtSettings.Value;
         }

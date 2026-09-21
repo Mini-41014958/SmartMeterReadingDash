@@ -13,10 +13,7 @@ namespace SmartMeterReadingDash.Controllers
             // User is already authenticated
             if (User.Identity?.IsAuthenticated == true)
             {
-                return RedirectToAction(
-                    "Index",
-                    "Dashboard"
-                );
+                return RedirectToAction( "Index", "Dashboard");
             }
 
             return View();
@@ -27,12 +24,12 @@ namespace SmartMeterReadingDash.Controllers
         {
             return View();
         }
+
         [AllowAnonymous]
         [HttpPost]
         public IActionResult Logout()
         {
-            Response.Cookies.Delete(
-                "SmartMeterAuth",
+            Response.Cookies.Delete( "SmartMeterAuth",
                 new CookieOptions
                 {
                     HttpOnly = true,
@@ -42,10 +39,7 @@ namespace SmartMeterReadingDash.Controllers
                 }
             );
 
-            return RedirectToAction(
-                "Login",
-                "Account"
-            );
+            return RedirectToAction( "Login","Account" );
         }
     }
 }

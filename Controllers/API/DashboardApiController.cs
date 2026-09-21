@@ -77,8 +77,8 @@ namespace SmartMeterReadingDash.Controllers.API
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ex.Message,
-                    innerException = ex.InnerException?.Message
+                    message = "Internal server error."
+
                 });
             }
         }
@@ -109,15 +109,13 @@ namespace SmartMeterReadingDash.Controllers.API
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ex.Message,
-                    innerException = ex.InnerException?.Message
+                    message = "Internal server error."
                 });
             }
         }
 
 
         // BRPL DOWNLOAD SUMMARY
-
 
         [HttpGet("meter-download-summary")]
         public IActionResult GetMeterDownloadSummary(
@@ -127,16 +125,11 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BRPL");
+                var access = CheckCompanyAccess(scope, "BRPL");
 
-                if (access != null)
-                    return access;
+                if (access != null) return access;
 
-                var summary =
-                    _dashboard.GetMeterReceivedDownloadSummary(
-                        ReadingMonth,
-                        scope);
+                var summary = _dashboard.GetMeterReceivedDownloadSummary( ReadingMonth,scope);
 
                 return Ok(summary);
             }
@@ -149,16 +142,12 @@ namespace SmartMeterReadingDash.Controllers.API
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ex.Message,
-                    innerException = ex.InnerException?.Message
+                    message = "Internal Server Error"
                 });
             }
         }
 
-
-        // ============================================================
         // BYPL DOWNLOAD SUMMARY
-        // ============================================================
 
         [HttpGet("meter-download-summary-bypl")]
         public IActionResult GetMeterDownloadSummaryBypl(
@@ -171,13 +160,9 @@ namespace SmartMeterReadingDash.Controllers.API
                 var access =
                     CheckCompanyAccess(scope, "BYPL");
 
-                if (access != null)
-                    return access;
+                if (access != null) return access;
 
-                var summary =
-                    _dashboard.GetMeterReceivedSummaryBypl(
-                        ReadingMonth,
-                        scope);
+                var summary = _dashboard.GetMeterReceivedSummaryBypl( ReadingMonth,scope);
 
                 return Ok(summary);
             }
@@ -190,16 +175,13 @@ namespace SmartMeterReadingDash.Controllers.API
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ex.Message,
-                    innerException = ex.InnerException?.Message
+                    message = "Internal Server Error"
                 });
             }
         }
 
 
-        // ============================================================
         // BRPL DETAILED
-        // ============================================================
 
         [HttpGet("meter-download-detailed-summary")]
         public IActionResult GetMeterDownloadDetailedSummary(
@@ -212,13 +194,9 @@ namespace SmartMeterReadingDash.Controllers.API
                 var access =
                     CheckCompanyAccess(scope, "BRPL");
 
-                if (access != null)
-                    return access;
+                if (access != null) return access;
 
-                var summaryList =
-                    _dashboard.MeterDetailedSummary(
-                        ReadingMonth,
-                        scope);
+                var summaryList = _dashboard.MeterDetailedSummary(ReadingMonth, scope);
 
                 return Ok(summaryList);
             }
@@ -231,16 +209,14 @@ namespace SmartMeterReadingDash.Controllers.API
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ex.Message,
-                    innerException = ex.InnerException?.Message
+                    message = "Internal Server Error"
+       
                 });
             }
         }
 
 
-        // ============================================================
         // BYPL DETAILED
-        // ============================================================
 
         [HttpGet("meter-download-detailed-summary-bypl")]
         public IActionResult GetMeterDownloadDetailedSummaryBypl(
@@ -250,16 +226,12 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BYPL");
+                var access = CheckCompanyAccess(scope, "BYPL");
 
                 if (access != null)
                     return access;
 
-                var summaryList =
-                    _dashboard.GetMeterDownloadDetailedSummaryBypl(
-                        ReadingMonth,
-                        scope);
+                var summaryList = _dashboard.GetMeterDownloadDetailedSummaryBypl(ReadingMonth, scope);
 
                 return Ok(summaryList);
             }
@@ -272,16 +244,13 @@ namespace SmartMeterReadingDash.Controllers.API
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ex.Message,
-                    innerException = ex.InnerException?.Message
+                    message = "Internal Server Error"
+                  
                 });
             }
         }
 
-
-        // ============================================================
-        // BRPL READING TREND
-        // ============================================================
+        // BRPL READING TREN
 
         [HttpGet("reading_trend_date_wise")]
         public IActionResult GetReadingTrend(
@@ -291,16 +260,11 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BRPL");
+                var access = CheckCompanyAccess(scope, "BRPL");
 
-                if (access != null)
-                    return access;
+                if (access != null) return access;
 
-                var result =
-                    _dashboard.GetReadingTrend(
-                        ReadingMonth,
-                        scope);
+                var result =_dashboard.GetReadingTrend( ReadingMonth,scope);
 
                 return Ok(result);
             }
@@ -313,16 +277,12 @@ namespace SmartMeterReadingDash.Controllers.API
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ex.Message,
-                    innerException = ex.InnerException?.Message
+                    message = "Internal Server Error"
                 });
             }
         }
 
-
-        // ============================================================
         // BRPL DEPARTMENT
-        // ============================================================
 
         [HttpGet("department-wise-data")]
         public IActionResult GetDepartmentWiseData(string ReadingMonth)
@@ -333,13 +293,9 @@ namespace SmartMeterReadingDash.Controllers.API
 
                 var access = CheckCompanyAccess(scope, "BRPL");
 
-                if (access != null)
-                    return access;
+                if (access != null) return access;
 
-                var result =
-                    _dashboard.GetDepartmentSummary(
-                        ReadingMonth,
-                        scope);
+                var result = _dashboard.GetDepartmentSummary( ReadingMonth,scope);
 
                 return Ok(result);
             }
@@ -356,15 +312,12 @@ namespace SmartMeterReadingDash.Controllers.API
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ex.Message,
-                    innerException = ex.InnerException?.Message
+                    message = "Internal Server Error"
                 });
             }
         }
 
-        // ============================================================
         // BYPL DEPARTMENT
-        // ============================================================
 
         [HttpGet("department-wise-data-bypl")]
         public IActionResult GetDepartmentWiseSummaryBYPL(
@@ -374,16 +327,11 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BYPL");
+                var access = CheckCompanyAccess(scope, "BYPL");
 
-                if (access != null)
-                    return access;
+                if (access != null)  return access;
 
-                var result =
-                    _dashboard.GetDepartmentWiseSummaryBypl(
-                        ReadingMonth,
-                        scope);
+                var result = _dashboard.GetDepartmentWiseSummaryBypl( ReadingMonth,scope);
 
                 return Ok(result);
             }
@@ -401,10 +349,7 @@ namespace SmartMeterReadingDash.Controllers.API
             }
         }
 
-
-        // ============================================================
         // BRPL FAILURE REASON
-        // ============================================================
 
         [HttpGet("failure-reason-count")]
         public IActionResult GetFailureReasonCount(
@@ -414,16 +359,11 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BRPL");
+                var access = CheckCompanyAccess(scope, "BRPL");
 
-                if (access != null)
-                    return access;
+                if (access != null) return access;
 
-                var result =
-                    _dashboard.FailureReasonCounts(
-                        ReadingMonth,
-                        scope);
+                var result = _dashboard.FailureReasonCounts( ReadingMonth, scope);
 
                 return Ok(result);
             }
@@ -449,16 +389,11 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BYPL");
+                var access = CheckCompanyAccess(scope, "BYPL");
 
-                if (access != null)
-                    return access;
+                if (access != null)  return access;
 
-                var result =
-                    _dashboard.FailureReasonCountsBYPL(
-                        ReadingMonth,
-                        scope);
+                var result = _dashboard.FailureReasonCountsBYPL( ReadingMonth, scope);
 
                 return Ok(result);
             }
@@ -476,10 +411,7 @@ namespace SmartMeterReadingDash.Controllers.API
             }
         }
 
-
-        // ============================================================
         // BRPL HES DOWNLOAD DETAILS
-        // ============================================================
 
         [HttpGet("hes-download-meters-details")]
         public IActionResult GetHESDownloadMetersDetails(
@@ -489,16 +421,11 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BRPL");
+                var access = CheckCompanyAccess(scope, "BRPL");
 
-                if (access != null)
-                    return access;
+                if (access != null) return access;
 
-                var result =
-                    _dashboard.HesDownloadMeterList(
-                        ReadingMonth,
-                        scope);
+                var result = _dashboard.HesDownloadMeterList( ReadingMonth, scope);
 
                 return Ok(result);
             }
@@ -516,10 +443,7 @@ namespace SmartMeterReadingDash.Controllers.API
             }
         }
 
-
-        // ============================================================
         // BYPL HES DOWNLOAD DETAILS
-        // ============================================================
 
         [HttpGet("hes-download-meters-details-bypl")]
         public IActionResult GetHESDownloadMetersDetailsBypl(
@@ -529,16 +453,11 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BYPL");
+                var access =  CheckCompanyAccess(scope, "BYPL");
 
-                if (access != null)
-                    return access;
+                if (access != null) return access;
 
-                var result =
-                    _dashboard.GetHesDownloadBypl(
-                        ReadingMonth,
-                        scope);
+                var result =_dashboard.GetHesDownloadBypl( ReadingMonth, scope);
 
                 return Ok(result);
             }

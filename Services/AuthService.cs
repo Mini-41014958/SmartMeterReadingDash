@@ -15,11 +15,7 @@ namespace SmartMeterReadingDash.Services
 
         private string GetConnectionString()
         {
-            return _configuration
-                .GetConnectionString("AuthConnection")
-                ?? throw new InvalidOperationException(
-                    "AuthConnection is not configured."
-                );
+            return _configuration .GetConnectionString("AuthConnection") ?? throw new InvalidOperationException( "AuthConnection is not configured." );
         }
 
         public async Task<bool> TestConnectionAsync()
@@ -66,6 +62,7 @@ namespace SmartMeterReadingDash.Services
             return new DashboardUser
             {
                 UserId = Convert.ToInt32( reader["USER_ID"] ),
+
                 Username =  reader["USERNAME"]?.ToString() ?? string.Empty,
 
                 Password = reader["PASSWORD"]?.ToString() ?? string.Empty,

@@ -13,9 +13,7 @@ namespace SmartMeterReadingDash.Controllers.API
         private readonly AuthRepository _authRepository;
         private readonly JwtService _jwtService;
 
-        public AuthApiController(
-            AuthRepository authRepository,
-            JwtService jwtService)
+        public AuthApiController( AuthRepository authRepository, JwtService jwtService)
         {
             _authRepository = authRepository;
             _jwtService = jwtService;
@@ -23,12 +21,9 @@ namespace SmartMeterReadingDash.Controllers.API
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Login(
-           [FromBody] LoginRequest request)
+        public async Task<IActionResult> Login( [FromBody] LoginRequest request)
         {
-            if (request == null ||
-                string.IsNullOrWhiteSpace(request.Username) ||
-                string.IsNullOrWhiteSpace(request.Password))
+            if (request == null ||  string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
             {
                 return BadRequest(new
                 {
@@ -37,8 +32,7 @@ namespace SmartMeterReadingDash.Controllers.API
                 });
             }
 
-            var user = await _authRepository
-                .GetUserByUsernameAsync(request.Username);
+            var user = await _authRepository.GetUserByUsernameAsync(request.Username);
 
             if (user == null)
             {
@@ -59,7 +53,6 @@ namespace SmartMeterReadingDash.Controllers.API
             }
 
             // IMPORTANT:
-            // Replace this with PasswordService verification
             if (request.Password != user.Password)
             {
                 return Unauthorized(new
@@ -69,23 +62,17 @@ namespace SmartMeterReadingDash.Controllers.API
                 });
             }
 
-            await _authRepository
-                .UpdateLastLoginAsync(user.UserId);
+            await _authRepository.UpdateLastLoginAsync(user.UserId);
 
             var token = _jwtService.GenerateToken(user);
 
-            Response.Cookies.Append(
-                "SmartMeterAuth",
-                token,
+            Response.Cookies.Append("SmartMeterAuth", token,
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = !HttpContext.Request.IsHttps
-                        ? false
-                        : true,
+                    Secure = !HttpContext.Request.IsHttps ? false : true,
                     SameSite = SameSiteMode.Lax,
                     Expires = DateTimeOffset.UtcNow.AddMinutes(60),
-
                     Path = "/"
                 }
             );
@@ -98,6 +85,7 @@ namespace SmartMeterReadingDash.Controllers.API
                 Username = user.Username,
                 FullName = user.FullName ?? "",
                 Role = user.Role
+                
             });
         }
 
@@ -105,8 +93,7 @@ namespace SmartMeterReadingDash.Controllers.API
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            Response.Cookies.Delete(
-                "SmartMeterAuth",
+            Response.Cookies.Delete( "SmartMeterAuth",
                 new CookieOptions
                 {
                     HttpOnly = true,
@@ -115,7 +102,6 @@ namespace SmartMeterReadingDash.Controllers.API
                     Path = "/"
                 }
             );
-
             return Ok(new
             {
                 success = true
@@ -154,10 +140,7 @@ namespace SmartMeterReadingDash.Controllers.API
 
             if (isInitialRegistration)
             {
-                var usernameExists =
-                    await _authRepository.UsernameExistsAsync(
-                        username
-                    );
+                var usernameExists = await _authRepository.UsernameExistsAsync( username );
 
                 if (usernameExists)
                 {
@@ -174,8 +157,7 @@ namespace SmartMeterReadingDash.Controllers.API
 
                     Password = request.Password,
 
-                    FullName =
-                        string.IsNullOrWhiteSpace(request.FullName)
+                    FullName = string.IsNullOrWhiteSpace(request.FullName)
                             ? null
                             : request.FullName.Trim(),
 
@@ -233,8 +215,7 @@ namespace SmartMeterReadingDash.Controllers.API
                 return BadRequest(new
                 {
                     success = false,
-                    message =
-                        "Only ADMIN or USER accounts can be created."
+                    message = "Only ADMIN or USER accounts can be created."
                 });
             }
 
@@ -244,8 +225,7 @@ namespace SmartMeterReadingDash.Controllers.API
                 return BadRequest(new
                 {
                     success = false,
-                    message =
-                        "Company is required for ADMIN and USER accounts."
+                    message = "Company is required for ADMIN and USER accounts."
                 });
             }
 
@@ -257,16 +237,11 @@ namespace SmartMeterReadingDash.Controllers.API
                 return BadRequest(new
                 {
                     success = false,
-                    message =
-                        "Company must be either BRPL or BYPL."
+                    message = "Company must be either BRPL or BYPL."
                 });
             }
 
-
-            var department = string.IsNullOrWhiteSpace(request.Department)
-                    ? null
-                    : request.Department.Trim().ToUpperInvariant();
-
+            var department = string.IsNullOrWhiteSpace(request.Department)  ? null  : request.Department.Trim().ToUpperInvariant();
 
             var exists = await _authRepository.UsernameExistsAsync(username);
 
@@ -279,15 +254,13 @@ namespace SmartMeterReadingDash.Controllers.API
                 });
             }
 
-
             var user = new DashboardUser
             {
                 Username = username,
 
                 Password = request.Password,
 
-                FullName =
-                    string.IsNullOrWhiteSpace(request.FullName)
+                FullName =  string.IsNullOrWhiteSpace(request.FullName)
                         ? null
                         : request.FullName.Trim(),
 
@@ -321,6 +294,7 @@ namespace SmartMeterReadingDash.Controllers.API
                 department = user.Department
             });
         }
+
         [Authorize]
         [HttpGet("my-access")]
         public IActionResult GetMyAccess()
@@ -329,32 +303,19 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 authenticated = User.Identity?.IsAuthenticated,
 
-                userId =
-                    User.FindFirst(
-                        ClaimTypes.NameIdentifier
-                    )?.Value,
+                userId =  User.FindFirst(ClaimTypes.NameIdentifier ) ?.Value,
 
-                username =
-                    User.FindFirst(
-                        ClaimTypes.Name
-                    )?.Value,
+                username = User.FindFirst(ClaimTypes.Name) ?.Value,
 
-                role =
-                    User.FindFirst(
-                        ClaimTypes.Role
-                    )?.Value,
+                role =  User.FindFirst( ClaimTypes.Role) ?.Value,
 
-                company =
-                    User.FindFirst("company")?.Value,
+                company =  User.FindFirst("company")?.Value,
 
-                department =
-                    User.FindFirst("department")?.Value,
+                department = User.FindFirst("department")?.Value,
 
-                isSuperAdmin =
-                    User.IsInRole("SUPERADMIN"),
+                isSuperAdmin = User.IsInRole("SUPERADMIN"),
 
-                isAdmin =
-                    User.IsInRole("ADMIN")
+                isAdmin = User.IsInRole("ADMIN")
             });
         }
 
