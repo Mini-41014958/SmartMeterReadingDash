@@ -1742,6 +1742,10 @@ namespace SmartMeterReadingDash.Services
         // BRPL DOWNLOADED
         // ============================================================
 
+        // ============================================================
+        // BRPL DOWNLOADED
+        // ============================================================
+
         private static void CreateBrplDownloadedSheet(
             XLWorkbook workbook,
             List<HesDownloadMeter> data)
@@ -1756,16 +1760,16 @@ namespace SmartMeterReadingDash.Services
 
             string[] headers =
             {
-                "S.No.",
-                "Meter Number",
-                "Cons Ref",
-                "Phase",
-                "Department",
-                "Division",
-                "Seq No",
-                "Address",
-                "Meter Type"
-            };
+        "S.No.",
+        "Meter Number",
+        "Cons Ref",
+        "Phase",
+        "Department",
+        "Division",
+        "Seq No",
+        "Address",
+        "Meter Type"
+    };
 
 
             SetHeaderRow(
@@ -1836,19 +1840,21 @@ namespace SmartMeterReadingDash.Services
 
             string[] headers =
             {
-                "S.No.",
-                "Meter Number",
-                "Cons Ref",
-                "Phase",
-                "Department",
-                "Division",
-                "Seq No",
-                "Address",
-                "Meter Type",
-                "Failure Reason",
-                "Scheduler Message",
-                "Entry Date"
-            };
+        "S.No.",
+        "Meter Number",
+        "Cons Ref",
+        "Phase",
+        "Department",
+        "Division",
+        "Seq No",
+        "Address",
+        "Meter Type",
+        "Failure Reason",
+        "Scheduler Message",
+        "Entry Date",
+        "Download Failed Since",
+        "Download Failed Days"
+    };
 
 
             SetHeaderRow(
@@ -1898,6 +1904,10 @@ namespace SmartMeterReadingDash.Services
                     item.SchedulerMessage;
 
 
+                // ========================================================
+                // ENTRY DATE
+                // ========================================================
+
                 if (item.EntryDate.HasValue)
                 {
                     ws.Cell(row, 12).Value =
@@ -1908,6 +1918,68 @@ namespace SmartMeterReadingDash.Services
                         .DateFormat
                         .Format =
                         "dd-MM-yyyy HH:mm:ss";
+                }
+
+
+                // ========================================================
+                // DOWNLOAD FAILED SINCE
+                // ========================================================
+
+                if (item.DownloadFailedSince.HasValue)
+                {
+                    ws.Cell(row, 13).Value =
+                        item.DownloadFailedSince.Value;
+
+                    ws.Cell(row, 13)
+                        .Style
+                        .DateFormat
+                        .Format =
+                        "dd-MM-yyyy";
+                }
+
+
+                // ========================================================
+                // DOWNLOAD FAILED DAYS
+                // ========================================================
+
+                ws.Cell(row, 14).Value =
+                    item.DownloadFailedDays;
+
+
+                // ========================================================
+                // RED IF FAILED DAYS >= 5
+                // ========================================================
+
+                if (item.DownloadFailedDays >= 5)
+                {
+                    ws.Cell(row, 14)
+                        .Style
+                        .Fill
+                        .SetBackgroundColor(
+                            XLColor.Red);
+
+                    ws.Cell(row, 14)
+                        .Style
+                        .Font
+                        .SetBold();
+
+                    ws.Cell(row, 14)
+                        .Style
+                        .Font
+                        .SetFontColor(
+                            XLColor.White);
+
+                    ws.Cell(row, 14)
+                        .Style
+                        .Alignment
+                        .Horizontal =
+                        XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(row, 14)
+                        .Style
+                        .Alignment
+                        .Vertical =
+                        XLAlignmentVerticalValues.Center;
                 }
 
 
@@ -1940,16 +2012,16 @@ namespace SmartMeterReadingDash.Services
 
             string[] headers =
             {
-                "S.No.",
-                "Meter Number",
-                "Cons Ref",
-                "Phase",
-                "Department",
-                "Division",
-                "Seq No",
-                "Address",
-                "Meter Type"
-            };
+        "S.No.",
+        "Meter Number",
+        "Cons Ref",
+        "Phase",
+        "Department",
+        "Division",
+        "Seq No",
+        "Address",
+        "Meter Type"
+    };
 
 
             SetHeaderRow(
@@ -2020,18 +2092,20 @@ namespace SmartMeterReadingDash.Services
 
             string[] headers =
             {
-                "S.No.",
-                "Meter Number",
-                "Cons Ref",
-                "Phase",
-                "Department",
-                "Division",
-                "Seq No",
-                "Address",
-                "Meter Type",
-                "Failure Reason",
-                "Entry Date"
-            };
+        "S.No.",
+        "Meter Number",
+        "Cons Ref",
+        "Phase",
+        "Department",
+        "Division",
+        "Seq No",
+        "Address",
+        "Meter Type",
+        "Failure Reason",
+        "Entry Date",
+        "Download Failed Since",
+        "Download Failed Days"
+    };
 
 
             SetHeaderRow(
@@ -2077,6 +2151,10 @@ namespace SmartMeterReadingDash.Services
                     item.SchedulerMessage;
 
 
+                // ========================================================
+                // ENTRY DATE
+                // ========================================================
+
                 if (item.EntryDate.HasValue)
                 {
                     ws.Cell(row, 11).Value =
@@ -2087,6 +2165,68 @@ namespace SmartMeterReadingDash.Services
                         .DateFormat
                         .Format =
                         "dd-MM-yyyy HH:mm:ss";
+                }
+
+
+                // ========================================================
+                // DOWNLOAD FAILED SINCE
+                // ========================================================
+
+                if (item.DownloadFailedSince.HasValue)
+                {
+                    ws.Cell(row, 12).Value =
+                        item.DownloadFailedSince.Value;
+
+                    ws.Cell(row, 12)
+                        .Style
+                        .DateFormat
+                        .Format =
+                        "dd-MM-yyyy";
+                }
+
+
+                // ========================================================
+                // DOWNLOAD FAILED DAYS
+                // ========================================================
+
+                ws.Cell(row, 13).Value =
+                    item.DownloadFailedDays;
+
+
+                // ========================================================
+                // RED IF FAILED DAYS >= 5
+                // ========================================================
+
+                if (item.DownloadFailedDays >= 5)
+                {
+                    ws.Cell(row, 13)
+                        .Style
+                        .Fill
+                        .SetBackgroundColor(
+                            XLColor.Red);
+
+                    ws.Cell(row, 13)
+                        .Style
+                        .Font
+                        .SetBold();
+
+                    ws.Cell(row, 13)
+                        .Style
+                        .Font
+                        .SetFontColor(
+                            XLColor.White);
+
+                    ws.Cell(row, 13)
+                        .Style
+                        .Alignment
+                        .Horizontal =
+                        XLAlignmentHorizontalValues.Center;
+
+                    ws.Cell(row, 13)
+                        .Style
+                        .Alignment
+                        .Vertical =
+                        XLAlignmentVerticalValues.Center;
                 }
 
 

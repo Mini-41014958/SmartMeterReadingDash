@@ -1,6 +1,9 @@
 ﻿@using System.Security.Claims
 
 @{
+
+    ViewBag.Title = "RCM - Smart Meter Reading Dashboard";
+
     var userCompany = User.FindFirst("Company")?.Value?.Trim().ToUpperInvariant() ?? "";
 
     var userRole =  User.FindFirst(ClaimTypes.Role)?.Value?.Trim().ToUpperInvariant()  ?? User.FindFirst("Role")?.Value?.Trim().ToUpperInvariant() ?? "";

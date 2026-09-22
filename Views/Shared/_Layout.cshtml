@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     <link rel="stylesheet" href="~/SmartMeterReadingDash.styles.css" asp-append-version="true" />
+    <link href="https://www.bsesdelhi.com/o/BSESHome-theme/images/bses.ico" rel="icon" />
 </head>
 
 <body>
@@ -60,11 +61,14 @@
                 Apply
 
             </button>
-          
-            <button type="button" id="btnExportCompleteDashboard" class="btn btn-success btn-lg" onclick="exportCompleteDashboard()">
+          @if(User.IsInRole("SUPERADMIN"))
+           {
+             <button type="button" id="btnExportCompleteDashboard" class="btn btn-success btn-lg" onclick="exportCompleteDashboard()">
             <i class="bi bi-file-earmark-excel"></i>
              Export Dashboard
             </button>
+            }
+
  
         </div>
 

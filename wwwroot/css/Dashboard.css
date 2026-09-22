@@ -547,8 +547,8 @@ canvas {
 #downloadSummaryTableBYPL,
 #hesDownloadSummaryTable,
 #hesDownloadSummaryTableBypl {
-    width: 100%;
-    min-width: 1050px;
+    width: max-content;
+    min-width: 1450px;
     margin: 0;
     table-layout: fixed;
     border-collapse: collapse;
@@ -602,10 +602,30 @@ canvas {
     }
 
 
-    /* =========================================================
+/* =========================================================
    14. DOWNLOAD / HES TABLE COLUMN WIDTHS
    ========================================================= */
 
+/*
+   IMPORTANT:
+   Download Summary tables contain 13 columns.
+
+   Total minimum width is intentionally larger than the laptop
+   viewport so the table can horizontally scroll instead of
+   squeezing/hiding the last columns.
+*/
+
+#downloadSummaryTable,
+#downloadSummaryTableBYPL,
+#hesDownloadSummaryTable,
+#hesDownloadSummaryTableBypl {
+    width: max-content;
+    min-width: 1450px;
+    table-layout: fixed;
+}
+
+
+    /* S.No. */
     #downloadSummaryTable th:nth-child(1),
     #downloadSummaryTable td:nth-child(1),
     #downloadSummaryTableBYPL th:nth-child(1),
@@ -615,9 +635,13 @@ canvas {
     #hesDownloadSummaryTableBypl th:nth-child(1),
     #hesDownloadSummaryTableBypl td:nth-child(1) {
         width: 55px;
+        min-width: 55px;
+        max-width: 55px;
         text-align: center;
     }
 
+
+    /* Cons Ref */
     #downloadSummaryTable th:nth-child(2),
     #downloadSummaryTable td:nth-child(2),
     #downloadSummaryTableBYPL th:nth-child(2),
@@ -626,9 +650,12 @@ canvas {
     #hesDownloadSummaryTable td:nth-child(2),
     #hesDownloadSummaryTableBypl th:nth-child(2),
     #hesDownloadSummaryTableBypl td:nth-child(2) {
-        width: 105px;
+        width: 110px;
+        min-width: 110px;
     }
 
+
+    /* Meter Number */
     #downloadSummaryTable th:nth-child(3),
     #downloadSummaryTable td:nth-child(3),
     #downloadSummaryTableBYPL th:nth-child(3),
@@ -637,9 +664,12 @@ canvas {
     #hesDownloadSummaryTable td:nth-child(3),
     #hesDownloadSummaryTableBypl th:nth-child(3),
     #hesDownloadSummaryTableBypl td:nth-child(3) {
-        width: 125px;
+        width: 130px;
+        min-width: 130px;
     }
 
+
+    /* Phase */
     #downloadSummaryTable th:nth-child(4),
     #downloadSummaryTable td:nth-child(4),
     #downloadSummaryTableBYPL th:nth-child(4),
@@ -649,9 +679,12 @@ canvas {
     #hesDownloadSummaryTableBypl th:nth-child(4),
     #hesDownloadSummaryTableBypl td:nth-child(4) {
         width: 65px;
+        min-width: 65px;
         text-align: center;
     }
 
+
+    /* Department */
     #downloadSummaryTable th:nth-child(5),
     #downloadSummaryTable td:nth-child(5),
     #downloadSummaryTableBYPL th:nth-child(5),
@@ -660,9 +693,12 @@ canvas {
     #hesDownloadSummaryTable td:nth-child(5),
     #hesDownloadSummaryTableBypl th:nth-child(5),
     #hesDownloadSummaryTableBypl td:nth-child(5) {
-        width: 100px;
+        width: 110px;
+        min-width: 110px;
     }
 
+
+    /* Division */
     #downloadSummaryTable th:nth-child(6),
     #downloadSummaryTable td:nth-child(6),
     #downloadSummaryTableBYPL th:nth-child(6),
@@ -671,9 +707,12 @@ canvas {
     #hesDownloadSummaryTable td:nth-child(6),
     #hesDownloadSummaryTableBypl th:nth-child(6),
     #hesDownloadSummaryTableBypl td:nth-child(6) {
-        width: 100px;
+        width: 110px;
+        min-width: 110px;
     }
 
+
+    /* Seq No */
     #downloadSummaryTable th:nth-child(7),
     #downloadSummaryTable td:nth-child(7),
     #downloadSummaryTableBYPL th:nth-child(7),
@@ -683,8 +722,12 @@ canvas {
     #hesDownloadSummaryTableBypl th:nth-child(7),
     #hesDownloadSummaryTableBypl td:nth-child(7) {
         width: 80px;
+        min-width: 80px;
+        text-align: center;
     }
 
+
+    /* Address */
     #downloadSummaryTable th:nth-child(8),
     #downloadSummaryTable td:nth-child(8),
     #downloadSummaryTableBYPL th:nth-child(8),
@@ -693,9 +736,12 @@ canvas {
     #hesDownloadSummaryTable td:nth-child(8),
     #hesDownloadSummaryTableBypl th:nth-child(8),
     #hesDownloadSummaryTableBypl td:nth-child(8) {
-        width: 200px;
+        width: 220px;
+        min-width: 220px;
     }
 
+
+    /* Meter Make */
     #downloadSummaryTable th:nth-child(9),
     #downloadSummaryTable td:nth-child(9),
     #downloadSummaryTableBYPL th:nth-child(9),
@@ -704,25 +750,68 @@ canvas {
     #hesDownloadSummaryTable td:nth-child(9),
     #hesDownloadSummaryTableBypl th:nth-child(9),
     #hesDownloadSummaryTableBypl td:nth-child(9) {
-        width: 100px;
+        width: 110px;
+        min-width: 110px;
     }
 
+
+    /* Status */
     #downloadSummaryTable th:nth-child(10),
     #downloadSummaryTable td:nth-child(10),
     #downloadSummaryTableBYPL th:nth-child(10),
     #downloadSummaryTableBYPL td:nth-child(10) {
         width: 220px;
+        min-width: 220px;
     }
 
+
+    /* Entry Date */
     #downloadSummaryTable th:nth-child(11),
     #downloadSummaryTable td:nth-child(11),
     #downloadSummaryTableBYPL th:nth-child(11),
     #downloadSummaryTableBYPL td:nth-child(11) {
         width: 145px;
+        min-width: 145px;
     }
 
 
-    /* Address cells */
+    /* =========================================================
+   IMPORTANT FIX
+   FAILED SINCE
+   ========================================================= */
+
+    #downloadSummaryTable th:nth-child(12),
+    #downloadSummaryTable td:nth-child(12),
+    #downloadSummaryTableBYPL th:nth-child(12),
+    #downloadSummaryTableBYPL td:nth-child(12) {
+        width: 150px;
+        min-width: 150px;
+        max-width: 150px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+
+    /* =========================================================
+   IMPORTANT FIX
+   TOTAL FAILED DAYS
+   ========================================================= */
+
+    #downloadSummaryTable th:nth-child(13),
+    #downloadSummaryTable td:nth-child(13),
+    #downloadSummaryTableBYPL th:nth-child(13),
+    #downloadSummaryTableBYPL td:nth-child(13) {
+        width: 155px;
+        min-width: 155px;
+        max-width: 155px;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+
+    /* HES tables only have their own column definitions.
+   Keep address readable. */
+
     #hesDownloadSummaryTable td:nth-child(8),
     #hesDownloadSummaryTableBypl td:nth-child(8),
     #hesDownloadSummaryTable .address-cell,
@@ -734,6 +823,7 @@ canvas {
 
 
     /* Empty / loading rows */
+
     #hesDownloadSummaryTable tbody td[colspan],
     #hesDownloadSummaryTableBypl tbody td[colspan] {
         padding: 20px 10px;
