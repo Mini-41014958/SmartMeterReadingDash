@@ -811,8 +811,8 @@ namespace SmartMeterReadingDash.Services
                 con.Open();
                 string query = @"WITH MONTHS (READING_MONTH) AS
                 (
-                    SELECT TRIM( REGEXP_SUBSTR( :READING_MONTH, '[^,]+', 1, LEVEL )) FROM DUAL
-                    CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+', 1,  LEVEL) IS NOT NULL
+                    SELECT TRIM(REGEXP_SUBSTR(:READING_MONTH, '[^,]+', 1, LEVEL)) FROM DUAL
+                    CONNECT BY REGEXP_SUBSTR(:READING_MONTH, '[^,]+', 1, LEVEL) IS NOT NULL
                 ),
                 BILLING_DATA AS
                 (
@@ -823,34 +823,18 @@ namespace SmartMeterReadingDash.Services
                 LATEST_FAILURE AS
                 (
                     SELECT METERNO, CONS_REF, MESSAGE, ENTRY_DATE, READING_MONTH, SAP_DEPARTMENT, CYCLE,
-                        ROW_NUMBER() OVER
-                        (
-                            PARTITION BY METERNO, READING_MONTH
-                            ORDER BY ENTRY_DATE DESC
-                        ) AS RN
-                    FROM RCMPA.SMART_METER_SCHEDULER_LOGS WHERE MESSAGE NOT LIKE 'Data%'
-                      AND READING_MONTH IN
-                      (
-                          SELECT M.READING_MONTH FROM MONTHS M
-                      )
+                    MIN(TRUNC(ENTRY_DATE)) OVER (PARTITION BY METERNO, READING_MONTH ) AS DOWNLOAD_FAILED_SINCE,
+                    TRUNC(SYSDATE) - MIN(TRUNC(ENTRY_DATE)) OVER (PARTITION BY METERNO, READING_MONTH ) AS DOWNLOAD_FAILED_DAYS,
+                    ROW_NUMBER()OVER( PARTITION BY METERNO, READING_MONTH  ORDER BY ENTRY_DATE DESC) AS RN
+                    FROM RCMPA.SMART_METER_SCHEDULER_LOGS
+                    WHERE MESSAGE NOT LIKE 'Data%'
+                    AND READING_MONTH IN ( SELECT M.READING_MONTH FROM MONTHS M)
                       AND
-                      (
-                             (
-                                 SUBSTR(METERNO, 1, 2) = '91'
-                                 AND LENGTH(METERNO) = 8
-                             )
-                          OR (
-                                 SUBSTR(METERNO, 1, 2) = '90'
-                                 AND LENGTH(METERNO) = 8
-                             )
-                          OR (
-                                 SUBSTR(METERNO, 1, 2) = 'AL'
-                                 AND LENGTH(METERNO) = 10
-                             )
-                          OR (
-                                 SUBSTR(METERNO, 1, 2) = 'KI'
-                                 AND LENGTH(METERNO) = 10
-                             )
+                      ( 
+                      ( SUBSTR(METERNO, 1, 2) = '91' AND LENGTH(METERNO) = 8 )
+                      OR ( SUBSTR(METERNO, 1, 2) = '90' AND LENGTH(METERNO) = 8)
+                      OR ( SUBSTR(METERNO, 1, 2) = 'AL' AND LENGTH(METERNO) = 10)
+                      OR (SUBSTR(METERNO, 1, 2) = 'KI' AND LENGTH(METERNO) = 10)
                       )
                       AND
                       (
@@ -858,7 +842,7 @@ namespace SmartMeterReadingDash.Services
                           OR
                           UPPER(
                               CASE
-                                  WHEN SAP_DEPARTMENT = 'MLCC'AND CYCLE = '0N'
+                                  WHEN SAP_DEPARTMENT = 'MLCC'  AND CYCLE = '0N'
                                   THEN 'KCC'
                                   WHEN CYCLE IN ('KA', 'KC', 'KG')
                                   THEN 'KCC'
@@ -871,7 +855,7 @@ namespace SmartMeterReadingDash.Services
                 ),
                 FAILURE_DATA AS
                 (
-                    SELECT DISTINCT L.METERNO, L.CONS_REF, L.MESSAGE,  L.ENTRY_DATE, L.READING_MONTH, L.SAP_DEPARTMENT,L.CYCLE,
+                    SELECT DISTINCT L.METERNO, L.CONS_REF, L.MESSAGE, L.ENTRY_DATE, L.READING_MONTH, L.SAP_DEPARTMENT, L.CYCLE, L.DOWNLOAD_FAILED_SINCE, L.DOWNLOAD_FAILED_DAYS,
                         CASE
                             WHEN UPPER(L.MESSAGE) LIKE '%SYSTEM TITLE%'
                                 THEN 'System Title Mismatch'
@@ -880,9 +864,7 @@ namespace SmartMeterReadingDash.Services
                             WHEN UPPER(L.MESSAGE) LIKE '%NO DATA%'
                                 THEN 'No Data Found'
                             ELSE 'Others Failure Reason'
-                        END AS FAILURE_REASON
-                    FROM LATEST_FAILURE L
-                    WHERE L.RN = 1
+                        END AS FAILURE_REASON FROM LATEST_FAILURE L WHERE L.RN = 1
                       AND NOT EXISTS
                       (
                           SELECT 1 FROM BILLING_DATA B WHERE TRIM(B.METERNO) = TRIM(L.METERNO) AND B.READING_MONTH = L.READING_MONTH
@@ -894,9 +876,9 @@ namespace SmartMeterReadingDash.Services
                         THEN 'KCC'
                         WHEN F.CYCLE IN ('KA', 'KC', 'KG')
                         THEN 'KCC'
-                        ELSE NVL(TRIM(F.SAP_DEPARTMENT),'SLCC')
+                        ELSE NVL(TRIM(F.SAP_DEPARTMENT), 'SLCC')
                     END AS SAP_DEPARTMENT,
-                    NVL(S.SAP_DIVISION, FM.SAP_DIVISION ) AS SAP_DIVISION,
+                    NVL(S.SAP_DIVISION, FM.SAP_DIVISION) AS SAP_DIVISION,
                     NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO) AS SAP_SEQ_NO,
                     RTRIM(
                         NVL(S.ADD1, FM.ADD1) || ', ' ||
@@ -907,39 +889,41 @@ namespace SmartMeterReadingDash.Services
                         ', '
                     ) AS ADDRESS,
                     CASE
-                        WHEN SUBSTR(F.METERNO, 1, 2) IN ('90', 'AL') THEN 'ALLIED'
-                        WHEN SUBSTR(F.METERNO, 1, 2) IN ('91', 'KI') THEN 'KIMBAL'
+                        WHEN SUBSTR(F.METERNO, 1, 2) IN ('90', 'AL')
+                        THEN 'ALLIED'
+                        WHEN SUBSTR(F.METERNO, 1, 2) IN ('91', 'KI')
+                        THEN 'KIMBAL'
                     END AS METER_TYPE,
                     CASE
-                        WHEN SUBSTR(F.METERNO, 1, 4) = 'AL91' THEN '1PH'
-                        WHEN SUBSTR(F.METERNO, 1, 4) = 'AL90' THEN '3PH'
-                        WHEN SUBSTR(F.METERNO, 1, 4) = 'KI91' THEN '1PH'
-                        WHEN SUBSTR(F.METERNO, 1, 4) = '9150' THEN '1PH'
-                        WHEN SUBSTR(F.METERNO, 1, 4) = '9008' THEN '1PH'
-                        WHEN SUBSTR(F.METERNO, 1, 4) = '9027'THEN '1PH'
-                        WHEN SUBSTR(F.METERNO, 1, 4) = 'KI90' THEN '3PH'
-                        WHEN SUBSTR(F.METERNO, 1, 4) = '9026'THEN '3PH'
+                        WHEN SUBSTR(F.METERNO, 1, 4) = 'AL91'
+                            THEN '1PH'
+                        WHEN SUBSTR(F.METERNO, 1, 4) = 'AL90'
+                            THEN '3PH'
+                        WHEN SUBSTR(F.METERNO, 1, 4) = 'KI91'
+                            THEN '1PH'
+                        WHEN SUBSTR(F.METERNO, 1, 4) = '9150'
+                            THEN '1PH'
+                        WHEN SUBSTR(F.METERNO, 1, 4) = '9008'
+                            THEN '1PH'
+                        WHEN SUBSTR(F.METERNO, 1, 4) = '9027'
+                            THEN '1PH'
+                        WHEN SUBSTR(F.METERNO, 1, 4) = 'KI90'
+                            THEN '3PH'
+                        WHEN SUBSTR(F.METERNO, 1, 4) = '9026'
+                            THEN '3PH'
                         ELSE 'UNKNOWN'
-                    END AS PHASE_TYPE, F.FAILURE_REASON, F.MESSAGE AS SCHEDULER_MESSAGE, F.ENTRY_DATE, F.READING_MONTH
-                FROM FAILURE_DATA F
-
-                LEFT JOIN RCMPA.SAP_SLCC_FORMY S
-                    ON S.CONS_REF = F.CONS_REF
-                   AND S.READING_MONTH = F.READING_MONTH
-                LEFT JOIN RCMPA.SAP_FORMY FM
-                    ON FM.CONS_REF = F.CONS_REF
-                   AND FM.READING_MONTH = F.READING_MONTH
-                ORDER BY
+                    END AS PHASE_TYPE, F.FAILURE_REASON,  F.MESSAGE AS SCHEDULER_MESSAGE, F.ENTRY_DATE, F.READING_MONTH, F.DOWNLOAD_FAILED_SINCE, F.DOWNLOAD_FAILED_DAYS FROM FAILURE_DATA F
+                    LEFT JOIN RCMPA.SAP_SLCC_FORMY S ON S.CONS_REF = F.CONS_REF AND S.READING_MONTH = F.READING_MONTH
+                    LEFT JOIN RCMPA.SAP_FORMY FM ON FM.CONS_REF = F.CONS_REF  AND FM.READING_MONTH = F.READING_MONTH
+                    ORDER BY
                     CASE
-                        WHEN F.SAP_DEPARTMENT = 'MLCC'  AND F.CYCLE = '0N'
+                        WHEN F.SAP_DEPARTMENT = 'MLCC' AND F.CYCLE = '0N'
                         THEN 'KCC'
                         WHEN F.CYCLE IN ('KA', 'KC', 'KG')
                         THEN 'KCC'
-                        ELSE NVL( TRIM(F.SAP_DEPARTMENT),'SLCC')
+                        ELSE NVL(TRIM(F.SAP_DEPARTMENT), 'SLCC')
                     END,
-                    NVL(S.SAP_DIVISION, FM.SAP_DIVISION ),
-                    NVL( S.SAP_SEQ_NO, FM.SAP_SEQ_NO ),
-                    F.METERNO";
+                    NVL(S.SAP_DIVISION, FM.SAP_DIVISION), NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO), F.METERNO";
 
                 using (OracleCommand cmd = new OracleCommand(query, con))
                 {
@@ -974,8 +958,11 @@ namespace SmartMeterReadingDash.Services
 
                                 SchedulerMessage = dr["SCHEDULER_MESSAGE"] == DBNull.Value ? null : dr["SCHEDULER_MESSAGE"].ToString(),
 
-                                EntryDate = dr["ENTRY_DATE"] == DBNull.Value ? null : Convert.ToDateTime(dr["ENTRY_DATE"])
+                                EntryDate = dr["ENTRY_DATE"] == DBNull.Value ? null : Convert.ToDateTime(dr["ENTRY_DATE"]),
 
+                                DownloadFailedSince = dr["DOWNLOAD_FAILED_SINCE"] == DBNull.Value ? null : Convert.ToDateTime(dr["DOWNLOAD_FAILED_SINCE"]),
+
+                                DownloadFailedDays = dr["DOWNLOAD_FAILED_DAYS"] == DBNull.Value ? null : Convert.ToInt32(dr["DOWNLOAD_FAILED_DAYS"])
                             });
                         }
                     }
@@ -993,24 +980,20 @@ namespace SmartMeterReadingDash.Services
                 con.Open();
                 string query = @"WITH MONTHS AS
                 (
-                    SELECT /*+ MATERIALIZE */ TRIM( REGEXP_SUBSTR(:READING_MONTH,'[^,]+', 1, LEVEL)) AS READING_MONTH
-                    FROM DUAL CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1,LEVEL) IS NOT NULL
+                    SELECT /*+ MATERIALIZE */ TRIM(REGEXP_SUBSTR(:READING_MONTH, '[^,]+', 1, LEVEL)) AS READING_MONTH
+                    FROM DUAL CONNECT BY REGEXP_SUBSTR(:READING_MONTH, '[^,]+', 1, LEVEL) IS NOT NULL
                 ),
                 SLCC_FAILED AS
                 (
-                    SELECT METERNO, READING_MONTH, INSERTED_DATE, REMARKS, NVL(DEPARTMENT, 'SLCC') AS DEPARTMENT
+                    SELECT METERNO, READING_MONTH, INSERTED_DATE, REMARKS, NVL(DEPARTMENT, 'SLCC') AS DEPARTMENT, DOWNLOAD_FAILED_SINCE,
+                    TRUNC(SYSDATE) - TRUNC(DOWNLOAD_FAILED_SINCE) AS DOWNLOAD_FAILED_DAYS
                     FROM
                     (
-                        SELECT
-                            /*+ LEADING(M S) USE_NL(S) INDEX(S IDX_SLCC_SM_LOG_FAIL) */ TRIM(S.METERNO) AS METERNO,
-                            S.BILL_MONTH AS READING_MONTH, S.INSERTED_DATE,S.REMARKS,S.DEPARTMENT,
-                            ROW_NUMBER() OVER
-                            (
-                                PARTITION BY TRIM(S.METERNO), S.BILL_MONTH  ORDER BY S.INSERTED_DATE DESC NULLS LAST
-                            ) AS RN
-                        FROM MONTHS M
-                        JOIN RCMPA.SAP_SLCC_SMARTMETER_LOG S ON S.BILL_MONTH = M.READING_MONTH
-                        WHERE S.IS_FAILED = '1' AND S.METERNO IS NOT NULL
+                        SELECT /*+ LEADING(M S) USE_NL(S) INDEX(S IDX_SLCC_SM_LOG_FAIL) */ TRIM(S.METERNO) AS METERNO, S.BILL_MONTH AS READING_MONTH,
+                            S.INSERTED_DATE, S.REMARKS, S.DEPARTMENT,
+                            MIN(TRUNC(S.INSERTED_DATE)) OVER ( PARTITION BY TRIM(S.METERNO), S.BILL_MONTH) AS DOWNLOAD_FAILED_SINCE,
+                            ROW_NUMBER() OVER ( PARTITION BY TRIM(S.METERNO), S.BILL_MONTH ORDER BY S.INSERTED_DATE DESC NULLS LAST ) AS RN
+                        FROM MONTHS M JOIN RCMPA.SAP_SLCC_SMARTMETER_LOG S ON S.BILL_MONTH = M.READING_MONTH WHERE S.IS_FAILED = '1' AND S.METERNO IS NOT NULL
                           AND
                           (
                               :IS_SUPERADMIN = 1
@@ -1032,16 +1015,15 @@ namespace SmartMeterReadingDash.Services
                 ),
                 KCC_FAILED AS
                 (
-                    SELECT METERNO, READING_MONTH, INSERTED_DATE,REMARKS, DEPARTMENT
+                    SELECT METERNO, READING_MONTH, INSERTED_DATE, REMARKS, DEPARTMENT, DOWNLOAD_FAILED_SINCE,
+                     TRUNC(SYSDATE) - TRUNC(DOWNLOAD_FAILED_SINCE) AS DOWNLOAD_FAILED_DAYS
                     FROM
                     (
-                        SELECT
-                            /*+ LEADING(M K) USE_NL(K) INDEX(K IDX_KCC_SM_LOG_FAIL) */ TRIM(K.METERNO) AS METERNO, K.BILL_MONTH AS READING_MONTH,
-                            K.INSERTED_DATE, K.REMARKS, K.DEPARTMENT,
-                            ROW_NUMBER() OVER
-                            (
-                                PARTITION BY TRIM(K.METERNO),K.BILL_MONTH ORDER BY K.INSERTED_DATE DESC NULLS LAST
-                            ) AS RN
+                        SELECT /*+ LEADING(M K) USE_NL(K) INDEX(K IDX_KCC_SM_LOG_FAIL) */ TRIM(K.METERNO) AS METERNO,
+                        K.BILL_MONTH AS READING_MONTH, K.INSERTED_DATE, K.REMARKS, K.DEPARTMENT,
+        
+                        MIN(TRUNC(K.INSERTED_DATE)) OVER ( PARTITION BY TRIM(K.METERNO), K.BILL_MONTH ) AS DOWNLOAD_FAILED_SINCE,
+                        ROW_NUMBER() OVER (PARTITION BY TRIM(K.METERNO), K.BILL_MONTH  ORDER BY K.INSERTED_DATE DESC NULLS LAST) AS RN
                         FROM MONTHS M JOIN RCMPA.SAP_KCC_GCC_SMARTMETER_LOG K ON K.BILL_MONTH = M.READING_MONTH
                         WHERE K.IS_FAILED = '1' AND K.METERNO IS NOT NULL
                           AND
@@ -1050,7 +1032,7 @@ namespace SmartMeterReadingDash.Services
                               OR
                               UPPER(
                                   CASE
-                                      WHEN K.DEPARTMENT = 'MLCC' AND K.CYCLE = '0N'
+                                      WHEN K.DEPARTMENT = 'MLCC'  AND K.CYCLE = '0N'
                                       THEN 'KCC'
                                       WHEN K.CYCLE IN ('KA', 'KC', 'KG')
                                       THEN 'KCC'
@@ -1065,7 +1047,7 @@ namespace SmartMeterReadingDash.Services
                 ),
                 SLCC_METERS AS
                 (
-                    SELECT /*+ MATERIALIZE */ DISTINCT METERNO FROM SLCC_FAILED
+                    SELECT /*+ MATERIALIZE */  DISTINCT METERNO FROM SLCC_FAILED
                 ),
                 KCC_METERS AS
                 (
@@ -1073,41 +1055,31 @@ namespace SmartMeterReadingDash.Services
                 ),
                 SLCC_FORMY_FALLBACK AS
                 (
-                    SELECT METERNO, CONS_REF, SAP_DIVISION, SAP_SEQ_NO, ADD1,ADD2,ADD3,LAND_MARK,FATHER_NAME
+                    SELECT METERNO, CONS_REF, SAP_DIVISION, SAP_SEQ_NO, ADD1, ADD2, ADD3, LAND_MARK, FATHER_NAME
                     FROM
                     (
-                        SELECT
-                            /*+ LEADING(M F) USE_NL(F) INDEX(F IDX_SLCC_FORMY_MTR_MONTH) */
-                            F.METERNO, F.CONS_REF, F.SAP_DIVISION,F.SAP_SEQ_NO, F.ADD1, F.ADD2, F.ADD3,
-                            F.LAND_MARK,F.FATHER_NAME,
-                            ROW_NUMBER() OVER
-                            (
-                                PARTITION BY F.METERNO ORDER BY F.READING_MONTH DESC
-                            ) AS RN
-                        FROM SLCC_METERS M JOIN RCMPA.SAP_SLCC_FORMY F ON F.METERNO = M.METERNO
+                        SELECT /*+ LEADING(M F) USE_NL(F) INDEX(F IDX_SLCC_FORMY_MTR_MONTH) */  F.METERNO,
+                            F.CONS_REF, F.SAP_DIVISION,F.SAP_SEQ_NO, F.ADD1, F.ADD2, F.ADD3, F.LAND_MARK, F.FATHER_NAME,
+                            ROW_NUMBER() OVER (PARTITION BY F.METERNO ORDER BY F.READING_MONTH DESC ) AS RN FROM SLCC_METERS M JOIN RCMPA.SAP_SLCC_FORMY F
+                            ON F.METERNO = M.METERNO
                     )
                     WHERE RN = 1
                 ),
                 SAP_FORMY_FALLBACK AS
                 (
-                    SELECT METERNO, CONS_REF, SAP_DIVISION,SAP_SEQ_NO, ADD1, ADD2, ADD3,LAND_MARK,FATHER_NAME
+                    SELECT  METERNO, CONS_REF, SAP_DIVISION, SAP_SEQ_NO, ADD1, ADD2, ADD3, LAND_MARK,FATHER_NAME
                     FROM
                     (
-                        SELECT
-                            /*+ LEADING(M F) USE_NL(F) INDEX(F IDX_SAP_FORMY_MTR_MONTH) */
-                            F.METERNO, F.CONS_REF, F.SAP_DIVISION, F.SAP_SEQ_NO, F.ADD1,
-                            F.ADD2, F.ADD3, F.LAND_MARK, F.FATHER_NAME,
-                            ROW_NUMBER() OVER
-                            (
-                                PARTITION BY F.METERNO ORDER BY F.READING_MONTH DESC
-                            ) AS RN
-                        FROM KCC_METERS M JOIN RCMPA.SAP_FORMY F ON F.METERNO = M.METERNO
+                        SELECT /*+ LEADING(M F) USE_NL(F) INDEX(F IDX_SAP_FORMY_MTR_MONTH) */  F.METERNO,
+                            F.CONS_REF, F.SAP_DIVISION, F.SAP_SEQ_NO, F.ADD1, F.ADD2, F.ADD3, F.LAND_MARK,F.FATHER_NAME,
+                            ROW_NUMBER() OVER (PARTITION BY F.METERNO ORDER BY F.READING_MONTH DESC ) AS RN FROM KCC_METERS M JOIN RCMPA.SAP_FORMY F
+                            ON F.METERNO = M.METERNO
                     )
                     WHERE RN = 1
                 ),
                 SLCC_DATA AS
                 (
-                    SELECT D.METERNO,D.READING_MONTH,D.DEPARTMENT,D.REMARKS, D.INSERTED_DATE,
+                    SELECT D.METERNO, D.READING_MONTH, D.DEPARTMENT,  D.REMARKS, D.INSERTED_DATE, D.DOWNLOAD_FAILED_SINCE, D.DOWNLOAD_FAILED_DAYS,
                         COALESCE(
                             NULLIF(TRIM(FM.CONS_REF), ''),
                             NULLIF(TRIM(FL.CONS_REF), '')
@@ -1139,83 +1111,58 @@ namespace SmartMeterReadingDash.Services
                         COALESCE(
                             NULLIF(TRIM(FM.FATHER_NAME), ''),
                             NULLIF(TRIM(FL.FATHER_NAME), '')
-                        ) AS FATHER_NAME
-                    FROM SLCC_FAILED D
-                    LEFT JOIN RCMPA.SAP_SLCC_FORMY FM ON FM.METERNO = D.METERNO
-                     AND FM.READING_MONTH = D.READING_MONTH
-
-                    LEFT JOIN SLCC_FORMY_FALLBACK FL
-                      ON FL.METERNO = D.METERNO
+                        ) AS FATHER_NAME FROM SLCC_FAILED D LEFT JOIN RCMPA.SAP_SLCC_FORMY FM  ON FM.METERNO = D.METERNO AND FM.READING_MONTH = D.READING_MONTH 
+                        LEFT JOIN SLCC_FORMY_FALLBACK FL  ON FL.METERNO = D.METERNO
                 ),
-
                 KCC_DATA AS
                 (
-                    SELECT
-                        D.METERNO,
-                        D.READING_MONTH,
-                        D.DEPARTMENT,
-                        D.REMARKS,
-                        D.INSERTED_DATE,
-
+                    SELECT D.METERNO, D.READING_MONTH, D.DEPARTMENT, D.REMARKS,  D.INSERTED_DATE, D.DOWNLOAD_FAILED_SINCE, D.DOWNLOAD_FAILED_DAYS,
                         COALESCE(
                             NULLIF(TRIM(FM.CONS_REF), ''),
                             NULLIF(TRIM(FL.CONS_REF), '')
                         ) AS CONS_REF,
-
                         COALESCE(
                             NULLIF(TRIM(FM.SAP_DIVISION), ''),
                             NULLIF(TRIM(FL.SAP_DIVISION), '')
                         ) AS SAP_DIVISION,
-
                         COALESCE(
                             NULLIF(TRIM(FM.SAP_SEQ_NO), ''),
                             NULLIF(TRIM(FL.SAP_SEQ_NO), '')
                         ) AS SAP_SEQ_NO,
-
                         COALESCE(
                             NULLIF(TRIM(FM.ADD1), ''),
                             NULLIF(TRIM(FL.ADD1), '')
                         ) AS ADD1,
-
                         COALESCE(
                             NULLIF(TRIM(FM.ADD2), ''),
                             NULLIF(TRIM(FL.ADD2), '')
                         ) AS ADD2,
-
                         COALESCE(
                             NULLIF(TRIM(FM.ADD3), ''),
                             NULLIF(TRIM(FL.ADD3), '')
                         ) AS ADD3,
-
                         COALESCE(
                             NULLIF(TRIM(FM.LAND_MARK), ''),
                             NULLIF(TRIM(FL.LAND_MARK), '')
                         ) AS LAND_MARK,
-
                         COALESCE(
                             NULLIF(TRIM(FM.FATHER_NAME), ''),
                             NULLIF(TRIM(FL.FATHER_NAME), '')
-                        ) AS FATHER_NAME
-                    FROM KCC_FAILED D
-                    LEFT JOIN RCMPA.SAP_FORMY FM ON FM.METERNO = D.METERNO AND FM.READING_MONTH = D.READING_MONTH
-                    LEFT JOIN SAP_FORMY_FALLBACK FL ON FL.METERNO = D.METERNO
+                        ) AS FATHER_NAME FROM KCC_FAILED D LEFT JOIN RCMPA.SAP_FORMY FM ON FM.METERNO = D.METERNO AND FM.READING_MONTH = D.READING_MONTH LEFT JOIN SAP_FORMY_FALLBACK FL
+                         ON FL.METERNO = D.METERNO
                 ),
                 BASE_DATA AS
                 (
-                    SELECT METERNO, READING_MONTH, DEPARTMENT, REMARKS,INSERTED_DATE, CONS_REF, SAP_DIVISION,SAP_SEQ_NO, ADD1,ADD2,ADD3,
-                    LAND_MARK, FATHER_NAME, 1 AS SOURCE_PRIORITY
-                    FROM SLCC_DATA
+                    SELECT METERNO, READING_MONTH, DEPARTMENT, REMARKS, INSERTED_DATE, DOWNLOAD_FAILED_SINCE, DOWNLOAD_FAILED_DAYS, CONS_REF,SAP_DIVISION, SAP_SEQ_NO,
+                    ADD1, ADD2,  ADD3, LAND_MARK,FATHER_NAME, 1 AS SOURCE_PRIORITY FROM SLCC_DATA
                     UNION ALL
-                    SELECT METERNO, READING_MONTH, DEPARTMENT, REMARKS, INSERTED_DATE, CONS_REF, SAP_DIVISION, SAP_SEQ_NO, ADD1, ADD2,ADD3,
-                     LAND_MARK, FATHER_NAME,2 AS SOURCE_PRIORITY
-                    FROM KCC_DATA
+                    SELECT  METERNO,READING_MONTH,DEPARTMENT, REMARKS, INSERTED_DATE, DOWNLOAD_FAILED_SINCE, DOWNLOAD_FAILED_DAYS,CONS_REF, SAP_DIVISION, SAP_SEQ_NO,
+                    ADD1,ADD2, ADD3, LAND_MARK, FATHER_NAME, 2 AS SOURCE_PRIORITY FROM KCC_DATA
                 ),
                 DISTINCT_DATA AS
                 (
-                    SELECT METERNO, READING_MONTH, DEPARTMENT,REMARKS,INSERTED_DATE, CONS_REF, SAP_DIVISION, SAP_SEQ_NO, ADD1,ADD2, ADD3,
-                        LAND_MARK,
-                        FATHER_NAME
-                    FROM
+                    SELECT METERNO, READING_MONTH, DEPARTMENT, REMARKS,INSERTED_DATE, DOWNLOAD_FAILED_SINCE,DOWNLOAD_FAILED_DAYS, CONS_REF, SAP_DIVISION, SAP_SEQ_NO,
+                    ADD1,ADD2, ADD3, LAND_MARK,FATHER_NAME FROM
                     (
                         SELECT
                             B.*,
@@ -1224,11 +1171,9 @@ namespace SmartMeterReadingDash.Services
                                 PARTITION BY B.METERNO ORDER BY B.INSERTED_DATE DESC NULLS LAST,B.SOURCE_PRIORITY DESC
                             ) AS RN
                         FROM BASE_DATA B WHERE B.METERNO IS NOT NULL
-                    )
-                    WHERE RN = 1
+                    ) WHERE RN = 1
                 )
-                SELECT
-                    D.METERNO,D.CONS_REF,
+                SELECT D.METERNO, D.CONS_REF,
                     CASE
                         WHEN D.METERNO LIKE '92%'
                           OR D.METERNO LIKE '99%'
@@ -1252,8 +1197,7 @@ namespace SmartMeterReadingDash.Services
                         THEN 'SLCC'
                         ELSE D.DEPARTMENT
                     END AS SAP_DEPARTMENT,
-                    D.SAP_DIVISION,
-                    D.SAP_SEQ_NO,
+                    D.SAP_DIVISION,  D.SAP_SEQ_NO,
                     RTRIM(
                         D.ADD1 || ', ' ||
                         D.ADD2 || ', ' ||
@@ -1272,11 +1216,8 @@ namespace SmartMeterReadingDash.Services
                           OR D.METERNO LIKE '98%'
                         THEN 'KIMBAL'
                         ELSE 'UNKNOWN'
-                    END AS METER_TYPE,
-                    D.REMARKS AS FAILURE_REASON,
-                    D.INSERTED_DATE
-                FROM DISTINCT_DATA D
-                ORDER BY D.INSERTED_DATE DESC NULLS LAST,  D.METERNO";
+                    END AS METER_TYPE, D.REMARKS AS FAILURE_REASON, D.INSERTED_DATE, D.DOWNLOAD_FAILED_SINCE, D.DOWNLOAD_FAILED_DAYS FROM DISTINCT_DATA D
+                    ORDER BY D.INSERTED_DATE DESC NULLS LAST, D.METERNO";
                 using (OracleCommand cmd = new OracleCommand(query, con))
                 {
                     cmd.BindByName = true;
@@ -1309,7 +1250,11 @@ namespace SmartMeterReadingDash.Services
 
                                 SchedulerMessage = dr["FAILURE_REASON"] == DBNull.Value ? null : dr["FAILURE_REASON"].ToString(),
 
-                                EntryDate = dr["INSERTED_DATE"] == DBNull.Value ? null : Convert.ToDateTime(dr["INSERTED_DATE"])
+                                EntryDate = dr["INSERTED_DATE"] == DBNull.Value ? null : Convert.ToDateTime(dr["INSERTED_DATE"]),
+
+                                DownloadFailedDays = dr["DOWNLOAD_FAILED_DAYS"] == DBNull.Value ? null : Convert.ToInt32(dr["DOWNLOAD_FAILED_DAYS"]),
+
+                                DownloadFailedSince = dr["DOWNLOAD_FAILED_SINCE"] == DBNull.Value ? null : Convert.ToDateTime(dr["DOWNLOAD_FAILED_SINCE"])
                             });
                         }
                     }

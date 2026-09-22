@@ -374,52 +374,425 @@ function renderHesDownloadTableBypl(data)
 
 // EXCEL EXPORT - BYPL HES
 
-function exportHesDownloadByplTableToExcel()
-{
+// ============================================================
+// EXCEL EXPORT - BYPL HES DOWNLOAD
+// ============================================================
 
-    const table = document.getElementById( "hesDownloadSummaryTableBypl");
+function exportHesDownloadByplTableToExcel() {
+    const table =
+        document.getElementById(
+            "hesDownloadSummaryTableBypl"
+        );
 
 
-    if (!table)
-    {
-        console.error("BYPL HES table not found");
+    if (!table) {
+        console.error(
+            "BYPL HES table not found"
+        );
+
+        alert(
+            "BYPL HES Download table not found."
+        );
+
         return;
     }
 
-    const wb = XLSX.utils.book_new();
 
-    const ws =  XLSX.utils.table_to_sheet( table);
+    // ============================================================
+    // CHECK DATA
+    // ============================================================
 
-    // Column widths
-    ws["!cols"] = [
-
-        { wch: 7 },     // S.No
-        { wch: 15 },    // Cons Ref
-        { wch: 18 },    // Meter Number
-        { wch: 10 },    // Phase
-        { wch: 15 },    // Department
-        { wch: 15 },    // Division
-        { wch: 10 },    // Seq No
-        { wch: 45 },    // Address
-        { wch: 18 }     // Meter Make
-
-    ];
+    const bodyRows =
+        table.querySelectorAll(
+            "tbody tr"
+        );
 
 
-    // Auto Filter
-    ws["!autofilter"] = { ref: "A1:I1"};
+    let hasData = false;
 
 
-    // Freeze header
-    ws["!freeze"] = { xSplit: 0, ySplit: 1};
+    bodyRows.forEach(row => {
+        const cells =
+            row.querySelectorAll("td");
 
-    XLSX.utils.book_append_sheet( wb, ws,"HES Download");
 
-    const date = new Date()
+        if (cells.length === 9) {
+            const text =
+                row.innerText
+                    .trim()
+                    .toLowerCase();
+
+
+            if (
+                !text.includes(
+                    "no records found"
+                )
+            ) {
+                hasData = true;
+            }
+        }
+    });
+
+
+    if (!hasData) {
+        alert(
+            "No BYPL HES Download data available to export."
+        );
+
+        return;
+    }
+
+
+    // ============================================================
+    // CREATE WORKBOOK
+    // ============================================================
+
+    const wb =
+        XLSX.utils.book_new();
+
+
+    // ============================================================
+    // CREATE WORKSHEET
+    // ============================================================
+
+    const ws =
+        XLSX.utils.table_to_sheet(
+            table
+        );
+
+
+    // ============================================================
+    // REPORT COLORS
+    // ============================================================
+
+    const NAVY_BLUE =
+        "17365D";
+
+    const WHITE =
+        "FFFFFF";
+
+    const BLACK =
+        "000000";
+
+    const BORDER_COLOR =
+        "7F7F7F";
+
+
+    // ============================================================
+    // BORDER
+    // ============================================================
+
+    const allBorders =
+    {
+        top:
+        {
+            style: "thin",
+            color:
+            {
+                rgb: BORDER_COLOR
+            }
+        },
+
+        bottom:
+        {
+            style: "thin",
+            color:
+            {
+                rgb: BORDER_COLOR
+            }
+        },
+
+        left:
+        {
+            style: "thin",
+            color:
+            {
+                rgb: BORDER_COLOR
+            }
+        },
+
+        right:
+        {
+            style: "thin",
+            color:
+            {
+                rgb: BORDER_COLOR
+            }
+        }
+    };
+
+
+    // ============================================================
+    // HEADER STYLE
+    // ============================================================
+
+    const headerStyle =
+    {
+        fill:
+        {
+            patternType: "solid",
+            fgColor:
+            {
+                rgb: NAVY_BLUE
+            }
+        },
+
+        font:
+        {
+            name: "Calibri",
+            sz: 11,
+            bold: true,
+            color:
+            {
+                rgb: WHITE
+            }
+        },
+
+        alignment:
+        {
+            horizontal: "center",
+            vertical: "center",
+            wrapText: true
+        },
+
+        border: allBorders
+    };
+
+
+    // ============================================================
+    // NORMAL DATA STYLE
+    // ============================================================
+
+    const normalStyle =
+    {
+        font:
+        {
+            name: "Calibri",
+            sz: 10,
+            color:
+            {
+                rgb: BLACK
+            }
+        },
+
+        alignment:
+        {
+            vertical: "center",
+            wrapText: true
+        },
+
+        border: allBorders
+    };
+
+
+    // ============================================================
+    // CENTER DATA STYLE
+    // ============================================================
+
+    const centerStyle =
+    {
+        font:
+        {
+            name: "Calibri",
+            sz: 10,
+            color:
+            {
+                rgb: BLACK
+            }
+        },
+
+        alignment:
+        {
+            horizontal: "center",
+            vertical: "center",
+            wrapText: true
+        },
+
+        border: allBorders
+    };
+
+
+    // ============================================================
+    // STYLE HEADER
+    // ============================================================
+
+    for (
+        let col = 0;
+        col < 9;
+        col++
+    ) {
+        const address =
+            XLSX.utils.encode_cell(
+                {
+                    r: 0,
+                    c: col
+                });
+
+
+        if (ws[address]) {
+            ws[address].s =
+                headerStyle;
+        }
+    }
+
+
+    // ============================================================
+    // STYLE DATA
+    // ============================================================
+
+    for (
+        let row = 1;
+        row <= bodyRows.length;
+        row++
+    ) {
+        for (
+            let col = 0;
+            col < 9;
+            col++
+        ) {
+            const address =
+                XLSX.utils.encode_cell(
+                    {
+                        r: row,
+                        c: col
+                    });
+
+
+            if (!ws[address]) {
+                continue;
+            }
+
+
+            // ----------------------------------------------------
+            // CENTER COLUMNS
+            // ----------------------------------------------------
+            // A = S.No
+            // D = Phase
+            // G = Seq No
+            // ----------------------------------------------------
+
+            if (
+                col === 0 ||
+                col === 3 ||
+                col === 6
+            ) {
+                ws[address].s =
+                    centerStyle;
+            }
+            else {
+                ws[address].s =
+                    normalStyle;
+            }
+        }
+    }
+
+
+    // ============================================================
+    // COLUMN WIDTHS
+    // ============================================================
+
+    ws["!cols"] =
+        [
+            { wch: 8 },     // S.No
+            { wch: 17 },    // Cons Ref
+            { wch: 20 },    // Meter Number
+            { wch: 10 },    // Phase
+            { wch: 17 },    // Department
+            { wch: 18 },    // Division
+            { wch: 12 },    // Seq No
+            { wch: 55 },    // Address
+            { wch: 18 }     // Meter Make
+        ];
+
+
+    // ============================================================
+    // ROW HEIGHTS
+    // ============================================================
+
+    ws["!rows"] = [];
+
+
+    // Header
+    ws["!rows"][0] =
+    {
+        hpt: 32
+    };
+
+
+    // Data
+    for (
+        let i = 1;
+        i <= bodyRows.length;
+        i++
+    ) {
+        ws["!rows"][i] =
+        {
+            hpt: 30
+        };
+    }
+
+
+    // ============================================================
+    // AUTOFILTER
+    // ============================================================
+
+    ws["!autofilter"] =
+    {
+        ref:
+            `A1:I${bodyRows.length + 1}`
+    };
+
+
+    // ============================================================
+    // FREEZE HEADER
+    // ============================================================
+
+    ws["!freeze"] =
+    {
+        xSplit: 0,
+        ySplit: 1
+    };
+
+
+    // ============================================================
+    // HIDE GRIDLINES
+    // ============================================================
+
+    ws["!sheetViews"] =
+        [
+            {
+                showGridLines: false
+            }
+        ];
+
+
+    // ============================================================
+    // ADD WORKSHEET
+    // ============================================================
+
+    XLSX.utils.book_append_sheet(
+        wb,
+        ws,
+        "HES Download"
+    );
+
+
+    // ============================================================
+    // FILE NAME
+    // ============================================================
+
+    const date =
+        new Date()
             .toISOString()
             .split("T")[0];
 
-    XLSX.writeFile(wb, "HES_Download_Summary_BYPL_" + date +".xlsx");
+
+    XLSX.writeFile(
+        wb,
+        "HES_Download_Summary_BYPL_" +
+        date +
+        ".xlsx"
+    );
 }
 
 

@@ -95,7 +95,7 @@
 
         a.href = url;
 
-        a.download = `Dashboard_${readingMonth}.xlsx`;
+        a.download = `Smart_Meter_Reading_Dashboard_${readingMonth}.xlsx`;
 
 
         document.body.appendChild(a);

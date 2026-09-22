@@ -14,5 +14,7 @@
         public string SapSeqNo { get; set; }
         public string SchedulerMessage { get; set; }
         public DateTime? EntryDate { get; set; }
+        public DateTime? DownloadFailedSince { get; set; }
+        public int? DownloadFailedDays { get; set; }
     }
 }

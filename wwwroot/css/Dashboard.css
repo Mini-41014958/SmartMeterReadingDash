@@ -1305,3 +1305,8 @@ canvas {
         font-size: 10px;
     }
 }
+.download-failed-danger {
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}

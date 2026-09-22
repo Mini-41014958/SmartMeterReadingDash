@@ -18,7 +18,7 @@ async function loadDownloadSummary()
 
         $("#downloadSummaryBody").html(`
                 <tr>
-                    <td colspan="11" class="text-center py-4">
+                    <td colspan="13" class="text-center py-4">
                         <div class="spinner-border spinner-border-sm text-primary"></div>
                         Loading...
                     </td>
@@ -51,6 +51,7 @@ async function loadDownloadSummary()
         filteredData = [...allDownloadData];
 
         loadDepartmentFilter();
+        loadDepartmentFilter();
         loadDivisionFilter();
 
         loadReasonFilter();
@@ -71,7 +72,7 @@ async function loadDownloadSummary()
 
         $("#downloadSummaryBody").html(`
                 <tr>
-                    <td colspan="11"
+                    <td colspan="13"
                         class="text-center text-danger py-4">
 
                         Failed to load data.
@@ -107,9 +108,8 @@ function loadDepartmentFilter()
 
     });
 }
-// ============================================================
+
 // DIVISION FILTER
-// ============================================================
 
 function loadDivisionFilter() {
     const ddl = $("#divisionFilter");
@@ -224,10 +224,7 @@ function loadPhaseFilter()
     });
 }
 
-
-// ============================================================
 // METER MAKE FILTER
-// ============================================================
 
 function loadMeterMakeFilter() {
 
@@ -259,10 +256,7 @@ function loadMeterMakeFilter() {
     });
 }
 
-
-// ============================================================
 // FILTER EVENTS
-// ============================================================
 
 $("#departmentFilter").on("change", applyFilters);
 
@@ -279,9 +273,7 @@ $("#entryDateFrom").on("change",applyFilters);
 $("#entryDateTo").on("change", applyFilters);
 
 
-// ============================================================
 // CLEAR FILTER BUTTON
-// ============================================================
 
 $("#btnClearDownloadFilters").on("click",function ()
     {
@@ -291,10 +283,7 @@ $("#btnClearDownloadFilters").on("click",function ()
     }
 );
 
-
-// ============================================================
 // CLEAR FILTERS
-// ============================================================
 
 function clearFilters() {
 
@@ -317,10 +306,7 @@ function clearFilters() {
     );
 }
 
-
-// ============================================================
 // APPLY FILTERS
-// ============================================================
 
 function applyFilters()
 {
@@ -339,10 +325,7 @@ function applyFilters()
 
     const dateTo = $("#entryDateTo").val();
 
-
-    // --------------------------------------------------------
     // DATE VALIDATION
-    // --------------------------------------------------------
 
     if (dateFrom && dateTo && dateFrom > dateTo)
     {
@@ -358,10 +341,7 @@ function applyFilters()
 
     $("#entryDateTo").removeClass("is-invalid");
 
-
-    // --------------------------------------------------------
     // FILTER DATA
-    // --------------------------------------------------------
 
     filteredData = allDownloadData.filter(item =>
     {
@@ -457,26 +437,21 @@ function applyFilters()
 
 // RENDER TABLE
 
-function renderTable(data)
-{
-
-    const tbody =  $("#downloadSummaryBody");
+function renderTable(data) { const tbody = $("#downloadSummaryBody");
 
     tbody.empty();
 
-    if ( !data ||data.length === 0)
-    {
-
+    if (!data || data.length === 0) {
         tbody.html(`
-                <tr>
-                    <td colspan="11"
-                        class="text-center py-4">
+            <tr>
+                <td colspan="13"
+                    class="text-center py-4">
 
-                        No Records Found
+                    No Records Found
 
-                    </td>
-                </tr>
-            `);
+                </td>
+            </tr>
+        `);
 
         return;
     }
@@ -484,34 +459,24 @@ function renderTable(data)
 
     data.forEach((x, index) =>
     {
-
         let badgeColor = "#6c757d";
-
-        let textColor ="#fff";
-
-        const message =  (x.schedulerMessage || "") .toUpperCase();
+        let textColor = "#fff";
+        const message = (x.schedulerMessage || "").toUpperCase();
 
         // STATUS COLORS
 
         if (message.includes("SYSTEM TITLE"))
         {
-
-            badgeColor ="#dc3545";
-
+            badgeColor = "#dc3545";
         }
         else if (message.includes("TCP"))
         {
-
-            badgeColor ="#fd7e14";
-
+            badgeColor = "#fd7e14";
         }
         else if (message.includes("NO DATA"))
         {
-
             badgeColor = "#ffc107";
-
-            textColor ="#000";
-
+            textColor = "#000";
         }
         else if (message.includes("TIMEOUT"))
         {
@@ -520,100 +485,555 @@ function renderTable(data)
 
         // ENTRY DATE
 
-        let entryDate ="--";
+        let entryDate = "--";
 
         if (x.entryDate)
         {
-
-            const parsedDate =new Date( x.entryDate);
+            const parsedDate = new Date(x.entryDate);
 
             if (!isNaN(parsedDate.getTime()))
             {
-
                 entryDate = parsedDate.toLocaleString("en-GB");
             }
         }
 
+        // DOWNLOAD FAILED SINCE
+
+        let downloadFailedSince = "--";
+
+        if (x.downloadFailedSince)
+        {
+            const failedSinceDate = new Date(x.downloadFailedSince);
+
+            if (!isNaN(failedSinceDate.getTime()))
+            {
+                downloadFailedSince = failedSinceDate.toLocaleDateString("en-GB");
+            }
+        }
+
+        // DOWNLOAD FAILED DAYS
+
+        let downloadFailedDays = "--";
+
+        if (x.downloadFailedDays !== null && x.downloadFailedDays !== undefined && x.downloadFailedDays !== "")
+        {
+            downloadFailedDays = Number(x.downloadFailedDays);
+        }
+
+        // HIGHLIGHT IF FAILED > 5 DAYS
+
+        const failedDaysNumber = Number(x.downloadFailedDays);
+
+        const isMoreThan5Days = !isNaN(failedDaysNumber) && failedDaysNumber > 5;
+
+        let failedSinceStyle = "";
+        let failedDaysStyle = "";
+
+        if (isMoreThan5Days)
+        {
+            failedSinceStyle = `
+                background-color: #dc3545;
+                color: #fff;
+                font-weight: 700;
+                text-align: center;
+            `;
+
+            failedDaysStyle = `
+                background-color: #dc3545;
+                color: #fff;
+                font-weight: 700;
+                text-align: center;
+            `;
+        }
+        else
+        {
+            failedSinceStyle = `
+                text-align: center;
+            `;
+
+            failedDaysStyle = `
+                text-align: center;
+                font-weight: 600;
+            `;
+        }
 
         // TABLE ROW
 
         tbody.append(`
-                <tr>
+            <tr>
 
-                    <td class="text-center fw-semibold"> ${index + 1}</td>
+                <td class="text-center fw-semibold"> ${index + 1} </td>
 
-                    <td>${escapeHtml( x.consRef ?? "")}</td>
+                <td> ${escapeHtml(x.consRef ?? "")}  </td>
 
-                    <td> ${escapeHtml(x.meterNumber ?? "")} </td>
+                <td>${escapeHtml(x.meterNumber ?? "")}  </td>
 
-                    <td class="text-center">${escapeHtml( x.phase ?? "" )}</td>
+                <td class="text-center">${escapeHtml(x.phase ?? "")} </td>
 
-                    <td>${escapeHtml( x.sapDepartment ?? "")}</td>
+                <td> ${escapeHtml(x.sapDepartment ?? "")}</td>
 
-                    <td> ${escapeHtml( x.sapDivision ?? "" )}</td>
+                <td> ${escapeHtml(x.sapDivision ?? "")}   </td>
 
-                    <td> ${escapeHtml(x.sapSeqNo ?? "")} </td>
+                <td>  ${escapeHtml(x.sapSeqNo ?? "")}  </td>
 
-                    <td>${escapeHtml(x.address ?? "--")} </td>
+                <td> ${escapeHtml(x.address ?? "--")} </td>
 
-                    <td> ${escapeHtml( x.meterType ?? "" )} </td>
+                <td> ${escapeHtml(x.meterType ?? "")}  </td>
 
-                    <td>
-                        <span class="badge" style=" background:${badgeColor};color:${textColor}; ">
+                <td>
+                    <span class="badge"
+                          style="
+                              background:${badgeColor};
+                              color:${textColor};
+                          ">
 
-                            ${escapeHtml(x.schedulerMessage ?? "--")}
+                        ${escapeHtml( x.schedulerMessage ?? "--" )}
 
-                        </span>
-                    </td>
+                    </span>
+                </td>
 
-                    <td>  ${escapeHtml(entryDate )} </td>
+                <td> ${escapeHtml(entryDate)} </td>
 
-                </tr>
-            `);
+                <td style="${failedSinceStyle}"> ${escapeHtml(downloadFailedSince)}  </td>
+
+                <td style="${failedDaysStyle}">  ${escapeHtml(downloadFailedDays)} </td>
+
+            </tr>
+        `);
 
     });
 }
 
 
-// EXPORT TO EXCEL
- 
 function exportTableToExcel()
 {
 
-    const table = document.getElementById( "downloadSummaryTable");
+    const table = document.getElementById("downloadSummaryTable");
+
+    if (!table)
+    {
+        console.error("Download summary table not found.");
+        return;
+    }
+
+    // CREATE WORKBOOK
 
     const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.table_to_sheet(table);
+    const NAVY_BLUE = "17365D";
+    const WHITE = "FFFFFF";
+    const BLACK = "000000";
+    const RED = "DC3545";
+    const BORDER_COLOR = "7F7F7F";
 
-    const ws = XLSX.utils.table_to_sheet( table);
+    const allBorders = {
 
+        top: {
+            style: "thin",
+            color: {
+                rgb: BORDER_COLOR
+            }
+        },
+
+        bottom: {
+            style: "thin",
+            color: {
+                rgb: BORDER_COLOR
+            }
+        },
+
+        left: {
+            style: "thin",
+            color: {
+                rgb: BORDER_COLOR
+            }
+        },
+
+        right: {
+            style: "thin",
+            color: {
+                rgb: BORDER_COLOR
+            }
+        }
+    };
+
+    const headerStyle =
+    {
+
+        fill: {
+            patternType: "solid",
+            fgColor: {
+                rgb: NAVY_BLUE
+            }
+        },
+
+        font: {
+            name: "Calibri",
+            sz: 11,
+            bold: true,
+            color: {
+                rgb: WHITE
+            }
+        },
+
+        alignment: {
+            horizontal: "center",
+            vertical: "center",
+            wrapText: true
+        },
+
+        border: allBorders
+    };
+
+    const normalStyle =
+    {
+
+        font: {
+            name: "Calibri",
+            sz: 10,
+            color: {
+                rgb: BLACK
+            }
+        },
+
+        alignment: {
+            vertical: "center",
+            wrapText: true
+        },
+
+        border: allBorders
+    };
+
+    const centerStyle =
+    {
+
+        font: {
+            name: "Calibri",
+            sz: 10,
+            color: {
+                rgb: BLACK
+            }
+        },
+
+        alignment: {
+            horizontal: "center",
+            vertical: "center",
+            wrapText: true
+        },
+
+        border: allBorders
+    };
+
+    const failedDaysStyle =
+    {
+
+        fill: {
+            patternType: "solid",
+            fgColor: {
+                rgb: RED
+            }
+        },
+
+        font: {
+            name: "Calibri",
+            sz: 10,
+            bold: true,
+            color: {
+                rgb: WHITE
+            }
+        },
+
+        alignment: {
+            horizontal: "center",
+            vertical: "center"
+        },
+
+        border: allBorders
+    };
+
+    /*
+        A = S.No.
+        B = Cons Ref
+        C = Meter Number
+        D = Phase
+        E = Department
+        F = Division
+        G = Seq No
+        H = Address
+        I = Meter Make
+        J = Status
+        K = Entry Date
+        L = Download Failed Since
+        M = Download Failed Days
+    */
+
+    for (let col = 0; col < 13; col++) {
+
+        const address =
+            XLSX.utils.encode_cell({
+                r: 0,
+                c: col
+            });
+
+        if (ws[address]) {
+            ws[address].s = headerStyle;
+        }
+    }
+
+    // STYLE DATA ROWS
+    const rows = table.querySelectorAll("tbody tr");
+
+
+    rows.forEach((row, rowIndex) =>
+    {
+
+        const cells = row.querySelectorAll("td");
+
+
+        if (cells.length !== 13)
+        {
+            return;
+        }
+
+
+        // Excel row number
+        const excelRow =  rowIndex + 2;
+
+        const snoCell = `A${excelRow}`;
+
+
+        if (ws[snoCell])
+        {
+
+            ws[snoCell].t = "n";
+
+            ws[snoCell].v =  rowIndex + 1;
+
+            ws[snoCell].z = "0";
+
+            ws[snoCell].s = centerStyle;
+        }
+
+        for (let col = 1; col < 13; col++)
+        {
+
+            const address =
+                XLSX.utils.encode_cell({
+                    r: excelRow - 1,
+                    c: col
+                });
+
+
+            if (!ws[address]) {
+                continue;
+            }
+
+
+            // Center columns
+            if (
+                col === 3 ||   // Phase
+                col === 10 ||  // Entry Date
+                col === 11 ||  // Failed Since
+                col === 12     // Failed Days
+            ) {
+
+                ws[address].s =
+                    centerStyle;
+
+            }
+            else {
+
+                ws[address].s =
+                    normalStyle;
+            }
+        }
+
+
+        // ========================================================
+        // GET DOWNLOAD FAILED DAYS
+        // ========================================================
+
+        const failedDaysText =
+            cells[12]
+                .innerText
+                .trim();
+
+
+        const failedDays =
+            parseFloat(
+                failedDaysText
+            );
+
+
+        // ========================================================
+        // RED WHEN >= 5 DAYS
+        // ========================================================
+
+        if (
+            !isNaN(failedDays) &&
+            failedDays >= 5
+        ) {
+
+            const failedDaysCell =
+                `M${excelRow}`;
+
+
+            if (ws[failedDaysCell]) {
+
+                ws[failedDaysCell].s =
+                    failedDaysStyle;
+            }
+        }
+
+    });
+
+
+    // ============================================================
+    // COLUMN WIDTHS
+    // ============================================================
 
     ws["!cols"] = [
 
-        { wch: 7 },     // S.No
-        { wch: 15 },    // Cons Ref
-        { wch: 18 },    // Meter Number
-        { wch: 10 },    // Phase
-        { wch: 15 },    // Department
-        { wch: 15 },    // Division
-        { wch: 10 },    // Seq No
-        { wch: 45 },    // Address
-        { wch: 15 },    // Meter Make
-        { wch: 40 },    // Status
-        { wch: 20 }     // Entry Date
+        {
+            wch: 7
+        },
+
+        {
+            wch: 17
+        },
+
+        {
+            wch: 20
+        },
+
+        {
+            wch: 10
+        },
+
+        {
+            wch: 17
+        },
+
+        {
+            wch: 18
+        },
+
+        {
+            wch: 12
+        },
+
+        {
+            wch: 55
+        },
+
+        {
+            wch: 16
+        },
+
+        {
+            wch: 50
+        },
+
+        {
+            wch: 22
+        },
+
+        {
+            wch: 23
+        },
+
+        {
+            wch: 22
+        }
 
     ];
 
-    ws["!autofilter"] = { ref: "A1:K1" };
 
-    ws["!freeze"] = {xSplit: 0, ySplit: 1 };
+    // ============================================================
+    // ROW HEIGHTS
+    // ============================================================
 
-    XLSX.utils.book_append_sheet( wb, ws, "Download Failed");
+    ws["!rows"] = [];
 
-    const today = new Date()
+
+    // Header height
+
+    ws["!rows"][0] = {
+        hpt: 32
+    };
+
+
+    // Data row height
+
+    for (
+        let i = 1;
+        i < rows.length + 1;
+        i++
+    ) {
+
+        ws["!rows"][i] = {
+            hpt: 30
+        };
+    }
+
+
+    // ============================================================
+    // AUTOFILTER
+    // ============================================================
+
+    ws["!autofilter"] = {
+        ref: "A1:M1"
+    };
+
+
+    // ============================================================
+    // FREEZE HEADER
+    // ============================================================
+
+    ws["!freeze"] = {
+        xSplit: 0,
+        ySplit: 1
+    };
+
+
+    // ============================================================
+    // SHEET VIEW
+    // ============================================================
+
+    ws["!sheetViews"] = [
+        {
+            showGridLines: false
+        }
+    ];
+
+
+    // ============================================================
+    // ADD WORKSHEET
+    // ============================================================
+
+    XLSX.utils.book_append_sheet(
+        wb,
+        ws,
+        "Download Failed"
+    );
+
+
+    // ============================================================
+    // FILE NAME
+    // ============================================================
+
+    const today =
+        new Date()
             .toISOString()
             .split("T")[0];
 
-    XLSX.writeFile( wb,"Download_Failed_Summary_BRPL_" + today + ".xlsx");
+
+    XLSX.writeFile(
+        wb,
+        "Download_Failed_Summary_BRPL_" +
+        today +
+        ".xlsx"
+    );
 }
 
 // EXPORT TO CSV

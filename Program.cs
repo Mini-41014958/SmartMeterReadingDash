@@ -15,6 +15,7 @@ builder.Services.AddScoped<AuthRepository>();
 builder.Services.AddScoped<PasswordService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<UserAccess>();
+builder.Services.AddScoped<ReportGenService>();
 
 
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JWTSettings>(); 
