@@ -156,8 +156,7 @@ $("#hesDownload")
 async function loadHesDownloadSummary()
 {
 
-    try
-    {
+    try {
         // Loading state
 
         $("#hesDownloadSummaryBody").html(`
@@ -179,9 +178,9 @@ async function loadHesDownloadSummary()
         // Get user access
 
         const access = await getHesUserAccess();
--
+        
         // Verify BRPL access BEFORE API CALL
-
+        
         if (!hasHesBrplAccess(access))
         {
 

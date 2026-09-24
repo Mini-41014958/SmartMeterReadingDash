@@ -215,11 +215,6 @@ async function loadCurrentUserAccess() {
 
     };
 
-    console.log(
-        "Dashboard User Access:",
-        currentUserAccess
-    );
-
 }
 
 
@@ -234,18 +229,6 @@ function applyDashboardAccess() {
 
     const byplAllowed =
         canAccessBypl();
-
-
-    console.log(
-        "Dashboard Access:",
-        {
-            role: currentUserAccess?.role,
-            company: currentUserAccess?.company,
-            department: currentUserAccess?.department,
-            BRPL: brplAllowed,
-            BYPL: byplAllowed
-        }
-    );
 
 
     // --------------------------------------------------------
@@ -306,8 +289,6 @@ function getReadingMonth() {
     return currentReadingMonth;
 
 }
-
-
 
 function getPreviousReadingMonth() {
 
@@ -485,7 +466,6 @@ async function fetchDashboardApi(endpoint, readingMonth) {
         `${getApiUrl(endpoint)}` +
         `?ReadingMonth=${encodeURIComponent(readingMonth)}`;
 
-    console.log("Dashboard API:", url);
 
     const response = await fetch(url, {
         method: "GET",
@@ -534,10 +514,9 @@ let dashboardLoading = false;
 
 async function loadDashboard() {
 
-    if (dashboardLoading) {
-        console.warn(
-            "Dashboard load already in progress."
-        );
+    if (dashboardLoading)
+    {
+
         return;
     }
 
@@ -578,11 +557,6 @@ async function loadDashboard() {
                     "Department Distribution",
                     "Failure Reason Chart"
                 ];
-
-                console.error(
-                    `${names[index]} Error:`,
-                    result.reason
-                );
             }
 
         });
@@ -716,9 +690,8 @@ document.addEventListener(
                     // Read selected month
                     // -------------------------------
 
-                    if (
-                        !setReadingMonthFromInput()
-                    ) {
+                    if (!setReadingMonthFromInput())
+                    {
 
                         console.warn(
                             "Invalid reading month."

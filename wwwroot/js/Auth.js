@@ -122,11 +122,6 @@ const appBasePath =
     getAppBasePath();
 
 
-console.log(
-    "Application Base Path:",
-    appBasePath
-);
-
 
 // ============================================================
 // BUILD APPLICATION URL

@@ -14,7 +14,7 @@ namespace SmartMeterReadingDash.Services
             _db = oracleCon;
         }
 
-        //Test connection to the database
+        //Test connection
         public string Testconnection()
         {
             using var connection = _db.GetConnection();
@@ -1827,7 +1827,7 @@ namespace SmartMeterReadingDash.Services
         }
 
 
-        //BRP HES DOWNLOAD METERS Detailed Summary
+        //BRPL HES DOWNLOAD METERS Detailed Summary
         public List<HesDownloadMeter> HesDownloadMeterList(string readingMonth, UserAccessScope scope)
         {
             List<HesDownloadMeter> hesDownloadMeters = new List<HesDownloadMeter>();
@@ -1836,8 +1836,8 @@ namespace SmartMeterReadingDash.Services
                 con.Open();
                 string query = @"WITH MONTHS (READING_MONTH) AS
                 (
-                    SELECT TRIM(REGEXP_SUBSTR(:READING_MONTH, '[^,]+', 1, LEVEL) )
-                    FROM DUAL CONNECT BY REGEXP_SUBSTR(:READING_MONTH, '[^,]+', 1, LEVEL) IS NOT NULL
+                    SELECT TRIM( REGEXP_SUBSTR( :READING_MONTH, '[^,]+', 1,LEVEL ))
+                    FROM DUAL CONNECT BY REGEXP_SUBSTR( :READING_MONTH, '[^,]+', 1, LEVEL) IS NOT NULL
                 ),
                 BILLING_DATA AS
                 (
@@ -1847,11 +1847,20 @@ namespace SmartMeterReadingDash.Services
                 ),
                 LATEST_DOWNLOAD AS
                 (
-                    SELECT /*+ PARALLEL(SM,8) */ SM.METERNO, SM.CONS_REF,  SM.READING_MONTH,  SM.SAP_DEPARTMENT,
+                    SELECT /*+ PARALLEL(SM,8) */  SM.METERNO,  SM.CONS_REF, SM.READING_MONTH,
+
+                           CASE
+                               WHEN SM.SAP_DEPARTMENT = 'MLCC' AND SM.CYCLE = '0N'
+                                   THEN 'KCC'
+                               WHEN SM.CYCLE IN ('KA', 'KC', 'KG')
+                                   THEN 'KCC'
+                               WHEN SM.SAP_DEPARTMENT IS NULL
+                                   THEN 'SLCC'
+                               ELSE SM.SAP_DEPARTMENT
+                           END AS SAP_DEPARTMENT,
                            ROW_NUMBER() OVER
                            (
-                               PARTITION BY SM.METERNO, SM.READING_MONTH
-                               ORDER BY SM.ENTRY_DATE DESC
+                               PARTITION BY SM.METERNO, SM.READING_MONTH  ORDER BY SM.ENTRY_DATE DESC
                            ) AS RN
                     FROM BILLING_DATA SM
                     WHERE
@@ -1863,41 +1872,30 @@ namespace SmartMeterReadingDash.Services
                     )
                     AND SM.READING_MONTH IN
                     (
-                        SELECT READING_MONTH
-                        FROM MONTHS
+                        SELECT READING_MONTH  FROM MONTHS
                     )
                     AND
                     (
                         :IS_SUPERADMIN = 1
-                        OR UPPER(TRIM(SM.SAP_DEPARTMENT)) = UPPER(TRIM(:DEPARTMENT))
+                        OR UPPER(TRIM(
+                            CASE
+                                WHEN SM.SAP_DEPARTMENT = 'MLCC' AND SM.CYCLE = '0N'
+                                    THEN 'KCC'
+                                WHEN SM.CYCLE IN ('KA', 'KC', 'KG')
+                                    THEN 'KCC'
+                                WHEN SM.SAP_DEPARTMENT IS NULL
+                                    THEN 'SLCC'
+                                ELSE SM.SAP_DEPARTMENT
+                            END
+                        )) = UPPER(TRIM(:DEPARTMENT))
                     )
                 ),
                 DOWNLOAD_DATA AS
                 (
-                    SELECT
-                        METERNO,
-                        CONS_REF,
-                        READING_MONTH,
-                        SAP_DEPARTMENT
-                    FROM LATEST_DOWNLOAD
-                    WHERE RN = 1
+                    SELECT METERNO, CONS_REF, READING_MONTH,  SAP_DEPARTMENT FROM LATEST_DOWNLOAD WHERE RN = 1
                 )
-                SELECT /*+ PARALLEL(8) */
-                       DISTINCT
-                       D.METERNO,
-                       D.CONS_REF,
-                       D.SAP_DEPARTMENT AS SAP_DEPARTMENT,
-
-                       NVL(
-                           S.SAP_DIVISION,
-                           FM.SAP_DIVISION
-                       ) AS SAP_DIVISION,
-
-                       NVL(
-                           S.SAP_SEQ_NO,
-                           FM.SAP_SEQ_NO
-                       ) AS SAP_SEQ_NO,
-
+                SELECT /*+ PARALLEL(8) */ DISTINCT  D.METERNO, D.CONS_REF, D.SAP_DEPARTMENT AS SAP_DEPARTMENT,
+                    NVL( S.SAP_DIVISION, FM.SAP_DIVISION ) AS SAP_DIVISION, NVL( S.SAP_SEQ_NO, FM.SAP_SEQ_NO ) AS SAP_SEQ_NO,
                        RTRIM(
                            NVL(S.ADD1, FM.ADD1) || ', ' ||
                            NVL(S.ADD2, FM.ADD2) || ', ' ||
@@ -1906,58 +1904,33 @@ namespace SmartMeterReadingDash.Services
                            NVL(S.FATHER_NAME, FM.FATHER_NAME),
                            ', '
                        ) AS ADDRESS,
-
                        CASE
                            WHEN SUBSTR(D.METERNO, 1, 2) IN ('90', 'AL')
                                THEN 'ALLIED'
-
                            WHEN SUBSTR(D.METERNO, 1, 2) IN ('91', 'KI')
                                THEN 'KIMBAL'
                        END AS METER_TYPE,
-
                        CASE
                            WHEN SUBSTR(D.METERNO, 1, 4) = 'AL91'
                                THEN '1PH'
-
                            WHEN SUBSTR(D.METERNO, 1, 4) = 'AL90'
                                THEN '3PH'
-
                            WHEN SUBSTR(D.METERNO, 1, 4) = 'KI91'
                                THEN '1PH'
-
                            WHEN SUBSTR(D.METERNO, 1, 4) = '9150'
                                THEN '1PH'
-
                            WHEN SUBSTR(D.METERNO, 1, 4) = '9008'
                                THEN '1PH'
-
                            WHEN SUBSTR(D.METERNO, 1, 4) = '9027'
                                THEN '1PH'
-
                            WHEN SUBSTR(D.METERNO, 1, 4) = 'KI90'
                                THEN '3PH'
-
                            WHEN SUBSTR(D.METERNO, 1, 4) = '9026'
                                THEN '3PH'
-
                            ELSE 'UNKNOWN'
-                       END AS PHASE_TYPE
-
-                FROM DOWNLOAD_DATA D
-
-                LEFT JOIN RCMPA.SAP_SLCC_FORMY S
-                       ON S.CONS_REF = D.CONS_REF
-                      AND S.READING_MONTH = D.READING_MONTH
-
-                LEFT JOIN RCMPA.SAP_FORMY FM
-                       ON FM.CONS_REF = D.CONS_REF
-                      AND FM.READING_MONTH = D.READING_MONTH
-
-                ORDER BY
-                       D.SAP_DEPARTMENT,
-                       NVL(S.SAP_DIVISION, FM.SAP_DIVISION),
-                       NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO),
-                       D.METERNO";
+                       END AS PHASE_TYPE FROM DOWNLOAD_DATA D LEFT JOIN RCMPA.SAP_SLCC_FORMY S ON S.CONS_REF = D.CONS_REF  AND S.READING_MONTH = D.READING_MONTH 
+                       LEFT JOIN RCMPA.SAP_FORMY FM ON FM.CONS_REF = D.CONS_REF AND FM.READING_MONTH = D.READING_MONTH ORDER BY D.SAP_DEPARTMENT, NVL(S.SAP_DIVISION, FM.SAP_DIVISION),
+                       NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO), D.METERNO";
                 using (OracleCommand cmd = new OracleCommand(query, con))
                 {
                     cmd.BindByName = true;

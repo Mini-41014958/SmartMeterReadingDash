@@ -2,44 +2,60 @@
 let filteredData = [];
 
 
-$("#btnViewDownloadDetails").on("click", function ()
-{
+/* ============================================================
+   OPEN DOWNLOAD SUMMARY MODAL
+   ============================================================ */
 
-    const modal = new bootstrap.Modal(document.getElementById("downloadSummaryModal"));
+$("#btnViewDownloadDetails").on("click", function () {
+
+    const modal = new bootstrap.Modal(
+        document.getElementById("downloadSummaryModal")
+    );
+
     modal.show();
+
     loadDownloadSummary();
 });
 
 
-async function loadDownloadSummary()
-{
+/* ============================================================
+   LOAD DOWNLOAD SUMMARY
+   ============================================================ */
+
+async function loadDownloadSummary() {
 
     try {
 
         $("#downloadSummaryBody").html(`
-                <tr>
-                    <td colspan="13" class="text-center py-4">
-                        <div class="spinner-border spinner-border-sm text-primary"></div>
-                        Loading...
-                    </td>
-                </tr>
-            `);
-
+            <tr>
+                <td colspan="13" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                    <span class="ms-2">Loading...</span>
+                </td>
+            </tr>
+        `);
 
         const readingMonth = getReadingMonth();
 
-        const apiUrl =`${getApiUrl("dashboardapi/meter-download-detailed-summary")}?readingMonth=${encodeURIComponent(readingMonth)}`;
+        const apiUrl =
+            `${getApiUrl("dashboardapi/meter-download-detailed-summary")}` +
+            `?readingMonth=${encodeURIComponent(readingMonth)}`;
 
         const response = await fetch(apiUrl);
 
-        if (!response.ok)
-        {
+        if (!response.ok) {
 
             const errorText = await response.text();
 
-            console.error( "API Error:", response.status, errorText);
+            console.error(
+                "API Error:",
+                response.status,
+                errorText
+            );
 
-            throw new Error(`Unable to load data (${response.status})`);
+            throw new Error(
+                `Unable to load data (${response.status})`
+            );
         }
 
         const result = await response.json();
@@ -50,68 +66,110 @@ async function loadDownloadSummary()
 
         filteredData = [...allDownloadData];
 
-        loadDepartmentFilter();
+
+        /* LOAD FILTERS */
+
         loadDepartmentFilter();
         loadDivisionFilter();
-
         loadReasonFilter();
-
         loadPhaseFilter();
-
         loadMeterMakeFilter();
 
+
+        /* RESET FILTER VALUES */
+
         clearFilters();
+
+
+        /* RENDER */
 
         renderTable(filteredData);
 
     }
-    catch (err)
-    {
+    catch (err) {
 
-        console.error( "loadDownloadSummary error:",err);
+        console.error(
+            "loadDownloadSummary error:",
+            err
+        );
 
         $("#downloadSummaryBody").html(`
-                <tr>
-                    <td colspan="13"
-                        class="text-center text-danger py-4">
+            <tr>
+                <td colspan="13"
+                    class="text-center text-danger py-4">
 
-                        Failed to load data.
+                    Failed to load data.
 
-                        Error:${escapeHtml(err.message)}
+                    <br>
 
-                    </td>
-                </tr>
-            `);
+                    Error:
+                    ${escapeHtml(err.message)}
+
+                </td>
+            </tr>
+        `);
     }
 }
 
-// DEPARTMENT FILTER
-function loadDepartmentFilter()
-{
+
+/* ============================================================
+   DEPARTMENT FILTER
+   ============================================================ */
+
+function loadDepartmentFilter() {
 
     const ddl = $("#departmentFilter");
+
     ddl.empty();
+
     ddl.append(`
-            <option value="">
-                All Departments
+        <option value="">
+            All Departments
+        </option>
+    `);
+
+    const departments = [
+        ...new Set(
+            allDownloadData
+                .map(x => x.sapDepartment)
+                .filter(
+                    x =>
+                        x !== null &&
+                        x !== undefined &&
+                        String(x).trim() !== ""
+                )
+                .map(x => String(x).trim())
+        )
+    ];
+
+    departments.sort((a, b) =>
+        a.localeCompare(
+            b,
+            undefined,
+            {
+                numeric: true
+            }
+        )
+    );
+
+    departments.forEach(department => {
+
+        ddl.append(`
+            <option value="${escapeHtml(department)}">
+                ${escapeHtml(department)}
             </option>
         `);
-
-    const departments = [...new Set(allDownloadData.map(x => x.sapDepartment).filter(x => x !== null && x !== undefined &&x !== ""))];
-
-    departments.sort((a, b) => String(a).localeCompare(String(b)));
-
-    departments.forEach(department =>
-    {
-
-        ddl.append(` <option value="${escapeHtml(String(department))}"> ${escapeHtml(String(department))}  </option>`);
 
     });
 }
 
-// DIVISION FILTER
+
+/* ============================================================
+   DIVISION FILTER
+   ============================================================ */
 
 function loadDivisionFilter() {
+
     const ddl = $("#divisionFilter");
 
     ddl.empty();
@@ -126,10 +184,11 @@ function loadDivisionFilter() {
         ...new Set(
             allDownloadData
                 .map(x => x.sapDivision)
-                .filter(x =>
-                    x !== null &&
-                    x !== undefined &&
-                    String(x).trim() !== ""
+                .filter(
+                    x =>
+                        x !== null &&
+                        x !== undefined &&
+                        String(x).trim() !== ""
                 )
                 .map(x => String(x).trim())
         )
@@ -146,68 +205,88 @@ function loadDivisionFilter() {
     );
 
     divisions.forEach(division => {
+
         ddl.append(`
             <option value="${escapeHtml(division)}">
                 ${escapeHtml(division)}
             </option>
         `);
+
     });
 }
 
-function loadReasonFilter()
-{
+
+/* ============================================================
+   REASON FILTER
+   ============================================================ */
+
+function loadReasonFilter() {
 
     const ddl = $("#reasonFilter");
 
     ddl.empty();
 
     ddl.append(`
-            <option value="">All Reasons</option>
+        <option value="">
+            All Reasons
+        </option>
 
-            <option value="SYSTEM TITLE">
-                System Title Mismatch
-            </option>
+        <option value="SYSTEM TITLE">
+            System Title Mismatch
+        </option>
 
-            <option value="TCP">
-                TCP Connection Failed
-            </option>
+        <option value="TCP">
+            TCP Connection Failed
+        </option>
 
-            <option value="NO DATA">
-                No Data Found ODR
-            </option>
+        <option value="NO DATA">
+            No Data Found ODR
+        </option>
 
-            <option value="TIMEOUT">
-                Timeout
-            </option>
+        <option value="TIMEOUT">
+            Timeout
+        </option>
 
-            <option value="OTHER">
-                Other
-            </option>
-        `);
+        <option value="OTHER">
+            Other
+        </option>
+    `);
 }
 
 
-// PHASE FILTER
+/* ============================================================
+   PHASE FILTER
+   ============================================================ */
 
-function loadPhaseFilter()
-{
+function loadPhaseFilter() {
 
     const ddl = $("#phaseFilter");
+
     ddl.empty();
 
-    ddl.append(` <option value=""> All Phases  </option> `);
+    ddl.append(`
+        <option value="">
+            All Phases
+        </option>
+    `);
 
-
-    const phases = [...new Set(allDownloadData.map(x => x.phase).filter(x =>
-                    x !== null &&
-                    x !== undefined &&
-                    x !== ""
+    const phases = [
+        ...new Set(
+            allDownloadData
+                .map(x => x.phase)
+                .filter(
+                    x =>
+                        x !== null &&
+                        x !== undefined &&
+                        String(x).trim() !== ""
                 )
+                .map(x => String(x).trim())
         )
     ];
 
-
-    phases.sort((a, b) =>String(a).localeCompare(String(b),
+    phases.sort((a, b) =>
+        a.localeCompare(
+            b,
             undefined,
             {
                 numeric: true
@@ -215,16 +294,21 @@ function loadPhaseFilter()
         )
     );
 
+    phases.forEach(phase => {
 
-    phases.forEach(phase =>
-    {
-
-        ddl.append(` <option value="${escapeHtml(String(phase))}">${escapeHtml(String(phase))} </option>`);
+        ddl.append(`
+            <option value="${escapeHtml(phase)}">
+                ${escapeHtml(phase)}
+            </option>
+        `);
 
     });
 }
 
-// METER MAKE FILTER
+
+/* ============================================================
+   METER MAKE FILTER
+   ============================================================ */
 
 function loadMeterMakeFilter() {
 
@@ -232,58 +316,110 @@ function loadMeterMakeFilter() {
 
     ddl.empty();
 
-    ddl.append(` <option value=""> All Meter Makes </option>`);
+    ddl.append(`
+        <option value="">
+            All Meter Makes
+        </option>
+    `);
 
-    const meterMakes = [...new Set( allDownloadData .map(x => x.meterType).filter(x =>
-                    x !== null &&
-                    x !== undefined &&
-                    x !== ""
+    const meterMakes = [
+        ...new Set(
+            allDownloadData
+                .map(x => x.meterType)
+                .filter(
+                    x =>
+                        x !== null &&
+                        x !== undefined &&
+                        String(x).trim() !== ""
                 )
+                .map(x => String(x).trim())
         )
     ];
 
-    meterMakes.sort((a, b) => String(a).localeCompare(String(b)));
+    meterMakes.sort((a, b) =>
+        a.localeCompare(
+            b,
+            undefined,
+            {
+                numeric: true
+            }
+        )
+    );
 
-    meterMakes.forEach(make =>
-    {
+    meterMakes.forEach(make => {
 
         ddl.append(`
-                <option value="${escapeHtml(String(make))}">
-                    ${escapeHtml(String(make))}
-                </option>
-            `);
+            <option value="${escapeHtml(make)}">
+                ${escapeHtml(make)}
+            </option>
+        `);
 
     });
 }
 
-// FILTER EVENTS
 
-$("#departmentFilter").on("change", applyFilters);
+/* ============================================================
+   FILTER EVENTS
+   ============================================================ */
 
-$("#divisionFilter").on("change", applyFilters);
+$("#departmentFilter").on(
+    "change",
+    applyFilters
+);
 
-$("#reasonFilter").on("change",applyFilters);
+$("#divisionFilter").on(
+    "change",
+    applyFilters
+);
 
-$("#phaseFilter").on("change",applyFilters);
+$("#reasonFilter").on(
+    "change",
+    applyFilters
+);
 
-$("#meterMakeFilter").on("change",applyFilters);
+$("#phaseFilter").on(
+    "change",
+    applyFilters
+);
 
-$("#entryDateFrom").on("change",applyFilters);
+$("#meterMakeFilter").on(
+    "change",
+    applyFilters
+);
 
-$("#entryDateTo").on("change", applyFilters);
+$("#entryDateFrom").on(
+    "change",
+    applyFilters
+);
+
+$("#entryDateTo").on(
+    "change",
+    applyFilters
+);
 
 
-// CLEAR FILTER BUTTON
+/* ============================================================
+   CLEAR FILTER BUTTON
+   ============================================================ */
 
-$("#btnClearDownloadFilters").on("click",function ()
-    {
+$("#btnClearDownloadFilters").on(
+    "click",
+    function () {
+
         clearFilters();
-        filteredData = [...allDownloadData];
-        renderTable( filteredData );
+
+        filteredData = [
+            ...allDownloadData
+        ];
+
+        renderTable(filteredData);
     }
 );
 
-// CLEAR FILTERS
+
+/* ============================================================
+   CLEAR FILTERS
+   ============================================================ */
 
 function clearFilters() {
 
@@ -306,31 +442,56 @@ function clearFilters() {
     );
 }
 
-// APPLY FILTERS
 
-function applyFilters()
-{
+/* ============================================================
+   APPLY FILTERS
+   ============================================================ */
 
-    const department = ($("#departmentFilter").val() || "").toUpperCase();
+function applyFilters() {
 
-    const division = ($("#divisionFilter").val() || "").toUpperCase();
+    const department =
+        String(
+            $("#departmentFilter").val() || ""
+        ).trim().toUpperCase();
 
-    const reason = ($("#reasonFilter").val() || "").toUpperCase();
+    const division =
+        String(
+            $("#divisionFilter").val() || ""
+        ).trim().toUpperCase();
 
-    const phase = ($("#phaseFilter").val() || "").toUpperCase();
+    const reason =
+        String(
+            $("#reasonFilter").val() || ""
+        ).trim().toUpperCase();
 
-    const meterMake = ($("#meterMakeFilter").val() || "").toUpperCase();
+    const phase =
+        String(
+            $("#phaseFilter").val() || ""
+        ).trim().toUpperCase();
 
-    const dateFrom = $("#entryDateFrom").val();
+    const meterMake =
+        String(
+            $("#meterMakeFilter").val() || ""
+        ).trim().toUpperCase();
 
-    const dateTo = $("#entryDateTo").val();
+    const dateFrom =
+        $("#entryDateFrom").val();
 
-    // DATE VALIDATION
+    const dateTo =
+        $("#entryDateTo").val();
 
-    if (dateFrom && dateTo && dateFrom > dateTo)
-    {
 
-        $("#entryDateTo").addClass( "is-invalid");
+    /* DATE VALIDATION */
+
+    if (
+        dateFrom &&
+        dateTo &&
+        dateFrom > dateTo
+    ) {
+
+        $("#entryDateTo").addClass(
+            "is-invalid"
+        );
 
         filteredData = [];
 
@@ -339,109 +500,207 @@ function applyFilters()
         return;
     }
 
-    $("#entryDateTo").removeClass("is-invalid");
+    $("#entryDateTo").removeClass(
+        "is-invalid"
+    );
 
-    // FILTER DATA
 
-    filteredData = allDownloadData.filter(item =>
-    {
+    /* FILTER DATA */
 
-            // DEPARTMENT
-            const itemDepartment =(item.sapDepartment || "").toUpperCase();
+    filteredData = allDownloadData.filter(
+        item => {
 
-            const departmentMatch = department === "" || itemDepartment === department;
+            /* --------------------------------
+               DEPARTMENT
+            -------------------------------- */
 
-        // DIVISION
+            const itemDepartment =
+                String(
+                    item.sapDepartment || ""
+                )
+                    .trim()
+                    .toUpperCase();
 
-            const itemDivision = (item.sapDivision || "").toUpperCase();
-            const divisionMatch =  division === "" || itemDivision === division;
+            const departmentMatch =
+                department === "" ||
+                itemDepartment === department;
 
-            // FAILED REASON
 
-            const message = (item.schedulerMessage || "").toUpperCase();
+            /* --------------------------------
+               DIVISION
+            -------------------------------- */
+
+            const itemDivision =
+                String(
+                    item.sapDivision || ""
+                )
+                    .trim()
+                    .toUpperCase();
+
+            const divisionMatch =
+                division === "" ||
+                itemDivision === division;
+
+
+            /* --------------------------------
+               FAILED REASON
+            -------------------------------- */
+
+            const message =
+                String(
+                    item.schedulerMessage || ""
+                )
+                    .trim()
+                    .toUpperCase();
 
             let reasonMatch = true;
 
-        if (reason !== "")
-        {
+            if (reason !== "") {
 
-            if (reason === "OTHER")
-            {
+                if (reason === "OTHER") {
 
-             reasonMatch =!message.includes( "SYSTEM TITLE") && !message.includes("TCP") && !message.includes( "NO DATA" ) && !message.includes( "TIMEOUT" );
+                    reasonMatch =
+                        !message.includes("SYSTEM TITLE") &&
+                        !message.includes("TCP") &&
+                        !message.includes("NO DATA") &&
+                        !message.includes("TIMEOUT");
 
-             }
-            else
-             {
-                reasonMatch = message.includes(reason );
-             }
-        }
+                }
+                else {
 
+                    reasonMatch =
+                        message.includes(reason);
 
-            // PHASE
-
-            const itemPhase = (item.phase || "").toUpperCase();
-
-            const phaseMatch = phase === "" || itemPhase === phase;
-
-            // METER MAKE
-
-            const itemMeterMake = (item.meterType || "").toUpperCase();
+                }
+            }
 
 
-            const meterMakeMatch = meterMake === "" || itemMeterMake === meterMake;
+            /* --------------------------------
+               PHASE
+            -------------------------------- */
 
-            // ENTRY DATE
+            const itemPhase =
+                String(
+                    item.phase || ""
+                )
+                    .trim()
+                    .toUpperCase();
+
+            const phaseMatch =
+                phase === "" ||
+                itemPhase === phase;
+
+
+            /* --------------------------------
+               METER MAKE
+            -------------------------------- */
+
+            const itemMeterMake =
+                String(
+                    item.meterType || ""
+                )
+                    .trim()
+                    .toUpperCase();
+
+            const meterMakeMatch =
+                meterMake === "" ||
+                itemMeterMake === meterMake;
+
+
+            /* --------------------------------
+               ENTRY DATE
+            -------------------------------- */
 
             let dateMatch = true;
 
-        if (dateFrom || dateTo)
-        {
+            if (
+                dateFrom ||
+                dateTo
+            ) {
 
-            if (!item.entryDate)
-            {
-               dateMatch = false;
+                if (!item.entryDate) {
 
-            }
-            else {
-                const entryDate = new Date(item.entryDate);
-
-                if (isNaN(entryDate.getTime()))
-                {
                     dateMatch = false;
 
-                 }
+                }
                 else {
-                    const entryDateString = formatDateForFilter(item.entryDate);
 
-                        if (dateFrom && entryDateString < dateFrom)
-                        {
-                             dateMatch = false;
+                    const entryDate =
+                        new Date(
+                            item.entryDate
+                        );
+
+                    if (
+                        isNaN(
+                            entryDate.getTime()
+                        )
+                    ) {
+
+                        dateMatch = false;
+
+                    }
+                    else {
+
+                        const entryDateString =
+                            formatDateForFilter(
+                                item.entryDate
+                            );
+
+                        if (
+                            dateFrom &&
+                            entryDateString < dateFrom
+                        ) {
+
+                            dateMatch = false;
                         }
 
-                       if (dateTo && entryDateString > dateTo)
-                       {
+                        if (
+                            dateTo &&
+                            entryDateString > dateTo
+                        ) {
+
                             dateMatch = false;
                         }
                     }
                 }
             }
 
-        return ( departmentMatch && divisionMatch && reasonMatch && phaseMatch && meterMakeMatch &&dateMatch );
 
-        });
+            return (
+                departmentMatch &&
+                divisionMatch &&
+                reasonMatch &&
+                phaseMatch &&
+                meterMakeMatch &&
+                dateMatch
+            );
+        }
+    );
 
-    renderTable( filteredData);
+
+    renderTable(
+        filteredData
+    );
 }
 
 
-// RENDER TABLE
+/* ============================================================
+   RENDER TABLE
+   ============================================================ */
 
-function renderTable(data) { const tbody = $("#downloadSummaryBody");
+function renderTable(data) {
+
+    const tbody =
+        $("#downloadSummaryBody");
 
     tbody.empty();
 
-    if (!data || data.length === 0) {
+
+    if (
+        !data ||
+        data.length === 0
+    ) {
+
         tbody.html(`
             <tr>
                 <td colspan="13"
@@ -457,174 +716,341 @@ function renderTable(data) { const tbody = $("#downloadSummaryBody");
     }
 
 
-    data.forEach((x, index) =>
-    {
-        let badgeColor = "#6c757d";
-        let textColor = "#fff";
-        const message = (x.schedulerMessage || "").toUpperCase();
+    /* ========================================================
+       IMPORTANT:
+       Everything depending on "x" MUST be inside forEach.
+       ======================================================== */
 
-        // STATUS COLORS
+    data.forEach(
+        (x, index) => {
 
-        if (message.includes("SYSTEM TITLE"))
-        {
-            badgeColor = "#dc3545";
-        }
-        else if (message.includes("TCP"))
-        {
-            badgeColor = "#fd7e14";
-        }
-        else if (message.includes("NO DATA"))
-        {
-            badgeColor = "#ffc107";
-            textColor = "#000";
-        }
-        else if (message.includes("TIMEOUT"))
-        {
-            badgeColor = "#6c757d";
-        }
+            /* --------------------------------
+               DOWNLOAD FAILED SINCE
+            -------------------------------- */
 
-        // ENTRY DATE
+            let downloadFailedSince = "--";
 
-        let entryDate = "--";
+            if (
+                x.downloadFailedSince
+            ) {
 
-        if (x.entryDate)
-        {
-            const parsedDate = new Date(x.entryDate);
+                const failedSinceDate =
+                    new Date(
+                        x.downloadFailedSince
+                    );
 
-            if (!isNaN(parsedDate.getTime()))
-            {
-                entryDate = parsedDate.toLocaleString("en-GB");
+                if (
+                    !isNaN(
+                        failedSinceDate.getTime()
+                    )
+                ) {
+
+                    downloadFailedSince =
+                        failedSinceDate.toLocaleDateString(
+                            "en-GB"
+                        );
+                }
             }
-        }
 
-        // DOWNLOAD FAILED SINCE
 
-        let downloadFailedSince = "--";
+            /* --------------------------------
+               DOWNLOAD FAILED DAYS
+            -------------------------------- */
 
-        if (x.downloadFailedSince)
-        {
-            const failedSinceDate = new Date(x.downloadFailedSince);
+            let downloadFailedDays = "--";
 
-            if (!isNaN(failedSinceDate.getTime()))
-            {
-                downloadFailedSince = failedSinceDate.toLocaleDateString("en-GB");
+            if (
+                x.downloadFailedDays !== null &&
+                x.downloadFailedDays !== undefined &&
+                x.downloadFailedDays !== ""
+            ) {
+
+                const numericDays =
+                    Number(
+                        x.downloadFailedDays
+                    );
+
+                downloadFailedDays =
+                    isNaN(numericDays)
+                        ? String(
+                            x.downloadFailedDays
+                        )
+                        : numericDays;
             }
+
+
+            /* --------------------------------
+               HIGHLIGHT IF FAILED > 5 DAYS
+            -------------------------------- */
+
+            const failedDaysNumber =
+                Number(
+                    x.downloadFailedDays
+                );
+
+            const isMoreThan5Days =
+                !isNaN(failedDaysNumber) &&
+                failedDaysNumber > 5;
+
+
+            let failedSinceStyle = "";
+
+            let failedDaysStyle = "";
+
+
+            if (isMoreThan5Days) {
+
+                failedSinceStyle = `
+                    background-color: #dc3545;
+                    color: #fff;
+                    font-weight: 700;
+                    text-align: center;
+                `;
+
+                failedDaysStyle = `
+                    background-color: #dc3545;
+                    color: #fff;
+                    font-weight: 700;
+                    text-align: center;
+                `;
+
+            }
+            else {
+
+                failedSinceStyle = `
+                    text-align: center;
+                `;
+
+                failedDaysStyle = `
+                    text-align: center;
+                    font-weight: 600;
+                `;
+            }
+
+
+            /* --------------------------------
+               STATUS BADGE
+            -------------------------------- */
+
+            let badgeColor = "#6c757d";
+
+            let textColor = "#fff";
+
+            const message =
+                String(
+                    x.schedulerMessage || ""
+                ).toUpperCase();
+
+
+            if (
+                message.includes(
+                    "SYSTEM TITLE"
+                )
+            ) {
+
+                badgeColor = "#dc3545";
+
+            }
+            else if (
+                message.includes("TCP")
+            ) {
+
+                badgeColor = "#fd7e14";
+
+            }
+            else if (
+                message.includes("NO DATA")
+            ) {
+
+                badgeColor = "#ffc107";
+
+                textColor = "#000";
+
+            }
+            else if (
+                message.includes("TIMEOUT")
+            ) {
+
+                badgeColor = "#6c757d";
+            }
+
+
+            /* --------------------------------
+               ENTRY DATE
+            -------------------------------- */
+
+            let entryDate = "--";
+
+            if (x.entryDate) {
+
+                const parsedDate =
+                    new Date(
+                        x.entryDate
+                    );
+
+                if (
+                    !isNaN(
+                        parsedDate.getTime()
+                    )
+                ) {
+
+                    entryDate =
+                        parsedDate.toLocaleString(
+                            "en-GB"
+                        );
+                }
+            }
+
+
+            /* --------------------------------
+               TABLE ROW
+            -------------------------------- */
+
+            tbody.append(`
+                <tr>
+
+                    <td class="text-center fw-semibold">
+                        ${index + 1}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.consRef ?? ""
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.meterNumber ?? ""
+            )}
+                    </td>
+
+                    <td class="text-center">
+                        ${escapeHtml(
+                x.phase ?? ""
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.sapDepartment ?? ""
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.sapDivision ?? ""
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.sapSeqNo ?? ""
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.address ?? "--"
+            )}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(
+                x.meterType ?? ""
+            )}
+                    </td>
+
+                    <!-- DOWNLOAD FAILED SINCE -->
+                    <td style="${failedSinceStyle}">
+                        ${escapeHtml(
+                downloadFailedSince
+            )}
+                    </td>
+
+                    <!-- DOWNLOAD FAILED DAYS -->
+                    <td style="${failedDaysStyle}">
+                        ${escapeHtml(
+                downloadFailedDays
+            )}
+                    </td>
+
+                    <!-- STATUS -->
+                    <td>
+                        <span
+                            class="badge"
+                            style="
+                                background:${badgeColor};
+                                color:${textColor};
+                            "
+                        >
+                            ${escapeHtml(
+                x.schedulerMessage ?? "--"
+            )}
+                        </span>
+                    </td>
+
+                    <!-- ENTRY DATE -->
+                    <td>
+                        ${escapeHtml(
+                entryDate
+            )}
+                    </td>
+
+                </tr>
+            `);
+
         }
-
-        // DOWNLOAD FAILED DAYS
-
-        let downloadFailedDays = "--";
-
-        if (x.downloadFailedDays !== null && x.downloadFailedDays !== undefined && x.downloadFailedDays !== "")
-        {
-            downloadFailedDays = Number(x.downloadFailedDays);
-        }
-
-        // HIGHLIGHT IF FAILED > 5 DAYS
-
-        const failedDaysNumber = Number(x.downloadFailedDays);
-
-        const isMoreThan5Days = !isNaN(failedDaysNumber) && failedDaysNumber > 5;
-
-        let failedSinceStyle = "";
-        let failedDaysStyle = "";
-
-        if (isMoreThan5Days)
-        {
-            failedSinceStyle = `
-                background-color: #dc3545;
-                color: #fff;
-                font-weight: 700;
-                text-align: center;
-            `;
-
-            failedDaysStyle = `
-                background-color: #dc3545;
-                color: #fff;
-                font-weight: 700;
-                text-align: center;
-            `;
-        }
-        else
-        {
-            failedSinceStyle = `
-                text-align: center;
-            `;
-
-            failedDaysStyle = `
-                text-align: center;
-                font-weight: 600;
-            `;
-        }
-
-        // TABLE ROW
-
-        tbody.append(`
-            <tr>
-
-                <td class="text-center fw-semibold"> ${index + 1} </td>
-
-                <td> ${escapeHtml(x.consRef ?? "")}  </td>
-
-                <td>${escapeHtml(x.meterNumber ?? "")}  </td>
-
-                <td class="text-center">${escapeHtml(x.phase ?? "")} </td>
-
-                <td> ${escapeHtml(x.sapDepartment ?? "")}</td>
-
-                <td> ${escapeHtml(x.sapDivision ?? "")}   </td>
-
-                <td>  ${escapeHtml(x.sapSeqNo ?? "")}  </td>
-
-                <td> ${escapeHtml(x.address ?? "--")} </td>
-
-                <td> ${escapeHtml(x.meterType ?? "")}  </td>
-
-                <td>
-                    <span class="badge"
-                          style="
-                              background:${badgeColor};
-                              color:${textColor};
-                          ">
-
-                        ${escapeHtml( x.schedulerMessage ?? "--" )}
-
-                    </span>
-                </td>
-
-                <td> ${escapeHtml(entryDate)} </td>
-
-                <td style="${failedSinceStyle}"> ${escapeHtml(downloadFailedSince)}  </td>
-
-                <td style="${failedDaysStyle}">  ${escapeHtml(downloadFailedDays)} </td>
-
-            </tr>
-        `);
-
-    });
+    );
 }
 
 
-function exportTableToExcel()
-{
+/* ============================================================
+   EXPORT TO EXCEL
+   ============================================================ */
 
-    const table = document.getElementById("downloadSummaryTable");
+function exportTableToExcel() {
 
-    if (!table)
-    {
-        console.error("Download summary table not found.");
+    const table =
+        document.getElementById(
+            "downloadSummaryTable"
+        );
+
+    if (!table) {
+
+        console.error(
+            "Download summary table not found."
+        );
+
         return;
     }
 
-    // CREATE WORKBOOK
 
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.table_to_sheet(table);
+    /* CREATE WORKBOOK */
+
+    const wb =
+        XLSX.utils.book_new();
+
+    const ws =
+        XLSX.utils.table_to_sheet(
+            table
+        );
+
+
+    /* COLORS */
+
     const NAVY_BLUE = "17365D";
+
     const WHITE = "FFFFFF";
+
     const BLACK = "000000";
+
     const RED = "DC3545";
+
     const BORDER_COLOR = "7F7F7F";
+
+
+    /* BORDER */
 
     const allBorders = {
 
@@ -655,13 +1081,17 @@ function exportTableToExcel()
                 rgb: BORDER_COLOR
             }
         }
+
     };
 
-    const headerStyle =
-    {
+
+    /* HEADER STYLE */
+
+    const headerStyle = {
 
         fill: {
             patternType: "solid",
+
             fgColor: {
                 rgb: NAVY_BLUE
             }
@@ -671,6 +1101,7 @@ function exportTableToExcel()
             name: "Calibri",
             sz: 11,
             bold: true,
+
             color: {
                 rgb: WHITE
             }
@@ -685,12 +1116,15 @@ function exportTableToExcel()
         border: allBorders
     };
 
-    const normalStyle =
-    {
+
+    /* NORMAL STYLE */
+
+    const normalStyle = {
 
         font: {
             name: "Calibri",
             sz: 10,
+
             color: {
                 rgb: BLACK
             }
@@ -704,12 +1138,15 @@ function exportTableToExcel()
         border: allBorders
     };
 
-    const centerStyle =
-    {
+
+    /* CENTER STYLE */
+
+    const centerStyle = {
 
         font: {
             name: "Calibri",
             sz: 10,
+
             color: {
                 rgb: BLACK
             }
@@ -724,11 +1161,14 @@ function exportTableToExcel()
         border: allBorders
     };
 
-    const failedDaysStyle =
-    {
+
+    /* FAILED DAYS STYLE */
+
+    const failedDaysExcelStyle = {
 
         fill: {
             patternType: "solid",
+
             fgColor: {
                 rgb: RED
             }
@@ -738,6 +1178,7 @@ function exportTableToExcel()
             name: "Calibri",
             sz: 10,
             bold: true,
+
             color: {
                 rgb: WHITE
             }
@@ -751,6 +1192,7 @@ function exportTableToExcel()
         border: allBorders
     };
 
+
     /*
         A = S.No.
         B = Cons Ref
@@ -761,13 +1203,22 @@ function exportTableToExcel()
         G = Seq No
         H = Address
         I = Meter Make
-        J = Status
-        K = Entry Date
-        L = Download Failed Since
-        M = Download Failed Days
+        J = Download Failed Since
+        K = Download Failed Days
+        L = Status
+        M = Entry Date
     */
 
-    for (let col = 0; col < 13; col++) {
+
+    /* ========================================================
+       STYLE HEADER
+       ======================================================== */
+
+    for (
+        let col = 0;
+        col < 13;
+        col++
+    ) {
 
         const address =
             XLSX.utils.encode_cell({
@@ -776,121 +1227,187 @@ function exportTableToExcel()
             });
 
         if (ws[address]) {
-            ws[address].s = headerStyle;
+
+            ws[address].s =
+                headerStyle;
         }
     }
 
-    // STYLE DATA ROWS
-    const rows = table.querySelectorAll("tbody tr");
+
+    /* ========================================================
+       STYLE DATA ROWS
+       ======================================================== */
+
+    const rows =
+        table.querySelectorAll(
+            "tbody tr"
+        );
 
 
-    rows.forEach((row, rowIndex) =>
-    {
+    rows.forEach(
+        (row, rowIndex) => {
 
-        const cells = row.querySelectorAll("td");
-
-
-        if (cells.length !== 13)
-        {
-            return;
-        }
+            const cells =
+                row.querySelectorAll(
+                    "td"
+                );
 
 
-        // Excel row number
-        const excelRow =  rowIndex + 2;
+            /*
+             * Ignore "No Records Found" row.
+             */
 
-        const snoCell = `A${excelRow}`;
-
-
-        if (ws[snoCell])
-        {
-
-            ws[snoCell].t = "n";
-
-            ws[snoCell].v =  rowIndex + 1;
-
-            ws[snoCell].z = "0";
-
-            ws[snoCell].s = centerStyle;
-        }
-
-        for (let col = 1; col < 13; col++)
-        {
-
-            const address =
-                XLSX.utils.encode_cell({
-                    r: excelRow - 1,
-                    c: col
-                });
-
-
-            if (!ws[address]) {
-                continue;
-            }
-
-
-            // Center columns
             if (
-                col === 3 ||   // Phase
-                col === 10 ||  // Entry Date
-                col === 11 ||  // Failed Since
-                col === 12     // Failed Days
+                cells.length !== 13
             ) {
 
-                ws[address].s =
+                return;
+            }
+
+
+            /* Excel row number */
+
+            const excelRow =
+                rowIndex + 2;
+
+
+            /* S.NO */
+
+            const snoCell =
+                `A${excelRow}`;
+
+            if (ws[snoCell]) {
+
+                ws[snoCell].t = "n";
+
+                ws[snoCell].v =
+                    rowIndex + 1;
+
+                ws[snoCell].z = "0";
+
+                ws[snoCell].s =
                     centerStyle;
-
             }
-            else {
 
-                ws[address].s =
-                    normalStyle;
+
+            /* --------------------------------
+               STYLE COLUMNS B:M
+            -------------------------------- */
+
+            for (
+                let col = 1;
+                col < 13;
+                col++
+            ) {
+
+                const address =
+                    XLSX.utils.encode_cell({
+                        r: excelRow - 1,
+                        c: col
+                    });
+
+
+                if (!ws[address]) {
+
+                    continue;
+                }
+
+
+                /*
+                 * Center:
+                 *
+                 * D = Phase
+                 * J = Failed Since
+                 * K = Failed Days
+                 * M = Entry Date
+                 */
+
+                if (
+                    col === 3 ||
+                    col === 9 ||
+                    col === 10 ||
+                    col === 12
+                ) {
+
+                    ws[address].s =
+                        centerStyle;
+
+                }
+                else {
+
+                    ws[address].s =
+                        normalStyle;
+                }
             }
+
+
+            /* =================================================
+               GET DOWNLOAD FAILED DAYS
+               K COLUMN = index 10
+               ================================================= */
+
+            const failedDaysText =
+                cells[10]
+                    .innerText
+                    .trim();
+
+
+            const failedDays =
+                parseFloat(
+                    failedDaysText
+                );
+
+
+            /* =================================================
+               RED WHEN > 5 DAYS
+               ================================================= */
+
+            if (
+                !isNaN(failedDays) &&
+                failedDays > 5
+            ) {
+
+                /*
+                 * J = Failed Since
+                 */
+
+                const failedSinceCell =
+                    `J${excelRow}`;
+
+
+                if (
+                    ws[failedSinceCell]
+                ) {
+
+                    ws[failedSinceCell].s =
+                        failedDaysExcelStyle;
+                }
+
+
+                /*
+                 * K = Failed Days
+                 */
+
+                const failedDaysCell =
+                    `K${excelRow}`;
+
+
+                if (
+                    ws[failedDaysCell]
+                ) {
+
+                    ws[failedDaysCell].s =
+                        failedDaysExcelStyle;
+                }
+            }
+
         }
+    );
 
 
-        // ========================================================
-        // GET DOWNLOAD FAILED DAYS
-        // ========================================================
-
-        const failedDaysText =
-            cells[12]
-                .innerText
-                .trim();
-
-
-        const failedDays =
-            parseFloat(
-                failedDaysText
-            );
-
-
-        // ========================================================
-        // RED WHEN >= 5 DAYS
-        // ========================================================
-
-        if (
-            !isNaN(failedDays) &&
-            failedDays >= 5
-        ) {
-
-            const failedDaysCell =
-                `M${excelRow}`;
-
-
-            if (ws[failedDaysCell]) {
-
-                ws[failedDaysCell].s =
-                    failedDaysStyle;
-            }
-        }
-
-    });
-
-
-    // ============================================================
-    // COLUMN WIDTHS
-    // ============================================================
+    /* ============================================================
+       COLUMN WIDTHS
+       ============================================================ */
 
     ws["!cols"] = [
 
@@ -931,15 +1448,15 @@ function exportTableToExcel()
         },
 
         {
-            wch: 50
-        },
-
-        {
-            wch: 22
-        },
-
-        {
             wch: 23
+        },
+
+        {
+            wch: 20
+        },
+
+        {
+            wch: 50
         },
 
         {
@@ -949,21 +1466,21 @@ function exportTableToExcel()
     ];
 
 
-    // ============================================================
-    // ROW HEIGHTS
-    // ============================================================
+    /* ============================================================
+       ROW HEIGHTS
+       ============================================================ */
 
     ws["!rows"] = [];
 
 
-    // Header height
+    /* Header */
 
     ws["!rows"][0] = {
         hpt: 32
     };
 
 
-    // Data row height
+    /* Data */
 
     for (
         let i = 1;
@@ -977,28 +1494,35 @@ function exportTableToExcel()
     }
 
 
-    // ============================================================
-    // AUTOFILTER
-    // ============================================================
+    /* ============================================================
+       AUTOFILTER
+       ============================================================ */
 
     ws["!autofilter"] = {
-        ref: "A1:M1"
+
+        ref:
+            `A1:M${Math.max(
+                rows.length + 1,
+                2
+            )}`
     };
 
 
-    // ============================================================
-    // FREEZE HEADER
-    // ============================================================
+    /* ============================================================
+       FREEZE HEADER
+       ============================================================ */
 
     ws["!freeze"] = {
+
         xSplit: 0,
+
         ySplit: 1
     };
 
 
-    // ============================================================
-    // SHEET VIEW
-    // ============================================================
+    /* ============================================================
+       SHEET VIEW
+       ============================================================ */
 
     ws["!sheetViews"] = [
         {
@@ -1007,9 +1531,9 @@ function exportTableToExcel()
     ];
 
 
-    // ============================================================
-    // ADD WORKSHEET
-    // ============================================================
+    /* ============================================================
+       ADD WORKSHEET
+       ============================================================ */
 
     XLSX.utils.book_append_sheet(
         wb,
@@ -1018,9 +1542,9 @@ function exportTableToExcel()
     );
 
 
-    // ============================================================
-    // FILE NAME
-    // ============================================================
+    /* ============================================================
+       FILE NAME
+       ============================================================ */
 
     const today =
         new Date()
@@ -1036,103 +1560,211 @@ function exportTableToExcel()
     );
 }
 
-// EXPORT TO CSV
 
-function exportTableToCSV()
-{
+/* ============================================================
+   EXPORT TO CSV
+   ============================================================ */
+
+function exportTableToCSV() {
 
     let csv = [];
 
-    document .querySelectorAll( "#downloadSummaryTable tr")
-        .forEach(row =>
-        {
 
-            if (row.style.display === "none")
-            {
-                return;
-            }
+    document
+        .querySelectorAll(
+            "#downloadSummaryTable tr"
+        )
+        .forEach(
+            row => {
 
-            const cols = row.querySelectorAll("th, td");
+                if (
+                    row.style.display ===
+                    "none"
+                ) {
 
-            let data = [];
-
-            cols.forEach(col =>
-            {
-
-                const value =  col.innerText
-                        .replace( /"/g, '""')
-                        .replace( /\r?\n|\r/g, " " )
-                        .trim();
-
-                data.push( `"${value}"`);
-
-            });
+                    return;
+                }
 
 
-            csv.push( data.join(","));
+                const cols =
+                    row.querySelectorAll(
+                        "th, td"
+                    );
 
-        });
+
+                let data = [];
 
 
-    const blob = new Blob( [csv.join("\n")],
-            {
-                type: "text/csv;charset=utf-8;"
+                cols.forEach(
+                    col => {
+
+                        const value =
+                            col.innerText
+                                .replace(
+                                    /"/g,
+                                    '""'
+                                )
+                                .replace(
+                                    /\r?\n|\r/g,
+                                    " "
+                                )
+                                .trim();
+
+
+                        data.push(
+                            `"${value}"`
+                        );
+                    }
+                );
+
+
+                csv.push(
+                    data.join(",")
+                );
             }
         );
 
-    const link =  document.createElement( "a" );
 
-    const url = URL.createObjectURL( blob);
+    const blob =
+        new Blob(
+            [
+                csv.join("\n")
+            ],
+            {
+                type:
+                    "text/csv;charset=utf-8;"
+            }
+        );
+
+
+    const link =
+        document.createElement(
+            "a"
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
 
     link.href = url;
 
-    const today = new Date().toISOString().split("T")[0];
+
+    const today =
+        new Date()
+            .toISOString()
+            .split("T")[0];
 
 
-    link.download = "Download_Failed_Summary_BRPL_" + today + ".csv";
+    link.download =
+        "Download_Failed_Summary_BRPL_" +
+        today +
+        ".csv";
 
 
-    document.body.appendChild(link); 
+    document.body.appendChild(
+        link
+    );
+
 
     link.click();
 
-    document.body.removeChild(link);
+
+    document.body.removeChild(
+        link
+    );
 
 
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(
+        url
+    );
 }
 
 
-function escapeHtml(value)
-{
+/* ============================================================
+   ESCAPE HTML
+   ============================================================ */
+
+function escapeHtml(value) {
 
     return String(value)
-        .replace(/&/g, "&amp;")
 
-        .replace(/</g, "&lt;")
+        .replace(
+            /&/g,
+            "&amp;"
+        )
 
-        .replace(/>/g, "&gt;")
+        .replace(
+            /</g,
+            "&lt;"
+        )
 
-        .replace(/"/g, "&quot;")
+        .replace(
+            />/g,
+            "&gt;"
+        )
 
-        .replace(/'/g, "&#039;");
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
 }
+
+
+/* ============================================================
+   FORMAT DATE FOR FILTER
+   ============================================================ */
 
 function formatDateForFilter(value) {
 
     if (!value) {
+
         return "";
     }
 
-    const date = new Date(value);
 
-    if (isNaN(date.getTime())) {
+    const date =
+        new Date(value);
+
+
+    if (
+        isNaN(
+            date.getTime()
+        )
+    ) {
+
         return "";
     }
 
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
+
+    const year =
+        date.getFullYear();
+
+
+    const month =
+        String(
+            date.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    const day =
+        String(
+            date.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
 
     return `${year}-${month}-${day}`;
 }

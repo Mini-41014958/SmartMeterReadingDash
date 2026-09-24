@@ -1,11 +1,8 @@
-﻿
-
-let readingTrendChart = null;
+﻿let readingTrendChart = null;
 
 function getReadingTrendApiUrl(endpoint) {
 
-    const path =
-        window.location.pathname.toLowerCase();
+    const path = window.location.pathname.toLowerCase();
 
     const basePath =
         path === "/smartmeter" ||
@@ -32,10 +29,7 @@ async function getCurrentUserAccessForFailureChart() {
     // Dashboard.js global
     // ---------------------------------------------------------
 
-    if (
-        typeof currentUserAccess !== "undefined" &&
-        currentUserAccess
-    ) {
+    if (typeof currentUserAccess !== "undefined" && currentUserAccess) {
 
         return currentUserAccess;
 
@@ -46,9 +40,7 @@ async function getCurrentUserAccessForFailureChart() {
     // Window fallback
     // ---------------------------------------------------------
 
-    if (
-        window.currentUserAccess
-    ) {
+    if (window.currentUserAccess) {
 
         return window.currentUserAccess;
 
@@ -112,10 +104,7 @@ async function getCurrentUserAccessForFailureChart() {
 // COMPANY ACCESS
 // =============================================================
 
-function canAccessFailureCompany(
-    access,
-    company
-) {
+function canAccessFailureCompany(access, company) {
 
     if (!access) {
 
@@ -172,37 +161,7 @@ function canAccessFailureCompany(
 
 
 // =============================================================
-// EXTRACT ARRAY FROM API RESPONSE
-//
-// Supports:
-//
-// [
-//    {...}
-// ]
-//
-// OR
-//
-// {
-//    data: [...]
-// }
-//
-// OR
-//
-// {
-//    result: [...]
-// }
-//
-// OR
-//
-// {
-//    items: [...]
-// }
-//
-// OR
-//
-// {
-//    records: [...]
-// }
+// EXTRACT FAILURE ARRAY
 // =============================================================
 
 function extractFailureArray(response) {
@@ -383,23 +342,86 @@ function getRawFailureCount(item) {
     }
 
 
-    const value =
-        item.count ??
-        item.COUNT ??
-        item.failureCount ??
-        item.FAILURE_COUNT ??
-        item.failure_count ??
-        item.FailureCount ??
-        item.totalCount ??
-        item.TOTAL_COUNT ??
-        item.total ??
-        item.TOTAL ??
-        item.failed ??
-        item.FAILED ??
-        0;
+    // =========================================================
+    // IMPORTANT:
+    // The BRPL failure-reason API can return the count using
+    // different property names depending on the response/model.
+    // =========================================================
+
+    const candidates = [
+
+        item.count,
+        item.COUNT,
+
+        item.failureCount,
+        item.FAILURE_COUNT,
+        item.failure_count,
+        item.FailureCount,
+
+        item.failedCount,
+        item.FAILED_COUNT,
+        item.failed_count,
+        item.FailedCount,
+
+        item.failedMeters,
+        item.FAILED_METERS,
+        item.failed_meters,
+        item.FailedMeters,
+
+        item.meterCount,
+        item.METER_COUNT,
+        item.meter_count,
+        item.MeterCount,
+
+        item.totalCount,
+        item.TOTAL_COUNT,
+        item.total_count,
+        item.TotalCount,
+
+        item.total,
+        item.TOTAL,
+
+        item.failed,
+        item.FAILED,
+
+        item.value,
+        item.VALUE
+
+    ];
 
 
-    return Number(value) || 0;
+    for (
+        const candidate of candidates
+    ) {
+
+        if (
+            candidate !== null &&
+            candidate !== undefined &&
+            candidate !== ""
+        ) {
+
+            const number =
+                Number(
+                    String(candidate)
+                        .replace(/,/g, "")
+                        .trim()
+                );
+
+
+            if (
+                Number.isFinite(number)
+            ) {
+
+                return number;
+
+            }
+
+        }
+
+    }
+
+
+    return 0;
 
 }
 
@@ -537,13 +559,6 @@ function normalizeBRPLFailureData(response) {
         );
 
 
-    console.log(
-        "BRPL Failure Raw Records:",
-        data.length,
-        data
-    );
-
-
     const grouped = {};
 
 
@@ -623,6 +638,9 @@ function normalizeBRPLFailureData(response) {
 // =============================================================
 // BUILD BYPL FAILURE DATA
 // =============================================================
+// Kept for future BYPL re-enable.
+// BYPL is NOT used by the current chart.
+// =============================================================
 
 function buildBYPLFailureCounts(response) {
 
@@ -630,13 +648,6 @@ function buildBYPLFailureCounts(response) {
         extractFailureArray(
             response
         );
-
-
-    console.log(
-        "BYPL Failure Detail Records:",
-        data.length,
-        data
-    );
 
 
     const grouped = {};
@@ -1311,49 +1322,15 @@ async function loadFailureReasonChart(
     try {
 
         // =====================================================
-        // USER ACCESS
+        // BRPL ONLY MODE
+        // =====================================================
+        // BYPL is intentionally disabled on this dashboard.
+        // This is forced to false even for SUPERADMIN.
         // =====================================================
 
-        const access =
-            await getCurrentUserAccessForFailureChart();
+        const brplAllowed = true;
 
-
-        const brplAllowed =
-            canAccessFailureCompany(
-                access,
-                "BRPL"
-            );
-
-
-        const byplAllowed =
-            canAccessFailureCompany(
-                access,
-                "BYPL"
-            );
-
-
-        console.log(
-            "Failure Chart Access:",
-            {
-                role:
-                    access?.role ??
-                    access?.Role,
-
-                company:
-                    access?.company ??
-                    access?.Company,
-
-                department:
-                    access?.department ??
-                    access?.Department,
-
-                BRPL:
-                    brplAllowed,
-
-                BYPL:
-                    byplAllowed
-            }
-        );
+        const byplAllowed = false;
 
 
         // =====================================================
@@ -1398,7 +1375,7 @@ async function loadFailureReasonChart(
 
 
             console.log(
-                "BRPL Failure API Raw Response:",
+                "BRPL failure reason API response:",
                 response
             );
 
@@ -1413,6 +1390,9 @@ async function loadFailureReasonChart(
 
         // =====================================================
         // BYPL API
+        // =====================================================
+        // Intentionally disabled.
+        // Kept here only for future re-enable.
         // =====================================================
 
         if (
@@ -1443,12 +1423,6 @@ async function loadFailureReasonChart(
                 });
 
 
-            console.log(
-                "BYPL Failure API Raw Response:",
-                response
-            );
-
-
             byplData =
                 buildBYPLFailureCounts(
                     response
@@ -1473,18 +1447,6 @@ async function loadFailureReasonChart(
             );
 
 
-        console.log(
-            "Normalized Failure Data:",
-            {
-                BRPL:
-                    brpl,
-
-                BYPL:
-                    bypl
-            }
-        );
-
-
         // =====================================================
         // FAILURE REASONS
         // =====================================================
@@ -1493,38 +1455,28 @@ async function loadFailureReasonChart(
             new Set();
 
 
-        if (
-            brplAllowed
-        ) {
+        // BRPL ONLY
 
-            brpl.forEach(
-                function (item) {
+        brpl.forEach(
+            function (item) {
 
-                    failureReasonSet.add(
-                        item.reason
-                    );
-
-                }
-            );
-
-        }
-
-
-        if (
-            byplAllowed
-        ) {
-
-            bypl.forEach(
-                function (item) {
+                if (
+                    item &&
+                    item.reason &&
+                    Number(item.count) > 0
+                ) {
 
                     failureReasonSet.add(
                         item.reason
                     );
 
                 }
-            );
 
-        }
+            }
+        );
+
+
+        // BYPL intentionally not added.
 
 
         const validFailureReasons =
@@ -1545,37 +1497,29 @@ async function loadFailureReasonChart(
 
 
         // =====================================================
-        // SORT BY TOTAL COUNT
+        // SORT BY BRPL COUNT
         // =====================================================
 
         validFailureReasons.sort(
             function (a, b) {
 
-                const totalA =
+                const countA =
                     getFailureCount(
                         brpl,
-                        a
-                    ) +
-                    getFailureCount(
-                        bypl,
                         a
                     );
 
 
-                const totalB =
+                const countB =
                     getFailureCount(
                         brpl,
-                        b
-                    ) +
-                    getFailureCount(
-                        bypl,
                         b
                     );
 
 
                 return (
-                    totalB -
-                    totalA
+                    countB -
+                    countA
                 );
 
             }
@@ -1642,20 +1586,7 @@ async function loadFailureReasonChart(
 
 
             console.warn(
-                "No failure reason data available.",
-                {
-                    BRPLAllowed:
-                        brplAllowed,
-
-                    BYPLAllowed:
-                        byplAllowed,
-
-                    BRPLRecords:
-                        brpl.length,
-
-                    BYPLRecords:
-                        bypl.length
-                }
+                "BRPL failure reason chart: no failure data."
             );
 
 
@@ -1668,29 +1599,9 @@ async function loadFailureReasonChart(
         // COMPANY LABELS
         // =====================================================
 
-        const companyLabels = [];
-
-
-        if (
-            brplAllowed
-        ) {
-
-            companyLabels.push(
-                "BRPL"
-            );
-
-        }
-
-
-        if (
-            byplAllowed
-        ) {
-
-            companyLabels.push(
-                "BYPL"
-            );
-
-        }
+        const companyLabels = [
+            "BRPL"
+        ];
 
 
         // =====================================================
@@ -1701,35 +1612,14 @@ async function loadFailureReasonChart(
             validFailureReasons.map(
                 function (reason) {
 
-                    const values = [];
+                    const values = [
 
+                        getFailureCount(
+                            brpl,
+                            reason
+                        )
 
-                    if (
-                        brplAllowed
-                    ) {
-
-                        values.push(
-                            getFailureCount(
-                                brpl,
-                                reason
-                            )
-                        );
-
-                    }
-
-
-                    if (
-                        byplAllowed
-                    ) {
-
-                        values.push(
-                            getFailureCount(
-                                bypl,
-                                reason
-                            )
-                        );
-
-                    }
+                    ];
 
 
                     return {
@@ -1767,6 +1657,35 @@ async function loadFailureReasonChart(
 
                 }
             );
+
+
+        // =====================================================
+        // DEBUG COUNTS
+        // =====================================================
+
+        console.table(
+            brpl.map(
+                function (item) {
+
+                    return {
+
+                        "Failure Reason":
+                            item.reason,
+
+                        "Count":
+                            Number(item.count) || 0
+
+                    };
+
+                }
+            )
+        );
+
+
+        console.log(
+            "BRPL failure reason totals:",
+            brpl
+        );
 
 
         // =====================================================
@@ -1932,7 +1851,7 @@ async function loadFailureReasonChart(
                                     true,
 
                                 text:
-                                    `${companyLabels.join(" vs ")} • ${month}`,
+                                    `BRPL • ${month}`,
 
                                 align:
                                     "start",
@@ -2129,6 +2048,7 @@ async function loadFailureReasonChart(
 
                                 },
 
+
                                 ticks: {
 
                                     precision:
@@ -2151,6 +2071,7 @@ async function loadFailureReasonChart(
                                         5
 
                                 },
+
 
                                 grid: {
 
@@ -2205,65 +2126,6 @@ async function loadFailureReasonChart(
 
                 }
             );
-
-
-        // =====================================================
-        // FINAL DEBUG
-        // =====================================================
-
-        console.log(
-            "Failure Reason Chart Created:",
-            {
-
-                role:
-                    access?.role ??
-                    access?.Role,
-
-                company:
-                    access?.company ??
-                    access?.Company,
-
-                department:
-                    access?.department ??
-                    access?.Department,
-
-                month:
-                    month,
-
-                companies:
-                    companyLabels,
-
-                failureReasons:
-                    validFailureReasons,
-
-                BRPL:
-                    brpl,
-
-                BYPL:
-                    bypl,
-
-                datasets:
-                    datasets.map(
-                        function (dataset) {
-
-                            return {
-
-                                label:
-                                    dataset.label,
-
-                                color:
-                                    dataset.backgroundColor,
-
-                                data:
-                                    dataset.data
-
-                            };
-
-                        }
-                    )
-
-            }
-        );
 
     }
     catch (error) {

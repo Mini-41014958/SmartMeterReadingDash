@@ -4,28 +4,36 @@ let filteredDataBypl = [];
 
 $("#btnViewHesFailedDetailsBYPL")
     .off("click")
-    .on("click", function ()
-    {
+    .on("click", function () {
 
-        const modalElement = document.getElementById("downloadSummaryModalBYPL");
+        const modalElement =
+            document.getElementById(
+                "downloadSummaryModalBYPL"
+            );
 
-        if (!modalElement)
-        {
-            console.error("BYPL modal not found.");
+        if (!modalElement) {
+
+            console.error(
+                "BYPL modal not found."
+            );
+
             return;
         }
 
-        const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+        const modal =
+            bootstrap.Modal.getOrCreateInstance(
+                modalElement
+            );
+
         modal.show();
+
         loadDownloadSummaryBYPL();
     });
 
 
-async function loadDownloadSummaryBYPL()
-{
+async function loadDownloadSummaryBYPL() {
 
-    try
-    {
+    try {
 
         $("#downloadSummaryBodyBYPL").html(`
             <tr>
@@ -43,30 +51,58 @@ async function loadDownloadSummaryBYPL()
         `);
 
 
-        const readingMonth = getReadingMonth();
+        const readingMonth =
+            getReadingMonth();
 
-        const apiUrl = `${getApiUrl("dashboardapi/meter-download-detailed-summary-bypl")}` +  `?readingMonth=${encodeURIComponent(readingMonth)}`;
 
-        const response = await fetch(apiUrl);
+        const apiUrl =
+            `${getApiUrl(
+                "dashboardapi/meter-download-detailed-summary-bypl"
+            )}` +
+            `?readingMonth=${encodeURIComponent(
+                readingMonth
+            )}`;
 
-        if (!response.ok)
-        {
 
-            const errorText = await response.text();
+        const response =
+            await fetch(apiUrl);
 
-            console.error( "BYPL API Error:", response.status, errorText );
 
-            throw new Error(  "Unable to load data. HTTP " +   response.status);
+        if (!response.ok) {
+
+            const errorText =
+                await response.text();
+
+
+            console.error(
+                "BYPL API Error:",
+                response.status,
+                errorText
+            );
+
+
+            throw new Error(
+                "Unable to load data. HTTP " +
+                response.status
+            );
         }
 
-        const result =  await response.json();
 
-        allDownloadDataBypl = Array.isArray(result)
+        const result =
+            await response.json();
+
+
+        allDownloadDataBypl =
+            Array.isArray(result)
                 ? result
                 : [];
 
 
-        filteredDataBypl =   [...allDownloadDataBypl];
+        filteredDataBypl =
+            [
+                ...allDownloadDataBypl
+            ];
+
 
         loadDepartmentFilterBYPL();
 
@@ -78,13 +114,17 @@ async function loadDownloadSummaryBYPL()
 
         clearFiltersBYPL();
 
-        renderTableBYPL( filteredDataBypl);
+        renderTableBYPL(
+            filteredDataBypl
+        );
 
     }
-    catch (err)
-    {
+    catch (err) {
 
-        console.error( "BYPL Download Summary Error:");
+        console.error(
+            "BYPL Download Summary Error:",
+            err
+        );
 
 
         $("#downloadSummaryBodyBYPL").html(`
@@ -92,7 +132,8 @@ async function loadDownloadSummaryBYPL()
                 <td colspan="13"
                     class="text-center text-danger py-4">
 
-                    Failed to load data:  ${escapeHtml(err.message)}
+                    Failed to load data:
+                    ${escapeHtml(err.message)}
 
                 </td>
             </tr>
@@ -100,12 +141,19 @@ async function loadDownloadSummaryBYPL()
     }
 }
 
-function loadDepartmentFilterBYPL()
-{
 
-    const ddl =  $("#departmentFilterBYPL");
+/* ============================================================
+   DEPARTMENT FILTER
+   ============================================================ */
+
+function loadDepartmentFilterBYPL() {
+
+    const ddl =
+        $("#departmentFilterBYPL");
+
 
     ddl.empty();
+
 
     ddl.append(`
         <option value="">
@@ -116,23 +164,29 @@ function loadDepartmentFilterBYPL()
 
     const departments =
         [
-            ...new Set( allDownloadDataBypl
+            ...new Set(
+                allDownloadDataBypl
                     .map(x =>
                         String(
                             x.sapDepartment || ""
                         ).trim()
-                    ) .filter(Boolean)
+                    )
+                    .filter(Boolean)
             )
         ];
 
-    departments.sort( (a, b) =>   a.localeCompare(b) );
+
+    departments.sort(
+        (a, b) =>
+            a.localeCompare(b)
+    );
+
 
     departments.forEach(
-        department =>
-        {
+        department => {
 
-            ddl.append($("<option>",
-                {
+            ddl.append(
+                $("<option>", {
                     value: department,
                     text: department
                 })
@@ -141,12 +195,20 @@ function loadDepartmentFilterBYPL()
         }
     );
 }
-function loadReasonFilterBYPL()
-{
 
-    const ddl =$("#reasonFilterBYPL");
+
+/* ============================================================
+   REASON FILTER
+   ============================================================ */
+
+function loadReasonFilterBYPL() {
+
+    const ddl =
+        $("#reasonFilterBYPL");
+
 
     ddl.empty();
+
 
     ddl.append(`
         <option value="">
@@ -179,12 +241,19 @@ function loadReasonFilterBYPL()
     `);
 }
 
-function loadPhaseFilterBYPL()
-{
 
-    const ddl =  $("#phaseFilterBYPL");
+/* ============================================================
+   PHASE FILTER
+   ============================================================ */
+
+function loadPhaseFilterBYPL() {
+
+    const ddl =
+        $("#phaseFilterBYPL");
+
 
     ddl.empty();
+
 
     ddl.append(`
         <option value="">
@@ -192,9 +261,11 @@ function loadPhaseFilterBYPL()
         </option>
     `);
 
+
     const phases =
         [
-            ...new Set(  allDownloadDataBypl
+            ...new Set(
+                allDownloadDataBypl
                     .map(x => x.phase)
                     .filter(
                         x =>
@@ -205,8 +276,11 @@ function loadPhaseFilterBYPL()
             )
         ];
 
+
     phases.sort(
-        (a, b) => String(a).localeCompare( String(b),
+        (a, b) =>
+            String(a).localeCompare(
+                String(b),
                 undefined,
                 {
                     numeric: true
@@ -214,8 +288,9 @@ function loadPhaseFilterBYPL()
             )
     );
 
-    phases.forEach(phase =>
-    {
+
+    phases.forEach(
+        phase => {
 
             ddl.append(
                 $("<option>", {
@@ -228,12 +303,19 @@ function loadPhaseFilterBYPL()
     );
 }
 
-function loadMeterMakeFilterBYPL()
-{
 
-    const ddl =   $("#meterMakeFilterBYPL");
+/* ============================================================
+   METER MAKE FILTER
+   ============================================================ */
+
+function loadMeterMakeFilterBYPL() {
+
+    const ddl =
+        $("#meterMakeFilterBYPL");
+
 
     ddl.empty();
+
 
     ddl.append(`
         <option value="">
@@ -280,9 +362,9 @@ function loadMeterMakeFilterBYPL()
 }
 
 
-// ============================================================
-// FAILURE CATEGORY
-// ============================================================
+/* ============================================================
+   FAILURE CATEGORY
+   ============================================================ */
 
 function getFailureCategoryBYPL(reason) {
 
@@ -293,12 +375,20 @@ function getFailureCategoryBYPL(reason) {
             .trim();
 
 
-    if (message.includes("SYSTEM TITLE")) {
+    if (
+        message.includes(
+            "SYSTEM TITLE"
+        )
+    ) {
+
         return "SYSTEM_TITLE";
     }
 
 
-    if (message.includes("TCP")) {
+    if (
+        message.includes("TCP")
+    ) {
+
         return "TCP";
     }
 
@@ -308,6 +398,7 @@ function getFailureCategoryBYPL(reason) {
         message.includes("NO DATA") ||
         message.includes("DATA NOT AVAILABLE")
     ) {
+
         return "NO_DATA";
     }
 
@@ -319,9 +410,12 @@ function getFailureCategoryBYPL(reason) {
             message.includes("SMART METER") &&
             message.includes("OLDER") &&
             message.includes("FORMY") &&
-            message.includes("SAP_MRO_DOWNLOAD_DATE")
+            message.includes(
+                "SAP_MRO_DOWNLOAD_DATE"
+            )
         )
     ) {
+
         return "DATE_OLDER";
     }
 
@@ -330,6 +424,7 @@ function getFailureCategoryBYPL(reason) {
         message.includes("TIMEOUT") ||
         message.includes("TIME OUT")
     ) {
+
         return "TIMEOUT";
     }
 
@@ -338,43 +433,61 @@ function getFailureCategoryBYPL(reason) {
 }
 
 
-// ============================================================
-// FILTER EVENTS
-// ============================================================
+/* ============================================================
+   FILTER EVENTS
+   ============================================================ */
 
 $("#departmentFilterBYPL")
     .off("change")
-    .on("change", applyFiltersBYPL);
+    .on(
+        "change",
+        applyFiltersBYPL
+    );
 
 
 $("#reasonFilterBYPL")
     .off("change")
-    .on("change", applyFiltersBYPL);
+    .on(
+        "change",
+        applyFiltersBYPL
+    );
 
 
 $("#phaseFilterBYPL")
     .off("change")
-    .on("change", applyFiltersBYPL);
+    .on(
+        "change",
+        applyFiltersBYPL
+    );
 
 
 $("#meterMakeFilterBYPL")
     .off("change")
-    .on("change", applyFiltersBYPL);
+    .on(
+        "change",
+        applyFiltersBYPL
+    );
 
 
 $("#entryDateFromBYPL")
     .off("change")
-    .on("change", applyFiltersBYPL);
+    .on(
+        "change",
+        applyFiltersBYPL
+    );
 
 
 $("#entryDateToBYPL")
     .off("change")
-    .on("change", applyFiltersBYPL);
+    .on(
+        "change",
+        applyFiltersBYPL
+    );
 
 
-// ============================================================
-// CLEAR FILTER BUTTON
-// ============================================================
+/* ============================================================
+   CLEAR FILTER BUTTON
+   ============================================================ */
 
 $("#btnClearDownloadFiltersBYPL")
     .off("click")
@@ -382,8 +495,12 @@ $("#btnClearDownloadFiltersBYPL")
 
         clearFiltersBYPL();
 
+
         filteredDataBypl =
-            [...allDownloadDataBypl];
+            [
+                ...allDownloadDataBypl
+            ];
+
 
         renderTableBYPL(
             filteredDataBypl
@@ -391,38 +508,53 @@ $("#btnClearDownloadFiltersBYPL")
     });
 
 
-// ============================================================
-// CLEAR FILTERS
-// ============================================================
+/* ============================================================
+   CLEAR FILTERS
+   ============================================================ */
 
 function clearFiltersBYPL() {
 
-    $("#departmentFilterBYPL").val("");
+    $("#departmentFilterBYPL")
+        .val("");
 
-    $("#reasonFilterBYPL").val("");
 
-    $("#phaseFilterBYPL").val("");
+    $("#reasonFilterBYPL")
+        .val("");
 
-    $("#meterMakeFilterBYPL").val("");
 
-    $("#entryDateFromBYPL").val("");
+    $("#phaseFilterBYPL")
+        .val("");
 
-    $("#entryDateToBYPL").val("");
+
+    $("#meterMakeFilterBYPL")
+        .val("");
+
+
+    $("#entryDateFromBYPL")
+        .val("");
+
 
     $("#entryDateToBYPL")
-        .removeClass("is-invalid");
+        .val("");
+
+
+    $("#entryDateToBYPL")
+        .removeClass(
+            "is-invalid"
+        );
 }
 
 
-// ============================================================
-// APPLY FILTERS
-// ============================================================
+/* ============================================================
+   APPLY FILTERS
+   ============================================================ */
 
 function applyFiltersBYPL() {
 
     const selectedDepartment =
         String(
-            $("#departmentFilterBYPL").val() || ""
+            $("#departmentFilterBYPL")
+                .val() || ""
         )
             .trim()
             .toUpperCase();
@@ -430,7 +562,8 @@ function applyFiltersBYPL() {
 
     const selectedReason =
         String(
-            $("#reasonFilterBYPL").val() || ""
+            $("#reasonFilterBYPL")
+                .val() || ""
         )
             .trim()
             .toUpperCase();
@@ -438,7 +571,8 @@ function applyFiltersBYPL() {
 
     const selectedPhase =
         String(
-            $("#phaseFilterBYPL").val() || ""
+            $("#phaseFilterBYPL")
+                .val() || ""
         )
             .trim()
             .toUpperCase();
@@ -446,21 +580,24 @@ function applyFiltersBYPL() {
 
     const selectedMeterMake =
         String(
-            $("#meterMakeFilterBYPL").val() || ""
+            $("#meterMakeFilterBYPL")
+                .val() || ""
         )
             .trim()
             .toUpperCase();
 
 
     const dateFrom =
-        $("#entryDateFromBYPL").val();
+        $("#entryDateFromBYPL")
+            .val();
 
 
     const dateTo =
-        $("#entryDateToBYPL").val();
+        $("#entryDateToBYPL")
+            .val();
 
 
-    // DATE VALIDATION
+    /* DATE VALIDATION */
 
     if (
         dateFrom &&
@@ -469,7 +606,9 @@ function applyFiltersBYPL() {
     ) {
 
         $("#entryDateToBYPL")
-            .addClass("is-invalid");
+            .addClass(
+                "is-invalid"
+            );
 
 
         filteredDataBypl = [];
@@ -479,21 +618,24 @@ function applyFiltersBYPL() {
             filteredDataBypl
         );
 
+
         return;
     }
 
 
     $("#entryDateToBYPL")
-        .removeClass("is-invalid");
+        .removeClass(
+            "is-invalid"
+        );
 
 
-    // FILTER
+    /* FILTER */
 
     filteredDataBypl =
         allDownloadDataBypl.filter(
             item => {
 
-                // DEPARTMENT
+                /* DEPARTMENT */
 
                 const itemDepartment =
                     String(
@@ -509,7 +651,7 @@ function applyFiltersBYPL() {
                     selectedDepartment;
 
 
-                // FAILURE REASON
+                /* FAILURE REASON */
 
                 const itemCategory =
                     getFailureCategoryBYPL(
@@ -523,7 +665,7 @@ function applyFiltersBYPL() {
                     selectedReason;
 
 
-                // PHASE
+                /* PHASE */
 
                 const itemPhase =
                     String(
@@ -539,7 +681,7 @@ function applyFiltersBYPL() {
                     selectedPhase;
 
 
-                // METER MAKE
+                /* METER MAKE */
 
                 const itemMeterMake =
                     String(
@@ -555,14 +697,19 @@ function applyFiltersBYPL() {
                     selectedMeterMake;
 
 
-                // ENTRY DATE
+                /* ENTRY DATE */
 
                 let dateMatch = true;
 
 
-                if (dateFrom || dateTo) {
+                if (
+                    dateFrom ||
+                    dateTo
+                ) {
 
-                    if (!item.entryDate) {
+                    if (
+                        !item.entryDate
+                    ) {
 
                         dateMatch = false;
 
@@ -597,6 +744,7 @@ function applyFiltersBYPL() {
                                 entryDateString <
                                 dateFrom
                             ) {
+
                                 dateMatch = false;
                             }
 
@@ -606,6 +754,7 @@ function applyFiltersBYPL() {
                                 entryDateString >
                                 dateTo
                             ) {
+
                                 dateMatch = false;
                             }
                         }
@@ -630,11 +779,13 @@ function applyFiltersBYPL() {
 }
 
 
-// ============================================================
-// BADGE STYLE
-// ============================================================
+/* ============================================================
+   BADGE STYLE
+   ============================================================ */
 
-function getFailureBadgeStyleBYPL(reason) {
+function getFailureBadgeStyleBYPL(
+    reason
+) {
 
     const category =
         getFailureCategoryBYPL(
@@ -694,13 +845,14 @@ function getFailureBadgeStyleBYPL(reason) {
 }
 
 
-// ============================================================
-// FORMAT ENTRY DATE
-// ============================================================
+/* ============================================================
+   FORMAT ENTRY DATE
+   ============================================================ */
 
 function formatEntryDateBYPL(value) {
 
     if (!value) {
+
         return "--";
     }
 
@@ -709,7 +861,12 @@ function formatEntryDateBYPL(value) {
         new Date(value);
 
 
-    if (isNaN(date.getTime())) {
+    if (
+        isNaN(
+            date.getTime()
+        )
+    ) {
+
         return String(value);
     }
 
@@ -728,13 +885,16 @@ function formatEntryDateBYPL(value) {
 }
 
 
-// ============================================================
-// FORMAT FAILED SINCE DATE
-// ============================================================
+/* ============================================================
+   FORMAT FAILED SINCE DATE
+   ============================================================ */
 
-function formatDownloadFailedSinceBYPL(value) {
+function formatDownloadFailedSinceBYPL(
+    value
+) {
 
     if (!value) {
+
         return "--";
     }
 
@@ -743,7 +903,12 @@ function formatDownloadFailedSinceBYPL(value) {
         new Date(value);
 
 
-    if (isNaN(date.getTime())) {
+    if (
+        isNaN(
+            date.getTime()
+        )
+    ) {
+
         return String(value);
     }
 
@@ -759,12 +924,14 @@ function formatDownloadFailedSinceBYPL(value) {
 }
 
 
-// ============================================================
-// GET FAILED DAYS
-// Handles camelCase + PascalCase JSON
-// ============================================================
+/* ============================================================
+   GET FAILED DAYS
+   Handles camelCase + PascalCase JSON
+   ============================================================ */
 
-function getDownloadFailedDaysBYPL(item) {
+function getDownloadFailedDaysBYPL(
+    item
+) {
 
     const value =
         item.downloadFailedDays ??
@@ -777,6 +944,7 @@ function getDownloadFailedDaysBYPL(item) {
         value === undefined ||
         value === ""
     ) {
+
         return null;
     }
 
@@ -791,12 +959,14 @@ function getDownloadFailedDaysBYPL(item) {
 }
 
 
-// ============================================================
-// GET FAILED SINCE
-// Handles camelCase + PascalCase JSON
-// ============================================================
+/* ============================================================
+   GET FAILED SINCE
+   Handles camelCase + PascalCase JSON
+   ============================================================ */
 
-function getDownloadFailedSinceBYPL(item) {
+function getDownloadFailedSinceBYPL(
+    item
+) {
 
     return (
         item.downloadFailedSince ??
@@ -807,9 +977,9 @@ function getDownloadFailedSinceBYPL(item) {
 }
 
 
-// ============================================================
-// RENDER BYPL TABLE
-// ============================================================
+/* ============================================================
+   RENDER BYPL TABLE
+   ============================================================ */
 
 function renderTableBYPL(data) {
 
@@ -819,8 +989,6 @@ function renderTableBYPL(data) {
 
     tbody.empty();
 
-
-    // NO RECORDS
 
     if (
         !Array.isArray(data) ||
@@ -842,10 +1010,12 @@ function renderTableBYPL(data) {
     }
 
 
-    // RENDER ROWS
-
     data.forEach(
         (x, index) => {
+
+            /* =================================================
+               STATUS
+               ================================================= */
 
             const badgeStyle =
                 getFailureBadgeStyleBYPL(
@@ -853,13 +1023,19 @@ function renderTableBYPL(data) {
                 );
 
 
+            /* =================================================
+               LAST ENTRY DATE
+               ================================================= */
+
             const entryDate =
                 formatEntryDateBYPL(
                     x.entryDate
                 );
 
 
-            // DOWNLOAD FAILED SINCE
+            /* =================================================
+               FAILED SINCE
+               ================================================= */
 
             const failedSince =
                 getDownloadFailedSinceBYPL(
@@ -873,19 +1049,25 @@ function renderTableBYPL(data) {
                 );
 
 
-            // DOWNLOAD FAILED DAYS
+            /* =================================================
+               FAILED DAYS
+               ================================================= */
 
             const failedDays =
                 getDownloadFailedDaysBYPL(
                     x
                 );
 
+
+            /*
+             * IMPORTANT:
+             * Red only when Total Failed Days > 5.
+             */
+
             const failedMoreThan5 =
                 failedDays !== null &&
-                failedDays >= 5;
+                failedDays > 5;
 
-
-            // RED STYLE WHEN >= 5 DAYS
 
             const failedSinceClass =
                 failedMoreThan5
@@ -899,61 +1081,126 @@ function renderTableBYPL(data) {
                     : "";
 
 
+            /* =================================================
+               TABLE ROW
+
+               ORDER:
+               S.No.
+               Cons Ref
+               Meter Number
+               Phase
+               Department
+               Division
+               Seq No
+               Address
+               Meter Make
+               Failed Since
+               Total Failed Days
+               Status
+               Last Entry Date
+               ================================================= */
+
             tbody.append(`
                 <tr>
 
+                    <!-- S.NO -->
                     <td class="text-center">
                         ${index + 1}
                     </td>
 
+
+                    <!-- CONS REF -->
                     <td>
                         ${escapeHtml(
                 x.consRef || ""
             )}
                     </td>
 
+
+                    <!-- METER NUMBER -->
                     <td>
                         ${escapeHtml(
                 x.meterNumber || ""
             )}
                     </td>
 
+
+                    <!-- PHASE -->
                     <td class="text-center">
                         ${escapeHtml(
                 x.phase || ""
             )}
                     </td>
 
+
+                    <!-- DEPARTMENT -->
                     <td>
                         ${escapeHtml(
                 x.sapDepartment || ""
             )}
                     </td>
 
+
+                    <!-- DIVISION -->
                     <td>
                         ${escapeHtml(
                 x.sapDivision || ""
             )}
                     </td>
 
+
+                    <!-- SEQ NO -->
                     <td>
                         ${escapeHtml(
                 x.sapSeqNo || ""
             )}
                     </td>
 
+
+                    <!-- ADDRESS -->
                     <td class="address-cell">
                         ${escapeHtml(
                 x.address || "--"
             )}
                     </td>
 
+
+                    <!-- METER MAKE -->
                     <td class="text-center">
                         ${escapeHtml(
                 x.meterType || ""
             )}
                     </td>
 
+
+                    <!-- FAILED SINCE -->
+                    <td
+                        class="text-center ${failedSinceClass}">
+
+                        ${escapeHtml(
+                failedSinceFormatted
+            )}
+
+                    </td>
+
+
+                    <!-- TOTAL FAILED DAYS -->
+                    <td
+                        class="text-center ${failedDaysClass}">
+
+                        ${failedDays !== null
+                    ? escapeHtml(
+                        String(
+                            failedDays
+                        )
+                    )
+                    : "--"
+                }
+
+                    </td>
+
+
+                    <!-- STATUS -->
                     <td class="status-cell">
 
                         <span
@@ -966,46 +1213,25 @@ function renderTableBYPL(data) {
                                 line-height:1.35;
                                 padding:6px 10px;
                                 max-width:100%;
-                            ">
+                            "
+                        >
 
                             ${escapeHtml(
-                x.schedulerMessage || "--"
-            )}
+                    x.schedulerMessage ||
+                    "--"
+                )}
 
                         </span>
 
                     </td>
 
+
+                    <!-- LAST ENTRY DATE -->
                     <td class="text-center">
-                        ${escapeHtml(
-                entryDate
-            )}
-                    </td>
-
-
-                    <!-- DOWNLOAD FAILED SINCE -->
-
-                    <td
-                        class="text-center ${failedSinceClass}">
 
                         ${escapeHtml(
-                failedSinceFormatted
-            )}
-
-                    </td>
-
-
-                    <!-- DOWNLOAD FAILED DAYS -->
-
-                    <td
-                        class="text-center ${failedDaysClass}">
-
-                        ${failedDays !== null
-                    ? escapeHtml(
-                        String(failedDays)
-                    )
-                    : "--"
-                }
+                    entryDate
+                )}
 
                     </td>
 
@@ -1016,9 +1242,9 @@ function renderTableBYPL(data) {
 }
 
 
-// ============================================================
-// ESCAPE HTML
-// ============================================================
+/* ============================================================
+   ESCAPE HTML
+   ============================================================ */
 
 function escapeHtml(value) {
 
@@ -1026,6 +1252,7 @@ function escapeHtml(value) {
         value === null ||
         value === undefined
     ) {
+
         return "";
     }
 
@@ -1054,53 +1281,76 @@ function escapeHtml(value) {
 }
 
 
-// ============================================================
-// EXPORT EXCEL
-// ============================================================
+/* ============================================================
+   EXPORT EXCEL
+   ============================================================ */
 
 function exportTableToExcelBYPL() {
 
-    // ============================================================
-    // FIND THE ACTUAL VISIBLE BYPL TABLE
-    // ============================================================
-
     let table = null;
 
-    const possibleTables = document.querySelectorAll(
-        'table[id*="downloadSummary"], table[id*="DownloadSummary"]'
-    );
 
-    for (const tbl of possibleTables) {
+    /* =========================================================
+       FIND ACTUAL BYPL TABLE
+       ========================================================= */
 
-        const rows = tbl.querySelectorAll("tbody tr");
+    const possibleTables =
+        document.querySelectorAll(
+            'table[id*="downloadSummary"], table[id*="DownloadSummary"]'
+        );
+
+
+    for (
+        const tbl of possibleTables
+    ) {
+
+        const rows =
+            tbl.querySelectorAll(
+                "tbody tr"
+            );
+
 
         let hasData = false;
 
-        rows.forEach(row => {
 
-            const cells = row.querySelectorAll("td");
+        rows.forEach(
+            row => {
 
-            if (cells.length >= 13) {
-                hasData = true;
+                const cells =
+                    row.querySelectorAll(
+                        "td"
+                    );
+
+
+                if (
+                    cells.length >= 13
+                ) {
+
+                    hasData = true;
+                }
             }
+        );
 
-        });
 
         if (hasData) {
+
             table = tbl;
+
             break;
         }
     }
 
 
-    // ============================================================
-    // FALLBACK
-    // ============================================================
+    /* =========================================================
+       FALLBACK
+       ========================================================= */
 
     if (!table) {
 
         table =
-            document.getElementById("downloadSummaryTable");
+            document.getElementById(
+                "downloadSummaryTableBYPL"
+            );
     }
 
 
@@ -1110,27 +1360,34 @@ function exportTableToExcelBYPL() {
             "BYPL Download Failed table not found."
         );
 
+
         alert(
             "Download Failed table not found."
         );
+
 
         return;
     }
 
 
-    // ============================================================
-    // GET TABLE HEADER
-    // ============================================================
+    /* =========================================================
+       HEADER
+       ========================================================= */
 
     const headerCells =
-        table.querySelectorAll("thead th");
+        table.querySelectorAll(
+            "thead th"
+        );
 
 
-    if (headerCells.length === 0) {
+    if (
+        headerCells.length === 0
+    ) {
 
         alert(
             "Table header not found."
         );
+
 
         return;
     }
@@ -1139,20 +1396,25 @@ function exportTableToExcelBYPL() {
     const headers = [];
 
 
-    headerCells.forEach(th => {
+    headerCells.forEach(
+        th => {
 
-        headers.push(
-            th.innerText
-                .replace(/\s+/g, " ")
-                .trim()
-        );
+            headers.push(
+                th.innerText
+                    .replace(
+                        /\s+/g,
+                        " "
+                    )
+                    .trim()
+            );
 
-    });
+        }
+    );
 
 
-    // ============================================================
-    // GET DATA ROWS
-    // ============================================================
+    /* =========================================================
+       DATA ROWS
+       ========================================================= */
 
     const tableRows =
         table.querySelectorAll(
@@ -1166,90 +1428,86 @@ function exportTableToExcelBYPL() {
     let sno = 1;
 
 
-    tableRows.forEach(row => {
+    tableRows.forEach(
+        row => {
 
-        const cells =
-            row.querySelectorAll("td");
-
-
-        // --------------------------------------------------------
-        // Ignore empty / no-record row
-        // --------------------------------------------------------
-
-        if (
-            cells.length === 0 ||
-            cells.length < 13
-        ) {
-            return;
-        }
+            const cells =
+                row.querySelectorAll(
+                    "td"
+                );
 
 
-        // Detect "No Records Found"
-        const completeText =
-            row.innerText
-                .trim()
-                .toLowerCase();
+            if (
+                cells.length === 0 ||
+                cells.length < 13
+            ) {
+
+                return;
+            }
 
 
-        if (
-            completeText.includes(
-                "no records found"
-            )
-        ) {
-            return;
-        }
+            const completeText =
+                row.innerText
+                    .trim()
+                    .toLowerCase();
 
 
-        const rowData = [];
+            if (
+                completeText.includes(
+                    "no records found"
+                )
+            ) {
+
+                return;
+            }
 
 
-        // --------------------------------------------------------
-        // S.NO.
-        // --------------------------------------------------------
-
-        rowData.push(
-            sno
-        );
-
-        sno++;
+            const rowData = [];
 
 
-        // --------------------------------------------------------
-        // OTHER COLUMNS
-        // --------------------------------------------------------
-
-        for (
-            let i = 1;
-            i < 13;
-            i++
-        ) {
+            /* S.NO */
 
             rowData.push(
-                cells[i]
-                    ? cells[i].innerText
-                        .replace(/\s+/g, " ")
-                        .trim()
-                    : ""
+                sno
             );
 
+
+            sno++;
+
+
+            /* OTHER COLUMNS */
+
+            for (
+                let i = 1;
+                i < 13;
+                i++
+            ) {
+
+                rowData.push(
+                    cells[i]
+                        ? cells[i].innerText
+                            .replace(
+                                /\s+/g,
+                                " "
+                            )
+                            .trim()
+                        : ""
+                );
+            }
+
+
+            data.push(
+                rowData
+            );
         }
+    );
 
-
-        data.push(
-            rowData
-        );
-
-    });
-
-
-    // ============================================================
-    // IMPORTANT DEBUG
-    // ============================================================
 
     console.log(
         "BYPL export table:",
         table
     );
+
 
     console.log(
         "BYPL export rows:",
@@ -1257,62 +1515,67 @@ function exportTableToExcelBYPL() {
     );
 
 
-    // ============================================================
-    // NO DATA CHECK
-    // ============================================================
-
-    if (data.length === 0) {
+    if (
+        data.length === 0
+    ) {
 
         alert(
             "No Download Failed data available to export."
         );
 
+
         return;
     }
 
 
-    // ============================================================
-    // CREATE WORKBOOK
-    // ============================================================
+    /* =========================================================
+       CREATE WORKBOOK
+       ========================================================= */
 
     const wb =
         XLSX.utils.book_new();
 
 
-    // ============================================================
-    // CREATE SHEET
-    // ============================================================
+    /* =========================================================
+       CREATE SHEET
+       ========================================================= */
 
     const ws =
-        XLSX.utils.aoa_to_sheet([
-            headers,
-            ...data
-        ]);
+        XLSX.utils.aoa_to_sheet(
+            [
+                headers,
+                ...data
+            ]
+        );
 
 
-    // ============================================================
-    // COLORS
-    // ============================================================
+    /* =========================================================
+       COLORS
+       ========================================================= */
 
     const NAVY_BLUE =
         "17365D";
 
+
     const WHITE =
         "FFFFFF";
+
 
     const BLACK =
         "000000";
 
+
     const RED =
         "DC3545";
+
 
     const BORDER_COLOR =
         "7F7F7F";
 
 
-    // ============================================================
-    // BORDER
-    // ============================================================
+    /* =========================================================
+       BORDER
+       ========================================================= */
 
     const allBorders = {
 
@@ -1347,9 +1610,9 @@ function exportTableToExcelBYPL() {
     };
 
 
-    // ============================================================
-    // HEADER STYLE
-    // ============================================================
+    /* =========================================================
+       HEADER STYLE
+       ========================================================= */
 
     const headerStyle = {
 
@@ -1376,13 +1639,12 @@ function exportTableToExcelBYPL() {
         },
 
         border: allBorders
-
     };
 
 
-    // ============================================================
-    // NORMAL STYLE
-    // ============================================================
+    /* =========================================================
+       NORMAL STYLE
+       ========================================================= */
 
     const normalStyle = {
 
@@ -1400,13 +1662,12 @@ function exportTableToExcelBYPL() {
         },
 
         border: allBorders
-
     };
 
 
-    // ============================================================
-    // CENTER STYLE
-    // ============================================================
+    /* =========================================================
+       CENTER STYLE
+       ========================================================= */
 
     const centerStyle = {
 
@@ -1425,13 +1686,12 @@ function exportTableToExcelBYPL() {
         },
 
         border: allBorders
-
     };
 
 
-    // ============================================================
-    // RED FAILED DAYS STYLE
-    // ============================================================
+    /* =========================================================
+       RED FAILED DAYS STYLE
+       ========================================================= */
 
     const failedDaysStyle = {
 
@@ -1457,13 +1717,12 @@ function exportTableToExcelBYPL() {
         },
 
         border: allBorders
-
     };
 
 
-    // ============================================================
-    // HEADER
-    // ============================================================
+    /* =========================================================
+       HEADER
+       ========================================================= */
 
     for (
         let col = 0;
@@ -1483,13 +1742,26 @@ function exportTableToExcelBYPL() {
             ws[address].s =
                 headerStyle;
         }
-
     }
 
 
-    // ============================================================
-    // DATA FORMATTING
-    // ============================================================
+    /* =========================================================
+       DATA FORMATTING
+
+       A = S.No.
+       B = Cons Ref
+       C = Meter Number
+       D = Phase
+       E = Department
+       F = Division
+       G = Seq No
+       H = Address
+       I = Meter Make
+       J = Failed Since
+       K = Failed Days
+       L = Status
+       M = Last Entry Date
+       ========================================================= */
 
     for (
         let row = 1;
@@ -1497,33 +1769,38 @@ function exportTableToExcelBYPL() {
         row++
     ) {
 
-        // ========================================================
-        // S.NO.
-        // ========================================================
+        /* =====================================================
+           S.NO
+           ===================================================== */
 
         const snoAddress =
             `A${row + 1}`;
 
 
-        if (ws[snoAddress]) {
+        if (
+            ws[snoAddress]
+        ) {
 
             ws[snoAddress].t =
                 "n";
 
+
             ws[snoAddress].v =
                 row;
 
+
             ws[snoAddress].z =
                 "0";
+
 
             ws[snoAddress].s =
                 centerStyle;
         }
 
 
-        // ========================================================
-        // OTHER COLUMNS
-        // ========================================================
+        /* =====================================================
+           OTHER COLUMNS
+           ===================================================== */
 
         for (
             let col = 1;
@@ -1539,19 +1816,26 @@ function exportTableToExcelBYPL() {
 
 
             if (!ws[address]) {
+
                 continue;
             }
 
 
-            // D = Phase
-            // K = Entry Date
-            // L = Download Failed Since
-            // M = Download Failed Days
+            /*
+             * Center:
+             *
+             * D = Phase
+             * I = Meter Make
+             * J = Failed Since
+             * K = Failed Days
+             * M = Last Entry Date
+             */
 
             if (
                 col === 3 ||
+                col === 8 ||
+                col === 9 ||
                 col === 10 ||
-                col === 11 ||
                 col === 12
             ) {
 
@@ -1564,71 +1848,154 @@ function exportTableToExcelBYPL() {
                 ws[address].s =
                     normalStyle;
             }
-
         }
 
 
-        // ========================================================
-        // DOWNLOAD FAILED DAYS
-        // ========================================================
+        /* =====================================================
+           FAILED DAYS
+
+           K = Total Failed Days
+
+           Red only when > 5 days.
+           ===================================================== */
 
         const failedDaysAddress =
-            `M${row + 1}`;
+            `K${row + 1}`;
 
 
-        if (ws[failedDaysAddress]) {
+        if (
+            ws[failedDaysAddress]
+        ) {
 
             const failedDays =
                 parseFloat(
                     String(
-                        ws[failedDaysAddress].v
+                        ws[
+                            failedDaysAddress
+                        ].v
                     )
-                    .replace(/[^0-9.-]/g, "")
+                        .replace(
+                            /[^0-9.-]/g,
+                            ""
+                        )
                 );
 
 
-            // >= 5 DAYS
             if (
                 !isNaN(failedDays) &&
-                failedDays >= 5
+                failedDays > 5
             ) {
 
-                ws[failedDaysAddress].s =
+                /*
+                 * Highlight both:
+                 *
+                 * J = Failed Since
+                 * K = Failed Days
+                 */
+
+                const failedSinceAddress =
+                    `J${row + 1}`;
+
+
+                if (
+                    ws[
+                    failedSinceAddress
+                    ]
+                ) {
+
+                    ws[
+                        failedSinceAddress
+                    ].s =
+                        failedDaysStyle;
+                }
+
+
+                ws[
+                    failedDaysAddress
+                ].s =
                     failedDaysStyle;
-
             }
-
         }
-
     }
 
 
-    // ============================================================
-    // COLUMN WIDTHS
-    // ============================================================
+    /* =========================================================
+       COLUMN WIDTHS
+
+       A = S.No.
+       B = Cons Ref
+       C = Meter Number
+       D = Phase
+       E = Department
+       F = Division
+       G = Seq No
+       H = Address
+       I = Meter Make
+       J = Failed Since
+       K = Failed Days
+       L = Status
+       M = Last Entry Date
+       ========================================================= */
 
     ws["!cols"] = [
 
-        { wch: 7 },     // S.No
-        { wch: 17 },    // Cons Ref
-        { wch: 20 },    // Meter Number
-        { wch: 10 },    // Phase
-        { wch: 17 },    // Department
-        { wch: 18 },    // Division
-        { wch: 12 },    // Seq No
-        { wch: 55 },    // Address
-        { wch: 16 },    // Meter Make
-        { wch: 50 },    // Status
-        { wch: 22 },    // Entry Date
-        { wch: 23 },    // Download Failed Since
-        { wch: 22 }     // Download Failed Days
+        {
+            wch: 7
+        },
 
+        {
+            wch: 17
+        },
+
+        {
+            wch: 20
+        },
+
+        {
+            wch: 10
+        },
+
+        {
+            wch: 17
+        },
+
+        {
+            wch: 18
+        },
+
+        {
+            wch: 12
+        },
+
+        {
+            wch: 55
+        },
+
+        {
+            wch: 16
+        },
+
+        {
+            wch: 23
+        },
+
+        {
+            wch: 22
+        },
+
+        {
+            wch: 50
+        },
+
+        {
+            wch: 22
+        }
     ];
 
 
-    // ============================================================
-    // ROW HEIGHT
-    // ============================================================
+    /* =========================================================
+       ROW HEIGHT
+       ========================================================= */
 
     ws["!rows"] = [];
 
@@ -1647,50 +2014,47 @@ function exportTableToExcelBYPL() {
         ws["!rows"][i] = {
             hpt: 30
         };
-
     }
 
 
-    // ============================================================
-    // FILTER
-    // ============================================================
+    /* =========================================================
+       AUTOFILTER
+       ========================================================= */
 
     ws["!autofilter"] = {
 
         ref:
             `A1:M${data.length + 1}`
-
     };
 
 
-    // ============================================================
-    // FREEZE HEADER
-    // ============================================================
+    /* =========================================================
+       FREEZE HEADER
+       ========================================================= */
 
     ws["!freeze"] = {
 
         xSplit: 0,
-        ySplit: 1
 
+        ySplit: 1
     };
 
 
-    // ============================================================
-    // HIDE GRIDLINES
-    // ============================================================
+    /* =========================================================
+       HIDE GRIDLINES
+       ========================================================= */
 
     ws["!sheetViews"] = [
 
         {
             showGridLines: false
         }
-
     ];
 
 
-    // ============================================================
-    // ADD SHEET
-    // ============================================================
+    /* =========================================================
+       ADD SHEET
+       ========================================================= */
 
     XLSX.utils.book_append_sheet(
         wb,
@@ -1699,9 +2063,9 @@ function exportTableToExcelBYPL() {
     );
 
 
-    // ============================================================
-    // FILE NAME
-    // ============================================================
+    /* =========================================================
+       FILE NAME
+       ========================================================= */
 
     const today =
         new Date()
@@ -1713,13 +2077,12 @@ function exportTableToExcelBYPL() {
         wb,
         `Download_Failed_Summary_BYPL_${today}.xlsx`
     );
-
 }
 
 
-// ============================================================
-// EXPORT CSV
-// ============================================================
+/* ============================================================
+   EXPORT CSV
+   ============================================================ */
 
 function exportTableToCSVBYPL() {
 
@@ -1734,6 +2097,7 @@ function exportTableToCSVBYPL() {
         console.error(
             "BYPL download table not found."
         );
+
 
         return;
     }
@@ -1844,13 +2208,16 @@ function exportTableToCSVBYPL() {
 }
 
 
-// ============================================================
-// FORMAT DATE FOR FILTER
-// ============================================================
+/* ============================================================
+   FORMAT DATE FOR FILTER
+   ============================================================ */
 
-function formatDateForFilterBYPL(value) {
+function formatDateForFilterBYPL(
+    value
+) {
 
     if (!value) {
+
         return "";
     }
 
@@ -1864,6 +2231,7 @@ function formatDateForFilterBYPL(value) {
             date.getTime()
         )
     ) {
+
         return "";
     }
 
@@ -1875,13 +2243,19 @@ function formatDateForFilterBYPL(value) {
     const month =
         String(
             date.getMonth() + 1
-        ).padStart(2, "0");
+        ).padStart(
+            2,
+            "0"
+        );
 
 
     const day =
         String(
             date.getDate()
-        ).padStart(2, "0");
+        ).padStart(
+            2,
+            "0"
+        );
 
 
     return `${year}-${month}-${day}`;

@@ -11,9 +11,14 @@
     var isSuperAdmin =  userRole.Equals("SUPERADMIN", StringComparison.OrdinalIgnoreCase);
 
 
-    var showBrpl = isSuperAdmin || userCompany.Equals("BRPL", StringComparison.OrdinalIgnoreCase);
+    // var showBrpl = isSuperAdmin || userCompany.Equals("BRPL", StringComparison.OrdinalIgnoreCase);
 
-    var showBypl =isSuperAdmin ||  userCompany.Equals("BYPL", StringComparison.OrdinalIgnoreCase);
+    // var showBypl =isSuperAdmin ||  userCompany.Equals("BYPL", StringComparison.OrdinalIgnoreCase);
+    var showBrpl = true;
+
+    // BYPL temporarily disabled
+    // var showBypl = isSuperAdmin || userCompany.Equals("BYPL", StringComparison.OrdinalIgnoreCase);
+    var showBypl = false;
 }
 
 <link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
@@ -64,117 +69,118 @@
 
 <div id="dashboardContent" style="display:none;">
 
-  <div class="container-fluid py-1">   
+  <div class="container-fluid py-1">        <!-- =========================================================
+     BRPL DASHBOARD SUMMARY
+========================================================= -->
 
         <div class="row g-3">
 
-            <div class="col-lg-6">
+            <!-- =====================================================
+         METER SUMMARY
+    ====================================================== -->
+            <div class="col-xl-6 col-lg-6 col-md-12">
 
                 <div class="card dashboard-card meter-summary-card h-100">
 
                     <div class="card-header">
-                        <i class="bi bi-speedometer2"></i> Meter Summary
+                        <i class="bi bi-speedometer2 me-1"></i>
+                        Meter Summary
                     </div>
 
                     <div class="card-body">
 
-                        <div class="row g-2 align-items-center">
+                        <div class="row g-3 align-items-center">
 
-                            <div class="col-md-7">
+                            <!-- ================================
+                         BRPL TABLE
+                    ================================= -->
+                            <div class="col-lg-8 col-md-8 col-sm-12">
 
                                 <div class="meter-summary-table">
 
                                     <table class="table table-sm mb-0">
 
                                         <thead>
+
                                             <tr>
 
-                                                <th rowspan="2">Utility </th>
+                                                <th rowspan="2">
+                                                    Utility
+                                                </th>
 
-                                                <th colspan="2" class="text-center"> ALLIED</th>
+                                                <th colspan="2"
+                                                    class="text-center">
+                                                    ALLIED
+                                                </th>
 
-                                                <th colspan="2" class="text-center"> KIMBAL </th>
+                                                <th colspan="2"
+                                                    class="text-center">
+                                                    KIMBAL
+                                                </th>
 
-                                                <th rowspan="2" class="text-end"> TOTAL </th>
+                                                <th rowspan="2"
+                                                    class="text-end">
+                                                    TOTAL
+                                                </th>
 
                                             </tr>
 
-                                            <!-- Sub Header -->
                                             <tr>
 
-                                                <th class="text-end"> 1PH </th>
+                                                <th class="text-end">
+                                                    1PH
+                                                </th>
 
-                                                <th class="text-end"> 3PH </th>
+                                                <th class="text-end">
+                                                    3PH
+                                                </th>
 
-                                                <th class="text-end"> 1PH</th>
+                                                <th class="text-end">
+                                                    1PH
+                                                </th>
 
-                                                <th class="text-end">3PH </th>
+                                                <th class="text-end">
+                                                    3PH
+                                                </th>
 
                                             </tr>
 
                                         </thead>
 
                                         <tbody>
-                                            
-                                            @if(showBrpl)
-                                            {
-                                                <tr>
 
-                                                    <td class="fw-semibold"> BRPL </td>
+                                            <tr>
 
-                                                    <!-- Allied -->
-                                                    <td class="text-end" id="brplAllied1Ph"> 0 </td>
+                                                <td class="fw-semibold">
+                                                    BRPL
+                                                </td>
 
-                                                    <td class="text-end" id="brplAllied3Ph"> 0 </td>
+                                                <td class="text-end"
+                                                    id="brplAllied1Ph">
+                                                    0
+                                                </td>
 
-                                                    <!-- Kimbal -->
-                                                    <td class="text-end" id="brplKimbal1Ph"> 0 </td>
+                                                <td class="text-end"
+                                                    id="brplAllied3Ph">
+                                                    0
+                                                </td>
 
-                                                    <td class="text-end" id="brplKimbal3Ph"> 0 </td>
+                                                <td class="text-end"
+                                                    id="brplKimbal1Ph">
+                                                    0
+                                                </td>
 
-                                                    <!-- Total -->
-                                                    <td class="text-end fw-bold" id="brplTotalMeter"> 0</td>
+                                                <td class="text-end"
+                                                    id="brplKimbal3Ph">
+                                                    0
+                                                </td>
 
-                                                </tr>
-                                            }
-                                            @if(showBypl)
-                                            {
-                                                <tr>
+                                                <td class="text-end fw-bold"
+                                                    id="brplTotalMeter">
+                                                    0
+                                                </td>
 
-                                                    <td class="fw-semibold"> BYPL </td>
-
-                                                    <!-- Allied -->
-                                                    <td class="text-end"
-                                                        id="byplAllied1Ph">
-                                                        0
-                                                    </td>
-
-                                                    <td class="text-end"
-                                                        id="byplAllied3Ph">
-                                                        0
-                                                    </td>
-
-                                                    <!-- Kimbal -->
-                                                    <td class="text-end"
-                                                        id="byplKimbal1Ph">
-                                                        0
-                                                    </td>
-
-                                                    <td class="text-end"
-                                                        id="byplKimbal3Ph">
-                                                        0
-                                                    </td>
-
-                                                    <!-- Total -->
-                                                    <td class="text-end fw-bold"
-                                                        id="byplTotalMeter">
-                                                        0
-                                                    </td>
-
-                                                </tr>
-                                            }
-
-                                           
+                                            </tr>
 
                                         </tbody>
 
@@ -185,42 +191,20 @@
                             </div>
 
 
-                            <!-- ========================= -->
-                            <!-- PIE CHARTS -->
-                            <!-- ========================= -->
+                            <!-- ================================
+                         BRPL PIE CHART
+                    ================================= -->
+                            <div class="col-lg-4 col-md-4 col-sm-12">
 
-                            <div class="col-md-5">
+                                <div class="meter-chart-item brpl-only-chart">
 
-                                <div class="meter-charts-wrapper">
-                                    @if(showBrpl)
-                                    {
-                                        <div class="meter-chart-item">
+                                    <div class="meter-chart-title">
+                                        BRPL
+                                    </div>
 
-                                            <div class="meter-chart-title">
-                                                BRPL
-                                            </div>
-
-                                            <div class="meter-chart-wrapper">
-                                                <canvas id="brplMeterTypeChart"></canvas>
-                                            </div>
-
-                                        </div>
-                                    }
-
-                                    @if(showBypl)
-                                    {
-                                        <div class="meter-chart-item">
-
-                                            <div class="meter-chart-title">
-                                                BYPL
-                                            </div>
-
-                                            <div class="meter-chart-wrapper">
-                                                <canvas id="byplMeterTypeChart"></canvas>
-                                            </div>
-
-                                        </div>
-                                    }
+                                    <div class="meter-chart-wrapper">
+                                        <canvas id="brplMeterTypeChart"></canvas>
+                                    </div>
 
                                 </div>
 
@@ -234,216 +218,160 @@
 
             </div>
 
-            <div class="col-lg-6">
+
+            <!-- =====================================================
+         METER RECEIVED IN MRO
+    ====================================================== -->
+            <div class="col-xl-6 col-lg-6 col-md-12">
 
                 <div class="card dashboard-card h-100">
 
                     <div class="card-header">
-                        <i class="bi bi-download"></i>
+
+                        <i class="bi bi-download me-1"></i>
+
                         Meter Received in MRO
-                    </div>
-
-                    <div class="card-body p-2">
-                        @if(showBrpl)
-                        {
-                            <div class="mro-company-row">
-
-                                <div class="mro-company">
-                                    <span class="company-badge brpl-badge">
-                                        BRPL
-                                    </span>
-                                </div>
-
-                                <!-- DOWNLOAD -->
-                                <div class="mro-metric">
-                                    <div class="mro-label">Download</div>
-
-                                    <div class="mro-value text-success">
-
-                                        <a href="javascript:void(0)"
-                                           class="text-success" style="text-decoration:none;"
-                                           id="hesDownload">
-                                            0
-                                        </a>
-
-                                        <small id="downloadPercentage">(0%)</small>
-
-                                    </div>
-                                </div>
-
-                                <!-- FAILED -->
-                                <div class="mro-metric">
-                                    <div class="mro-label">Failed</div>
-
-                                    <div class="mro-value">
-                                        <a href="javascript:void(0)"
-                                           class="mro-link mro-failed-value"
-                                           id="downloadFailed">
-                                            0
-                                        </a>
-
-                                        <small id="failedPercentage">(0%)</small>
-                                    </div>
-                                </div>
-
-                                <!-- TOTAL -->
-                                <div class="mro-metric">
-                                    <div class="mro-label">Total</div>
-
-                                    <div class="mro-value"
-                                         id="totalMeters">
-                                        0
-                                    </div>
-                                </div>
-
-                                <!-- BILLED -->
-                                <div class="mro-metric">
-                                    <div class="mro-label">Billed</div>
-
-                                    <div class="mro-value text-primary">
-                                        <span id="billedMeters">0</span>
-                                        <small id="billedPercentage">(0%)</small>
-                                    </div>
-                                </div>
-
-                                <!-- BILLED FAILED -->
-                                <div class="mro-metric">
-                                    <div class="mro-label">Billed Failed</div>
-
-                                    <div class="mro-value">
-                                        <a href="javascript:void(0)"
-                                           class="mro-link mro-failed-value"
-                                           id="billedFailed">
-                                            0
-                                        </a>
-
-                                        <small id="billedFailedPercentage">(0%)</small>
-                                    </div>
-                                </div>
-
-                            </div>
-                        }
-                     
-                        @if(showBypl)
-                        {
-                            <div class="mro-company-row">
-
-                                <div class="mro-company">
-                                    <span class="company-badge bypl-badge">
-                                        BYPL
-                                    </span>
-                                </div>
-
-                                <!-- DOWNLOAD -->
-                                <div class="mro-metric">
-                                    <div class="mro-label">Download</div>
-
-                                    <div class="mro-value text-success">
-                                        <a href="javascript:void(0)"
-                                           class="text-success" style="text-decoration:none;"
-                                           id="byplHesDownload">
-                                            0
-                                        </a>
-                                        <small id="byplDownloadPercentage">(0%)</small>
-                                    </div>
-                                </div>
-
-                                <!-- FAILED -->
-                                <div class="mro-metric">
-                                    <div class="mro-label">Failed</div>
-
-                                    <div class="mro-value">
-                                        <a href="javascript:void(0)"
-                                           class="mro-link mro-failed-value"
-                                           id="byplDownloadFailed">
-                                            0
-                                        </a>
-
-                                        <small id="byplFailedPercentage">(0%)</small>
-                                    </div>
-                                </div>
-
-                                <!-- TOTAL -->
-                                <div class="mro-metric">
-                                    <div class="mro-label">Total</div>
-
-                                    <div class="mro-value"
-                                         id="byplTotalMeters">
-                                        0
-                                    </div>
-                                </div>
-
-                                <!-- BILLED -->
-                                <div class="mro-metric">
-                                    <div class="mro-label">Billed</div>
-
-                                    <div class="mro-value text-primary">
-                                        <span id="byplBilledMeters">0</span>
-                                        <small id="byplBilledPercentage">(0%)</small>
-                                    </div>
-                                </div>
-
-                                <!-- BILLED FAILED -->
-                                <div class="mro-metric">
-                                    <div class="mro-label">Billed Failed</div>
-
-                                    <div class="mro-value">
-                                        <a href="javascript:void(0)"
-                                           class="mro-link mro-failed-value"
-                                           id="byplBilledFailed">
-                                            0
-                                        </a>
-
-                                        <small id="byplBilledFailedPercentage">(0%)</small>
-                                    </div>
-                                </div>
-
-                            </div>
-                        }
-                    
 
                     </div>
 
-                </div>
 
-            </div>
+                    <div class="card-body">
 
-</div>
+                        <!-- ================================
+                     BRPL ONLY
+                ================================= -->
 
-    <!-- Charts -->
+                        <div class="mro-company-row brpl-only-mro">
 
-    <div class="row mt-3 g-2">
+                            <!-- COMPANY -->
+                            <div class="mro-company">
 
-        <div class="col-lg-6">
+                                <span class="company-badge brpl-badge">
+                                    BRPL
+                                </span>
 
-            <div class="card dashboard-card">
+                            </div>
 
-                <div class="card-header">
-                    Department Distribution
-                </div>
 
-                <div class="card-body">
+                            <!-- DOWNLOAD -->
+                            <div class="mro-metric">
 
-                    <canvas id="departmentChart"
-                            ></canvas>
+                                <div class="mro-label">
+                                    Download
+                                </div>
 
-                </div>
+                                <div class="mro-value text-success">
 
-            </div>
+                                    <a href="javascript:void(0)"
+                                       class="text-success"
+                                       style="text-decoration:none;"
+                                       id="hesDownload">
 
-        </div>
-        <div class="col-lg-6">
+                                        0
 
-            <div class="card dashboard-card h-100">
+                                    </a>
 
-                <div class="card-header">
-                    Failure Reason Summary
-                </div>
+                                    <small id="downloadPercentage">
+                                        (0%)
+                                    </small>
 
-                <div class="card-body">
+                                </div>
 
-                    <div style="height: 420px;">
-                        <canvas id="readingTrendChart"></canvas>
+                            </div>
+
+
+                            <!-- FAILED -->
+                            <div class="mro-metric">
+
+                                <div class="mro-label">
+                                    Failed
+                                </div>
+
+                                <div class="mro-value">
+
+                                    <a href="javascript:void(0)"
+                                       class="mro-link mro-failed-value"
+                                       id="downloadFailed">
+
+                                        0
+
+                                    </a>
+
+                                    <small id="failedPercentage">
+                                        (0%)
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- TOTAL -->
+                            <div class="mro-metric">
+
+                                <div class="mro-label">
+                                    Total
+                                </div>
+
+                                <div class="mro-value"
+                                     id="totalMeters">
+
+                                    0
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- BILLED -->
+                            <div class="mro-metric">
+
+                                <div class="mro-label">
+                                    Billed
+                                </div>
+
+                                <div class="mro-value text-primary">
+
+                                    <span id="billedMeters">
+                                        0
+                                    </span>
+
+                                    <small id="billedPercentage">
+                                        (0%)
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- BILLED FAILED -->
+                            <div class="mro-metric">
+
+                                <div class="mro-label">
+                                    Billed Failed
+                                </div>
+
+                                <div class="mro-value">
+
+                                    <a href="javascript:void(0)"
+                                       class="mro-link mro-failed-value"
+                                       id="billedFailed">
+
+                                        0
+
+                                    </a>
+
+                                    <small id="billedFailedPercentage">
+                                        (0%)
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
                     </div>
 
                 </div>
@@ -452,7 +380,65 @@
 
         </div>
 
-    </div>
+
+        <!-- =========================================================
+     BRPL DASHBOARD CHARTS
+========================================================= -->
+
+        <div class="row g-3 mt-1">
+
+            <!-- DEPARTMENT DISTRIBUTION -->
+            <div class="col-xl-6 col-lg-6 col-md-12">
+
+                <div class="card dashboard-card h-100">
+
+                    <div class="card-header">
+
+                        <i class="bi bi-bar-chart-fill me-1"></i>
+
+                        Department Distribution
+
+                    </div>
+
+                    <div class="card-body chart-card-body">
+
+                        <div class="dashboard-chart-container">
+                            <canvas id="departmentChart"></canvas>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FAILURE REASON -->
+            <div class="col-xl-6 col-lg-6 col-md-12">
+
+                <div class="card dashboard-card h-100">
+
+                    <div class="card-header">
+
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+
+                        Failure Reason Summary
+
+                    </div>
+
+                    <div class="card-body chart-card-body">
+
+                        <div class="dashboard-chart-container">
+                            <canvas id="readingTrendChart"></canvas>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
 
 </div>
 
@@ -1145,10 +1131,11 @@
                                 <th>Seq No</th>
                                 <th>Address</th>
                                 <th>Meter Make</th>
-                                <th>Status</th>
-                                <th>Entry Date</th>
                                 <th>Failed Since</th>
                                 <th>Total Failed Days</th>
+                                <th>Status</th>
+                                <th>Last Entry Date</th>
+                              
 
                             </tr>
 
@@ -1405,12 +1392,13 @@
                                 <th>Department</th>
                                 <th>Division</th>
                                 <th>Seq No</th>
-                                <th>Address</th>
+                                <th>Address</th>                     
                                 <th>Meter Make</th>
-                                <th>Status</th>
-                                <th>Entry Date</th>
                                 <th>Failed Since</th>
                                 <th>Total Failed Days</th>
+                                <th>Status</th>
+                                <th>Last Entry Date</th>
+            
 
                             </tr>
 

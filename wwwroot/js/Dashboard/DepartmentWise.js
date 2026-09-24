@@ -2,7 +2,8 @@
 // API BASE URL
 // =============================================================
 
-function getApiUrl(endpoint) {
+function getApiUrl(endpoint)
+{
     const basePath = window.location.pathname
         .toLowerCase()
         .startsWith("/smartmeter/")
@@ -19,7 +20,8 @@ let departmentChart = null;
 // LOAD DEPARTMENT DISTRIBUTION
 // =============================================================
 
-async function loadDepartmentDistribution() {
+async function loadDepartmentDistribution()
+{
 
     const month = getReadingMonth();
 
@@ -28,15 +30,15 @@ async function loadDepartmentDistribution() {
         let brplData = [];
         let byplData = [];
 
-        const brplAllowed = canAccessCompany("BRPL");
-        const byplAllowed = canAccessCompany("BYPL");
+        // const brplAllowed = canAccessCompany("BRPL");
+        // const byplAllowed = canAccessCompany("BYPL");
 
-        console.log("Department Distribution Access:", {
-            BRPL: brplAllowed,
-            BYPL: byplAllowed,
-            ReadingMonth: month
-        });
-
+        // =====================================================
+        // BRPL ONLY MODE
+        // BYPL is temporarily disabled from the dashboard.
+        // =====================================================
+        const brplAllowed = true;
+        const byplAllowed = false;
 
         // =====================================================
         // BRPL
@@ -47,11 +49,6 @@ async function loadDepartmentDistribution() {
             const brplUrl =
                 `${getApiUrl("DashboardApi/department-wise-data")}` +
                 `?readingMonth=${encodeURIComponent(month)}`;
-
-            console.log(
-                "BRPL Department API URL:",
-                brplUrl
-            );
 
             const brplResponse =
                 await fetch(
@@ -71,15 +68,6 @@ async function loadDepartmentDistribution() {
                 const errorText =
                     await brplResponse.text()
                         .catch(() => "");
-
-                console.error(
-                    "BRPL Department API Error:",
-                    {
-                        status: brplResponse.status,
-                        url: brplUrl,
-                        response: errorText
-                    }
-                );
 
                 throw new Error(
                     `Failed to load BRPL Department Distribution. ` +
@@ -105,11 +93,6 @@ async function loadDepartmentDistribution() {
             const byplUrl =
                 `${getApiUrl("DashboardApi/department-wise-data-bypl")}` +
                 `?readingMonth=${encodeURIComponent(month)}`;
-
-            console.log(
-                "BYPL Department API URL:",
-                byplUrl
-            );
 
             const byplResponse =
                 await fetch(
@@ -152,21 +135,6 @@ async function loadDepartmentDistribution() {
                 byplData = [];
             }
         }
-
-
-        // =====================================================
-        // DEBUG
-        // =====================================================
-
-        console.log(
-            "BRPL Department Records:",
-            brplData.length
-        );
-
-        console.log(
-            "BYPL Department Records:",
-            byplData.length
-        );
 
 
         // =====================================================
@@ -782,41 +750,6 @@ async function loadDepartmentDistribution() {
 
                 }
             );
-
-
-        console.log(
-            "Department Chart Created:",
-            {
-
-                departments:
-                    departments,
-
-                departmentCount:
-                    departmentCount,
-
-                datasets:
-                    datasets.map(
-                        x => x.label
-                    ),
-
-                barSettings: {
-
-                    barPercentage:
-                        BAR_PERCENTAGE,
-
-                    categoryPercentage:
-                        CATEGORY_PERCENTAGE,
-
-                    maxBarThickness:
-                        MAX_BAR_THICKNESS,
-
-                    barThickness:
-                        FIXED_BAR_THICKNESS
-
-                }
-
-            }
-        );
 
     }
     catch (error) {
