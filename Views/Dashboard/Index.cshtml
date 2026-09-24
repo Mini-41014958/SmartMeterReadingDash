@@ -69,15 +69,10 @@
 
 <div id="dashboardContent" style="display:none;">
 
-  <div class="container-fluid py-1">        <!-- =========================================================
-     BRPL DASHBOARD SUMMARY
-========================================================= -->
+  <div class="container-fluid py-1">       
 
         <div class="row g-3">
 
-            <!-- =====================================================
-         METER SUMMARY
-    ====================================================== -->
             <div class="col-xl-6 col-lg-6 col-md-12">
 
                 <div class="card dashboard-card meter-summary-card h-100">
@@ -90,10 +85,6 @@
                     <div class="card-body">
 
                         <div class="row g-3 align-items-center">
-
-                            <!-- ================================
-                         BRPL TABLE
-                    ================================= -->
                             <div class="col-lg-8 col-md-8 col-sm-12">
 
                                 <div class="meter-summary-table">
@@ -190,10 +181,6 @@
 
                             </div>
 
-
-                            <!-- ================================
-                         BRPL PIE CHART
-                    ================================= -->
                             <div class="col-lg-4 col-md-4 col-sm-12">
 
                                 <div class="meter-chart-item brpl-only-chart">
@@ -219,9 +206,6 @@
             </div>
 
 
-            <!-- =====================================================
-         METER RECEIVED IN MRO
-    ====================================================== -->
             <div class="col-xl-6 col-lg-6 col-md-12">
 
                 <div class="card dashboard-card h-100">
@@ -909,13 +893,7 @@
 
 
    <!-- Modal for Detailed Summary -->
-<div class="modal fade"
-     id="downloadSummaryModal"
-     tabindex="-1"
-     role="dialog"
-     aria-labelledby="downloadSummaryModalLabel"
-     aria-hidden="true">
-
+<div class="modal fade" id="downloadSummaryModal" tabindex="-1" role="dialog" aria-labelledby="downloadSummaryModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl" role="document">
 
         <div class="modal-content">
@@ -1115,8 +1093,7 @@
                 <!-- Table -->
                 <div class="table-responsive">
 
-                    <table id="downloadSummaryTable"
-                           class="table table-bordered custom-table">
+                    <table id="downloadSummaryTable" class="table table-bordered custom-table">
 
                         <thead class="table-light">
 
@@ -1128,21 +1105,18 @@
                                 <th>Phase</th>
                                 <th>Department</th>
                                 <th>Division</th>
-                                <th>Seq No</th>
-                                <th>Address</th>
+                                <th>Seq No</th>     
                                 <th>Meter Make</th>
                                 <th>Failed Since</th>
                                 <th>Total Failed Days</th>
                                 <th>Status</th>
                                 <th>Last Entry Date</th>
-                              
-
+                                <th>Address</th>
                             </tr>
 
                         </thead>
 
-                        <tbody id="downloadSummaryBody">
-                        </tbody>
+                        <tbody id="downloadSummaryBody">   </tbody>
 
                     </table>
 

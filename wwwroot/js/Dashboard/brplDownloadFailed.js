@@ -684,28 +684,26 @@ function applyFilters() {
 }
 
 
-/* ============================================================
-   RENDER TABLE
-   ============================================================ */
+function renderTable(data)
+{
 
-function renderTable(data) {
-
-    const tbody =
-        $("#downloadSummaryBody");
+    const tbody = $("#downloadSummaryBody");
 
     tbody.empty();
 
 
-    if (
-        !data ||
-        data.length === 0
-    ) {
+    /* =========================================================
+       NO DATA
+       ========================================================= */
+
+    if (!data || data.length === 0) {
 
         tbody.html(`
             <tr>
                 <td colspan="13"
-                    class="text-center py-4">
+                    class="text-center text-muted py-4">
 
+                    <i class="bi bi-inbox me-1"></i>
                     No Records Found
 
                 </td>
@@ -716,292 +714,257 @@ function renderTable(data) {
     }
 
 
-    /* ========================================================
-       IMPORTANT:
-       Everything depending on "x" MUST be inside forEach.
-       ======================================================== */
+    /* =========================================================
+       RENDER ROWS
+       ========================================================= */
 
-    data.forEach(
-        (x, index) => {
+    data.forEach((x, index) => {
 
-            /* --------------------------------
-               DOWNLOAD FAILED SINCE
-            -------------------------------- */
 
-            let downloadFailedSince = "--";
+        /* =====================================================
+           FAILED SINCE
+           ===================================================== */
 
-            if (
-                x.downloadFailedSince
-            ) {
+        let downloadFailedSince = "--";
 
-                const failedSinceDate =
-                    new Date(
-                        x.downloadFailedSince
+        if (x.downloadFailedSince) {
+
+            const failedSinceDate =
+                new Date(x.downloadFailedSince);
+
+            if (!isNaN(failedSinceDate.getTime())) {
+
+                downloadFailedSince =
+                    failedSinceDate.toLocaleDateString(
+                        "en-GB"
                     );
-
-                if (
-                    !isNaN(
-                        failedSinceDate.getTime()
-                    )
-                ) {
-
-                    downloadFailedSince =
-                        failedSinceDate.toLocaleDateString(
-                            "en-GB"
-                        );
-                }
             }
+        }
 
 
-            /* --------------------------------
-               DOWNLOAD FAILED DAYS
-            -------------------------------- */
+        /* =====================================================
+           TOTAL FAILED DAYS
+           ===================================================== */
 
-            let downloadFailedDays = "--";
+        let downloadFailedDays = "--";
 
-            if (
-                x.downloadFailedDays !== null &&
-                x.downloadFailedDays !== undefined &&
-                x.downloadFailedDays !== ""
-            ) {
+        if (
+            x.downloadFailedDays !== null &&
+            x.downloadFailedDays !== undefined &&
+            String(x.downloadFailedDays).trim() !== ""
+        ) {
 
-                const numericDays =
-                    Number(
-                        x.downloadFailedDays
-                    );
+            const numericDays =
+                Number(x.downloadFailedDays);
 
-                downloadFailedDays =
-                    isNaN(numericDays)
-                        ? String(
-                            x.downloadFailedDays
-                        )
-                        : numericDays;
-            }
+            downloadFailedDays =
+                isNaN(numericDays)
+                    ? String(x.downloadFailedDays)
+                    : numericDays;
+        }
 
 
-            /* --------------------------------
-               HIGHLIGHT IF FAILED > 5 DAYS
-            -------------------------------- */
+        /* =====================================================
+           FAILED DAYS NUMBER
+           ===================================================== */
 
-            const failedDaysNumber =
-                Number(
-                    x.downloadFailedDays
-                );
+        const failedDaysNumber =
+            Number(x.downloadFailedDays);
 
-            const isMoreThan5Days =
-                !isNaN(failedDaysNumber) &&
-                failedDaysNumber > 5;
+        const isMoreThan5Days =
+            !isNaN(failedDaysNumber) &&
+            failedDaysNumber > 5;
 
 
-            let failedSinceStyle = "";
+        /* =====================================================
+           FAILED SINCE / FAILED DAYS CLASS
+           ===================================================== */
 
-            let failedDaysStyle = "";
+        const failedSinceClass =
+            isMoreThan5Days
+                ? "download-failed-danger"
+                : "download-failed-normal";
 
-
-            if (isMoreThan5Days) {
-
-                failedSinceStyle = `
-                    background-color: #dc3545;
-                    color: #fff;
-                    font-weight: 700;
-                    text-align: center;
-                `;
-
-                failedDaysStyle = `
-                    background-color: #dc3545;
-                    color: #fff;
-                    font-weight: 700;
-                    text-align: center;
-                `;
-
-            }
-            else {
-
-                failedSinceStyle = `
-                    text-align: center;
-                `;
-
-                failedDaysStyle = `
-                    text-align: center;
-                    font-weight: 600;
-                `;
-            }
+        const failedDaysClass =
+            isMoreThan5Days
+                ? "download-failed-danger"
+                : "download-failed-normal";
 
 
-            /* --------------------------------
-               STATUS BADGE
-            -------------------------------- */
+        /* =====================================================
+           STATUS
+           ===================================================== */
 
-            let badgeColor = "#6c757d";
+        const message =
+            String(x.schedulerMessage || "")
+                .trim()
+                .toUpperCase();
 
-            let textColor = "#fff";
-
-            const message =
-                String(
-                    x.schedulerMessage || ""
-                ).toUpperCase();
-
-
-            if (
-                message.includes(
-                    "SYSTEM TITLE"
-                )
-            ) {
-
-                badgeColor = "#dc3545";
-
-            }
-            else if (
-                message.includes("TCP")
-            ) {
-
-                badgeColor = "#fd7e14";
-
-            }
-            else if (
-                message.includes("NO DATA")
-            ) {
-
-                badgeColor = "#ffc107";
-
-                textColor = "#000";
-
-            }
-            else if (
-                message.includes("TIMEOUT")
-            ) {
-
-                badgeColor = "#6c757d";
-            }
+        let badgeClass =
+            "download-status-other";
 
 
-            /* --------------------------------
-               ENTRY DATE
-            -------------------------------- */
+        if (message.includes("SYSTEM TITLE")) {
 
-            let entryDate = "--";
-
-            if (x.entryDate) {
-
-                const parsedDate =
-                    new Date(
-                        x.entryDate
-                    );
-
-                if (
-                    !isNaN(
-                        parsedDate.getTime()
-                    )
-                ) {
-
-                    entryDate =
-                        parsedDate.toLocaleString(
-                            "en-GB"
-                        );
-                }
-            }
-
-
-            /* --------------------------------
-               TABLE ROW
-            -------------------------------- */
-
-            tbody.append(`
-                <tr>
-
-                    <td class="text-center fw-semibold">
-                        ${index + 1}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                x.consRef ?? ""
-            )}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                x.meterNumber ?? ""
-            )}
-                    </td>
-
-                    <td class="text-center">
-                        ${escapeHtml(
-                x.phase ?? ""
-            )}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                x.sapDepartment ?? ""
-            )}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                x.sapDivision ?? ""
-            )}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                x.sapSeqNo ?? ""
-            )}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                x.address ?? "--"
-            )}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(
-                x.meterType ?? ""
-            )}
-                    </td>
-
-                    <!-- DOWNLOAD FAILED SINCE -->
-                    <td style="${failedSinceStyle}">
-                        ${escapeHtml(
-                downloadFailedSince
-            )}
-                    </td>
-
-                    <!-- DOWNLOAD FAILED DAYS -->
-                    <td style="${failedDaysStyle}">
-                        ${escapeHtml(
-                downloadFailedDays
-            )}
-                    </td>
-
-                    <!-- STATUS -->
-                    <td>
-                        <span
-                            class="badge"
-                            style="
-                                background:${badgeColor};
-                                color:${textColor};
-                            "
-                        >
-                            ${escapeHtml(
-                x.schedulerMessage ?? "--"
-            )}
-                        </span>
-                    </td>
-
-                    <!-- ENTRY DATE -->
-                    <td>
-                        ${escapeHtml(
-                entryDate
-            )}
-                    </td>
-
-                </tr>
-            `);
+            badgeClass =
+                "download-status-system";
 
         }
-    );
+        else if (message.includes("TCP")) {
+
+            badgeClass =
+                "download-status-tcp";
+
+        }
+        else if (message.includes("NO DATA")) {
+
+            badgeClass =
+                "download-status-nodata";
+
+        }
+        else if (message.includes("TIMEOUT")) {
+
+            badgeClass =
+                "download-status-timeout";
+        }
+
+
+        /* =====================================================
+           LAST ENTRY DATE
+           ===================================================== */
+
+        let entryDate = "--";
+
+        if (x.entryDate) {
+
+            const parsedDate =
+                new Date(x.entryDate);
+
+            if (!isNaN(parsedDate.getTime())) {
+
+                entryDate =
+                    parsedDate.toLocaleString(
+                        "en-GB",
+                        {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        }
+                    );
+            }
+        }
+
+
+        /* =====================================================
+           TABLE ROW
+
+           1  S.No.
+           2  Cons Ref
+           3  Meter Number
+           4  Phase
+           5  Department
+           6  Division
+           7  Seq No
+           8  Meter Make
+           9  Failed Since
+           10 Total Failed Days
+           11 Status
+           12 Last Entry Date
+           13 Address
+           ===================================================== */
+
+        tbody.append(`
+            <tr>
+
+                <!-- 1. S.No. -->
+                <td class="text-center fw-semibold">
+                    ${index + 1}
+                </td>
+
+
+                <!-- 2. Cons Ref -->
+                <td>
+                    ${escapeHtml(x.consRef ?? "--")}
+                </td>
+
+
+                <!-- 3. Meter Number -->
+                <td class="meter-number-cell">
+                    ${escapeHtml(x.meterNumber ?? "--")}
+                </td>
+
+
+                <!-- 4. Phase -->
+                <td class="text-center">
+                    ${escapeHtml(x.phase ?? "--")}
+                </td>
+
+
+                <!-- 5. Department -->
+                <td>
+                    ${escapeHtml(x.sapDepartment ?? "--")}
+                </td>
+
+
+                <!-- 6. Division -->
+                <td>
+                    ${escapeHtml(x.sapDivision ?? "--")}
+                </td>
+
+
+                <!-- 7. Seq No -->
+                <td class="text-center">
+                    ${escapeHtml(x.sapSeqNo ?? "--")}
+                </td>
+
+
+                <!-- 8. Meter Make -->
+                <td class="meter-make-cell">
+                    ${escapeHtml(x.meterType ?? "--")}
+                </td>
+
+
+                <!-- 9. Failed Since -->
+                <td class="${failedSinceClass} text-center">
+                    ${escapeHtml(downloadFailedSince)}
+                </td>
+
+
+                <!-- 10. Total Failed Days -->
+                <td class="${failedDaysClass} text-center">
+                    ${escapeHtml(downloadFailedDays)}
+                </td>
+
+
+                <!-- 11. Status -->
+                <td class="status-cell">
+
+                    <span class="download-status-badge ${badgeClass}">
+                        ${escapeHtml(
+            x.schedulerMessage ?? "--"
+        )}
+                    </span>
+
+                </td>
+
+
+                <!-- 12. Last Entry Date -->
+                <td class="entry-date-cell text-center">
+                    ${escapeHtml(entryDate)}
+                </td>
+
+
+                <!-- 13. Address -->
+                <td class="address-cell">
+                    ${escapeHtml(x.address ?? "--")}
+                </td>
+
+            </tr>
+        `);
+
+    });
 }
 
 
@@ -1011,552 +974,379 @@ function renderTable(data) {
 
 function exportTableToExcel() {
 
-    const table =
-        document.getElementById(
-            "downloadSummaryTable"
-        );
+    const table = document.getElementById("downloadSummaryTable");
 
     if (!table) {
+        console.error("Download summary table not found.");
+        return;
+    }
 
-        console.error(
-            "Download summary table not found."
-        );
+
+    const tbody = table.querySelector("tbody");
+
+    if (!tbody || tbody.rows.length === 0) {
+
+        alert("No data available to export.");
 
         return;
     }
 
 
-    /* CREATE WORKBOOK */
+    /* =========================================================
+       CHECK FOR NO RECORDS
+       ========================================================= */
 
-    const wb =
-        XLSX.utils.book_new();
+    if (
+        tbody.rows.length === 1 &&
+        tbody.rows[0].innerText
+            .toLowerCase()
+            .includes("no records found")
+    ) {
 
-    const ws =
-        XLSX.utils.table_to_sheet(
-            table
+        alert("No data available to export.");
+
+        return;
+    }
+
+
+    /* =========================================================
+       EXCEL DATA
+       COLUMN ORDER MUST MATCH TABLE
+       ========================================================= */
+
+    const excelData = [];
+
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    excelData.push([
+        "S.No.",
+        "Cons Ref",
+        "Meter Number",
+        "Phase",
+        "Department",
+        "Division",
+        "Seq No",
+        "Meter Make",
+        "Failed Since",
+        "Total Failed Days",
+        "Status",
+        "Last Entry Date",
+        "Address"
+    ]);
+
+
+    /* =========================================================
+       BODY
+       ========================================================= */
+
+    Array.from(tbody.rows).forEach((row) => {
+
+        const cells = row.querySelectorAll("td");
+
+        if (cells.length < 13) {
+            return;
+        }
+
+
+        excelData.push([
+
+            /* 1. S.No. */
+            cells[0].innerText.trim(),
+
+            /* 2. Cons Ref */
+            cells[1].innerText.trim(),
+
+            /* 3. Meter Number */
+            cells[2].innerText.trim(),
+
+            /* 4. Phase */
+            cells[3].innerText.trim(),
+
+            /* 5. Department */
+            cells[4].innerText.trim(),
+
+            /* 6. Division */
+            cells[5].innerText.trim(),
+
+            /* 7. Seq No */
+            cells[6].innerText.trim(),
+
+            /* 8. Meter Make */
+            cells[7].innerText.trim(),
+
+            /* 9. Failed Since */
+            cells[8].innerText.trim(),
+
+            /* 10. Total Failed Days */
+            cells[9].innerText.trim(),
+
+            /* 11. Status */
+            cells[10].innerText.trim(),
+
+            /* 12. Last Entry Date */
+            cells[11].innerText.trim(),
+
+            /* 13. Address */
+            cells[12].innerText.trim()
+        ]);
+
+    });
+
+
+    /* =========================================================
+       CREATE WORKSHEET
+       ========================================================= */
+
+    const worksheet =
+        XLSX.utils.aoa_to_sheet(excelData);
+
+
+    /* =========================================================
+       COLUMN WIDTHS
+       ========================================================= */
+
+    worksheet["!cols"] = [
+
+        { wch: 7 },      // S.No.
+        { wch: 18 },     // Cons Ref
+        { wch: 20 },     // Meter Number
+        { wch: 10 },     // Phase
+        { wch: 18 },     // Department
+        { wch: 18 },     // Division
+        { wch: 10 },     // Seq No
+        { wch: 18 },     // Meter Make
+        { wch: 16 },     // Failed Since
+        { wch: 20 },     // Total Failed Days
+        { wch: 40 },     // Status
+        { wch: 22 },     // Last Entry Date
+        { wch: 45 }      // Address
+
+    ];
+
+
+    /* =========================================================
+       HEADER STYLE
+       ========================================================= */
+
+    const headerRange =
+        XLSX.utils.decode_range(
+            worksheet["!ref"]
         );
 
 
-    /* COLORS */
-
-    const NAVY_BLUE = "17365D";
-
-    const WHITE = "FFFFFF";
-
-    const BLACK = "000000";
-
-    const RED = "DC3545";
-
-    const BORDER_COLOR = "7F7F7F";
-
-
-    /* BORDER */
-
-    const allBorders = {
-
-        top: {
-            style: "thin",
-            color: {
-                rgb: BORDER_COLOR
-            }
-        },
-
-        bottom: {
-            style: "thin",
-            color: {
-                rgb: BORDER_COLOR
-            }
-        },
-
-        left: {
-            style: "thin",
-            color: {
-                rgb: BORDER_COLOR
-            }
-        },
-
-        right: {
-            style: "thin",
-            color: {
-                rgb: BORDER_COLOR
-            }
-        }
-
-    };
-
-
-    /* HEADER STYLE */
-
-    const headerStyle = {
-
-        fill: {
-            patternType: "solid",
-
-            fgColor: {
-                rgb: NAVY_BLUE
-            }
-        },
-
-        font: {
-            name: "Calibri",
-            sz: 11,
-            bold: true,
-
-            color: {
-                rgb: WHITE
-            }
-        },
-
-        alignment: {
-            horizontal: "center",
-            vertical: "center",
-            wrapText: true
-        },
-
-        border: allBorders
-    };
-
-
-    /* NORMAL STYLE */
-
-    const normalStyle = {
-
-        font: {
-            name: "Calibri",
-            sz: 10,
-
-            color: {
-                rgb: BLACK
-            }
-        },
-
-        alignment: {
-            vertical: "center",
-            wrapText: true
-        },
-
-        border: allBorders
-    };
-
-
-    /* CENTER STYLE */
-
-    const centerStyle = {
-
-        font: {
-            name: "Calibri",
-            sz: 10,
-
-            color: {
-                rgb: BLACK
-            }
-        },
-
-        alignment: {
-            horizontal: "center",
-            vertical: "center",
-            wrapText: true
-        },
-
-        border: allBorders
-    };
-
-
-    /* FAILED DAYS STYLE */
-
-    const failedDaysExcelStyle = {
-
-        fill: {
-            patternType: "solid",
-
-            fgColor: {
-                rgb: RED
-            }
-        },
-
-        font: {
-            name: "Calibri",
-            sz: 10,
-            bold: true,
-
-            color: {
-                rgb: WHITE
-            }
-        },
-
-        alignment: {
-            horizontal: "center",
-            vertical: "center"
-        },
-
-        border: allBorders
-    };
-
-
-    /*
-        A = S.No.
-        B = Cons Ref
-        C = Meter Number
-        D = Phase
-        E = Department
-        F = Division
-        G = Seq No
-        H = Address
-        I = Meter Make
-        J = Download Failed Since
-        K = Download Failed Days
-        L = Status
-        M = Entry Date
-    */
-
-
-    /* ========================================================
-       STYLE HEADER
-       ======================================================== */
-
     for (
-        let col = 0;
-        col < 13;
+        let col = headerRange.s.c;
+        col <= headerRange.e.c;
         col++
     ) {
 
-        const address =
+        const cellAddress =
             XLSX.utils.encode_cell({
                 r: 0,
                 c: col
             });
 
-        if (ws[address]) {
+        const cell =
+            worksheet[cellAddress];
 
-            ws[address].s =
-                headerStyle;
-        }
-    }
 
-
-    /* ========================================================
-       STYLE DATA ROWS
-       ======================================================== */
-
-    const rows =
-        table.querySelectorAll(
-            "tbody tr"
-        );
-
-
-    rows.forEach(
-        (row, rowIndex) => {
-
-            const cells =
-                row.querySelectorAll(
-                    "td"
-                );
-
-
-            /*
-             * Ignore "No Records Found" row.
-             */
-
-            if (
-                cells.length !== 13
-            ) {
-
-                return;
-            }
-
-
-            /* Excel row number */
-
-            const excelRow =
-                rowIndex + 2;
-
-
-            /* S.NO */
-
-            const snoCell =
-                `A${excelRow}`;
-
-            if (ws[snoCell]) {
-
-                ws[snoCell].t = "n";
-
-                ws[snoCell].v =
-                    rowIndex + 1;
-
-                ws[snoCell].z = "0";
-
-                ws[snoCell].s =
-                    centerStyle;
-            }
-
-
-            /* --------------------------------
-               STYLE COLUMNS B:M
-            -------------------------------- */
-
-            for (
-                let col = 1;
-                col < 13;
-                col++
-            ) {
-
-                const address =
-                    XLSX.utils.encode_cell({
-                        r: excelRow - 1,
-                        c: col
-                    });
-
-
-                if (!ws[address]) {
-
-                    continue;
-                }
-
-
-                /*
-                 * Center:
-                 *
-                 * D = Phase
-                 * J = Failed Since
-                 * K = Failed Days
-                 * M = Entry Date
-                 */
-
-                if (
-                    col === 3 ||
-                    col === 9 ||
-                    col === 10 ||
-                    col === 12
-                ) {
-
-                    ws[address].s =
-                        centerStyle;
-
-                }
-                else {
-
-                    ws[address].s =
-                        normalStyle;
-                }
-            }
-
-
-            /* =================================================
-               GET DOWNLOAD FAILED DAYS
-               K COLUMN = index 10
-               ================================================= */
-
-            const failedDaysText =
-                cells[10]
-                    .innerText
-                    .trim();
-
-
-            const failedDays =
-                parseFloat(
-                    failedDaysText
-                );
-
-
-            /* =================================================
-               RED WHEN > 5 DAYS
-               ================================================= */
-
-            if (
-                !isNaN(failedDays) &&
-                failedDays > 5
-            ) {
-
-                /*
-                 * J = Failed Since
-                 */
-
-                const failedSinceCell =
-                    `J${excelRow}`;
-
-
-                if (
-                    ws[failedSinceCell]
-                ) {
-
-                    ws[failedSinceCell].s =
-                        failedDaysExcelStyle;
-                }
-
-
-                /*
-                 * K = Failed Days
-                 */
-
-                const failedDaysCell =
-                    `K${excelRow}`;
-
-
-                if (
-                    ws[failedDaysCell]
-                ) {
-
-                    ws[failedDaysCell].s =
-                        failedDaysExcelStyle;
-                }
-            }
-
-        }
-    );
-
-
-    /* ============================================================
-       COLUMN WIDTHS
-       ============================================================ */
-
-    ws["!cols"] = [
-
-        {
-            wch: 7
-        },
-
-        {
-            wch: 17
-        },
-
-        {
-            wch: 20
-        },
-
-        {
-            wch: 10
-        },
-
-        {
-            wch: 17
-        },
-
-        {
-            wch: 18
-        },
-
-        {
-            wch: 12
-        },
-
-        {
-            wch: 55
-        },
-
-        {
-            wch: 16
-        },
-
-        {
-            wch: 23
-        },
-
-        {
-            wch: 20
-        },
-
-        {
-            wch: 50
-        },
-
-        {
-            wch: 22
+        if (!cell) {
+            continue;
         }
 
-    ];
 
+        cell.s = {
 
-    /* ============================================================
-       ROW HEIGHTS
-       ============================================================ */
+            font: {
+                bold: true,
+                color: {
+                    rgb: "FFFFFF"
+                }
+            },
 
-    ws["!rows"] = [];
+            fill: {
+                fgColor: {
+                    rgb: "1F4E78"
+                }
+            },
 
+            alignment: {
+                horizontal: "center",
+                vertical: "center",
+                wrapText: true
+            },
 
-    /* Header */
+            border: {
 
-    ws["!rows"][0] = {
-        hpt: 32
-    };
+                top: {
+                    style: "thin",
+                    color: {
+                        rgb: "000000"
+                    }
+                },
 
+                bottom: {
+                    style: "thin",
+                    color: {
+                        rgb: "000000"
+                    }
+                },
 
-    /* Data */
+                left: {
+                    style: "thin",
+                    color: {
+                        rgb: "000000"
+                    }
+                },
 
-    for (
-        let i = 1;
-        i < rows.length + 1;
-        i++
-    ) {
-
-        ws["!rows"][i] = {
-            hpt: 30
+                right: {
+                    style: "thin",
+                    color: {
+                        rgb: "000000"
+                    }
+                }
+            }
         };
     }
 
 
-    /* ============================================================
-       AUTOFILTER
-       ============================================================ */
+    /* =========================================================
+       BODY STYLE
+       ========================================================= */
 
-    ws["!autofilter"] = {
+    for (
+        let row = 1;
+        row <= headerRange.e.r;
+        row++
+    ) {
 
-        ref:
-            `A1:M${Math.max(
-                rows.length + 1,
-                2
-            )}`
-    };
+        for (
+            let col = 0;
+            col <= headerRange.e.c;
+            col++
+        ) {
+
+            const cellAddress =
+                XLSX.utils.encode_cell({
+                    r: row,
+                    c: col
+                });
+
+            const cell =
+                worksheet[cellAddress];
 
 
-    /* ============================================================
-       FREEZE HEADER
-       ============================================================ */
+            if (!cell) {
+                continue;
+            }
 
-    ws["!freeze"] = {
 
+            cell.s = {
+
+                alignment: {
+                    vertical: "top",
+                    wrapText: true
+                },
+
+                border: {
+
+                    top: {
+                        style: "thin",
+                        color: {
+                            rgb: "D9D9D9"
+                        }
+                    },
+
+                    bottom: {
+                        style: "thin",
+                        color: {
+                            rgb: "D9D9D9"
+                        }
+                    },
+
+                    left: {
+                        style: "thin",
+                        color: {
+                            rgb: "D9D9D9"
+                        }
+                    },
+
+                    right: {
+                        style: "thin",
+                        color: {
+                            rgb: "D9D9D9"
+                        }
+                    }
+                }
+            };
+
+
+            /* Center specific columns */
+
+            if (
+                col === 0 ||
+                col === 3 ||
+                col === 6 ||
+                col === 8 ||
+                col === 9 ||
+                col === 11
+            ) {
+
+                cell.s.alignment.horizontal =
+                    "center";
+            }
+        }
+    }
+
+
+    /* =========================================================
+       WORKBOOK
+       ========================================================= */
+
+    const workbook =
+        XLSX.utils.book_new();
+
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Failed Summary"
+    );
+
+
+    worksheet["!freeze"] = {
         xSplit: 0,
-
         ySplit: 1
     };
 
 
-    /* ============================================================
-       SHEET VIEW
-       ============================================================ */
+    /* =========================================================
+       DOWNLOAD
+       ========================================================= */
 
-    ws["!sheetViews"] = [
-        {
-            showGridLines: false
-        }
-    ];
+    const now =
+        new Date();
 
-
-    /* ============================================================
-       ADD WORKSHEET
-       ============================================================ */
-
-    XLSX.utils.book_append_sheet(
-        wb,
-        ws,
-        "Download Failed"
-    );
+    const timestamp =
+        now.getFullYear() +
+        String(now.getMonth() + 1).padStart(2, "0") +
+        String(now.getDate()).padStart(2, "0") +
+        "_" +
+        String(now.getHours()).padStart(2, "0") +
+        String(now.getMinutes()).padStart(2, "0") +
+        String(now.getSeconds()).padStart(2, "0");
 
 
-    /* ============================================================
-       FILE NAME
-       ============================================================ */
-
-    const today =
-        new Date()
-            .toISOString()
-            .split("T")[0];
+    const fileName =
+        `Download_Failed_Summary_${timestamp}.xlsx`;
 
 
     XLSX.writeFile(
-        wb,
-        "Download_Failed_Summary_BRPL_" +
-        today +
-        ".xlsx"
+        workbook,
+        fileName
     );
 }
 
