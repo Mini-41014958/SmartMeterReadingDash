@@ -709,15 +709,45 @@ function loadHesMeterMakeFilter() {
 
 function loadHesCycleFilter() {
 
-    const ddl =
-        $("#hesCycleFilter");
+    const ddl = $("#hesCycleFilter");
 
     if (!ddl.length) {
         return;
     }
 
+
+    /*
+     * Save currently selected cycle
+     * BEFORE clearing dropdown.
+     */
+    const currentCycle =
+        String(
+            ddl.val() || ""
+        )
+            .trim()
+            .toUpperCase();
+
+
+    /*
+     * Get selected department
+     */
+    const selectedDepartment =
+        String(
+            $("#hesDepartmentFilter").val() || ""
+        )
+            .trim()
+            .toUpperCase();
+
+
+    /*
+     * Clear cycle dropdown
+     */
     ddl.empty();
 
+
+    /*
+     * DEFAULT OPTION
+     */
     ddl.append(`
         <option value="">
             All Cycles
@@ -725,22 +755,60 @@ function loadHesCycleFilter() {
     `);
 
 
-    const cycles =
-        [
-            ...new Set(
-                allHesDownloadData
-                    .map(
-                        x =>
-                            String(
-                                x.cycle ||
-                                ""
-                            ).trim()
-                    )
-                    .filter(Boolean)
-            )
-        ];
+    /*
+     * Start with all HES data
+     */
+    let sourceData =
+        allHesDownloadData;
 
 
+    /*
+     * If department is selected,
+     * only show cycles belonging
+     * to that department.
+     */
+    if (selectedDepartment !== "") {
+
+        sourceData =
+            allHesDownloadData.filter(
+                item => {
+
+                    const itemDepartment =
+                        String(
+                            item.sapDepartment || ""
+                        )
+                            .trim()
+                            .toUpperCase();
+
+                    return (
+                        itemDepartment ===
+                        selectedDepartment
+                    );
+                }
+            );
+    }
+
+
+    /*
+     * Get unique cycles
+     */
+    const cycles = [
+        ...new Set(
+            sourceData
+                .map(
+                    item =>
+                        String(
+                            item.cycle || ""
+                        ).trim()
+                )
+                .filter(Boolean)
+        )
+    ];
+
+
+    /*
+     * Sort cycles numerically
+     */
     cycles.sort(
         (a, b) =>
             a.localeCompare(
@@ -753,20 +821,46 @@ function loadHesCycleFilter() {
     );
 
 
-    cycles.forEach(
-        cycle => {
+    /*
+     * Add cycles to dropdown
+     */
+    cycles.forEach(cycle => {
 
-            ddl.append(
-                $("<option>", {
+        ddl.append(
+            $("<option>", {
+                value: cycle,
+                text: cycle
+            })
+        );
 
-                    value: cycle,
+    });
 
-                    text: cycle
 
-                })
-            );
-        }
-    );
+    /*
+     * Restore previous cycle only if
+     * it still belongs to selected department.
+     */
+    if (
+        currentCycle !== "" &&
+        cycles.some(
+            cycle =>
+                String(cycle)
+                    .trim()
+                    .toUpperCase() ===
+                currentCycle
+        )
+    ) {
+
+        ddl.val(currentCycle);
+
+    }
+    else {
+
+        /*
+         * Default to All Cycles
+         */
+        ddl.val("");
+    }
 }
 
 
@@ -774,12 +868,12 @@ function loadHesCycleFilter() {
 // FILTER EVENTS
 // ============================================================
 
-$("#hesDepartmentFilter")
-    .off("change.hesDepartment")
-    .on(
-        "change.hesDepartment",
-        applyHesFilters
-    );
+$("#hesDepartmentFilter") .off("change.hesDepartment").on( "change.hesDepartment",
+    function ()
+    {
+            loadHesCycleFilter();
+            applyHesFilters();
+    });
 
 
 $("#hesDivisionFilter")

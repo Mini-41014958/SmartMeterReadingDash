@@ -165,36 +165,105 @@ function loadDepartmentFilter() {
 
     });
 }
-/* ============================================================
-   CYCLE FILTER
-   ============================================================ */
+
 
 function loadCycleFilter() {
 
     const ddl = $("#cycleFilter");
 
+    /*
+     * Save currently selected cycle
+     * BEFORE clearing dropdown.
+     */
+    const previousCycle =
+        String(
+            ddl.val() || ""
+        )
+            .trim()
+            .toUpperCase();
+
+
+    /*
+     * Get selected department
+     */
+    const selectedDepartment =
+        String(
+            $("#departmentFilter").val() || ""
+        )
+            .trim()
+            .toUpperCase();
+
+
+    /*
+     * Clear dropdown
+     */
     ddl.empty();
 
+
+    /*
+     * Default option
+     */
     ddl.append(`
         <option value="">
             All Cycles
         </option>
     `);
 
+
+    /*
+     * Start with all records
+     */
+    let sourceData = allDownloadData;
+
+
+    /*
+     * Department-dependent cycles
+     *
+     * Example:
+     * SLCC -> only SLCC cycles
+     * MLCC -> only MLCC cycles
+     * GCC  -> only GCC cycles
+     * KCC  -> only KCC cycles
+     */
+    if (selectedDepartment !== "") {
+
+        sourceData =
+            allDownloadData.filter(item => {
+
+                const itemDepartment =
+                    String(
+                        item.sapDepartment || ""
+                    )
+                        .trim()
+                        .toUpperCase();
+
+                return (
+                    itemDepartment ===
+                    selectedDepartment
+                );
+            });
+    }
+
+
+    /*
+     * Get unique cycles
+     */
     const cycles = [
         ...new Set(
-            allDownloadData
-                .map(x => x.cycle)
-                .filter(
-                    x =>
-                        x !== null &&
-                        x !== undefined &&
-                        String(x).trim() !== ""
+            sourceData
+                .map(item =>
+                    String(
+                        item.cycle || ""
+                    ).trim()
                 )
-                .map(x => String(x).trim())
+                .filter(Boolean)
         )
     ];
 
+
+    /*
+     * Sort cycles numerically
+     */
     cycles.sort((a, b) =>
         a.localeCompare(
             b,
@@ -205,15 +274,48 @@ function loadCycleFilter() {
         )
     );
 
+
+    /*
+     * Populate cycle dropdown
+     */
     cycles.forEach(cycle => {
 
-        ddl.append(`
-            <option value="${escapeHtml(cycle)}">
-                ${escapeHtml(cycle)}
-            </option>
-        `);
+        ddl.append(
+            $("<option>", {
+                value: cycle,
+                text: cycle
+            })
+        );
 
     });
+
+
+    /*
+     * Restore previous cycle ONLY if it
+     * belongs to the selected department.
+     */
+    if (
+        previousCycle !== "" &&
+        cycles.some(
+            cycle =>
+                String(cycle)
+                    .trim()
+                    .toUpperCase() ===
+                previousCycle
+        )
+    ) {
+
+        ddl.val(previousCycle);
+
+    }
+    else {
+
+        /*
+         * Previous cycle does not belong
+         * to selected department.
+         */
+        ddl.val("");
+    }
 }
 
 /* ============================================================
@@ -410,8 +512,12 @@ function loadMeterMakeFilter() {
 }
 
    //FILTER EVENTS
+$("#departmentFilter").on("change", function ()
+{
 
-$("#departmentFilter").on( "change", applyFilters);
+        loadCycleFilter();
+    applyFilters();
+});
 
 $("#cycleFilter").on(
     "change",

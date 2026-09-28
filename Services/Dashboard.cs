@@ -552,214 +552,112 @@ namespace SmartMeterReadingDash.Services
             {
                 con.Open();
                 string query = @"WITH MONTHS (READING_MONTH) AS
-(
-    SELECT TRIM(
-               REGEXP_SUBSTR(
-                   :READING_MONTH,
-                   '[^,]+',
-                   1,
-                   LEVEL
-               )
-           )
-    FROM DUAL
-    CONNECT BY REGEXP_SUBSTR(
-                   :READING_MONTH,
-                   '[^,]+',
-                   1,
-                   LEVEL
-               ) IS NOT NULL
-),
-
-BILLING_DATA AS
-(
-    SELECT *
-    FROM RCMPA.SMART_METER_BILLING_DATA_SEP
-
-    UNION ALL
-
-    SELECT *
-    FROM RCMPA.SMART_METER_BILLING_DATA
-),
-
-/* =========================================================
-   DISTINCT HES DOWNLOAD METERS
-   ========================================================= */
-DOWNLOAD AS
-(
-    SELECT
-        /*+ PARALLEL(SM,8) */
-        COUNT(DISTINCT TRIM(SM.METERNO)) AS HES_DOWNLOAD
-
-    FROM BILLING_DATA SM
-
-    WHERE
-    (
-           SM.METERNO LIKE '91______'
-        OR SM.METERNO LIKE '90______'
-        OR SM.METERNO LIKE 'AL________'
-        OR SM.METERNO LIKE 'KI________'
-    )
-
-    AND SM.READING_MONTH IN
-    (
-        SELECT M.READING_MONTH
-        FROM MONTHS M
-    )
-
-    AND
-    (
-        :IS_SUPERADMIN = 1
-
-        OR
-
-        UPPER(
-            CASE
-                WHEN SM.SAP_DEPARTMENT = 'MLCC'
-                     AND SM.CYCLE = '0N'
-                THEN 'KCC'
-
-                WHEN SM.CYCLE IN ('KA', 'KC', 'KG')
-                THEN 'KCC'
-
-                WHEN SM.SAP_DEPARTMENT IS NULL
-                THEN 'SLCC'
-
-                ELSE TRIM(SM.SAP_DEPARTMENT)
-            END
-        ) = :DEPARTMENT
-    )
-),
-
-/* =========================================================
-   DISTINCT HES FAILED METERS
-   ========================================================= */
-FAILED AS
-(
-    SELECT
-        NVL(SUM(HES_FAILED), 0) AS HES_FAILED
-
-    FROM
-    (
-        SELECT
-            /*+ PARALLEL(L,8) */
-            L.READING_MONTH,
-
-            COUNT(DISTINCT TRIM(L.METERNO)) AS HES_FAILED
-
-        FROM RCMPA.SMART_METER_SCHEDULER_LOGS L
-
-        WHERE
-        (
-               L.METERNO LIKE '91______'
-            OR L.METERNO LIKE '90______'
-            OR L.METERNO LIKE 'AL________'
-            OR L.METERNO LIKE 'KI________'
-        )
-
-        AND L.MESSAGE NOT LIKE 'Data%'
-
-        AND L.READING_MONTH IN
-        (
-            SELECT M.READING_MONTH
-            FROM MONTHS M
-        )
-
-        /* =====================================================
-           IF METER EXISTS IN ANY DOWNLOAD TABLE,
-           DO NOT COUNT IT AS FAILED
-           ===================================================== */
-        AND NOT EXISTS
-        (
-            SELECT
-                /*+ INDEX(B IDX_SM_BILLING_CONSREF_MONTH) */
-                1
-
-            FROM BILLING_DATA B
-
-            WHERE TRIM(B.METERNO) = TRIM(L.METERNO)
-
-              AND B.READING_MONTH = L.READING_MONTH
-        )
-
-        AND
-        (
-            :IS_SUPERADMIN = 1
-
-            OR
-
-            UPPER(
-                CASE
-                    WHEN L.SAP_DEPARTMENT = 'MLCC'
-                         AND L.CYCLE = '0N'
-                    THEN 'KCC'
-
-                    WHEN L.CYCLE IN ('KA', 'KC', 'KG')
-                    THEN 'KCC'
-
-                    WHEN L.SAP_DEPARTMENT IS NULL
-                    THEN 'SLCC'
-
-                    ELSE TRIM(L.SAP_DEPARTMENT)
-                END
-            ) = :DEPARTMENT
-        )
-
-        GROUP BY L.READING_MONTH
-    )
-),
-
-/* =========================================================
-   FINAL DATA
-   ========================================================= */
-FINAL_DATA AS
-(
-    SELECT
-        NVL(D.HES_DOWNLOAD, 0) AS HES_DOWNLOAD,
-
-        NVL(F.HES_FAILED, 0) AS HES_FAILED,
-
-        NVL(D.HES_DOWNLOAD, 0)
-        +
-        NVL(F.HES_FAILED, 0) AS TOTAL_METERS
-
-    FROM DOWNLOAD D
-
-    CROSS JOIN FAILED F
-)
-
-/* =========================================================
-   FINAL RESULT
-   ========================================================= */
-SELECT
-    TOTAL_METERS,
-
-    HES_DOWNLOAD,
-
-    HES_FAILED,
-
-    ROUND(
-        CASE
-            WHEN TOTAL_METERS = 0
-            THEN 0
-            ELSE
-                (HES_DOWNLOAD * 100.0)
-                / TOTAL_METERS
-        END,
-        2
-    ) AS HES_DOWNLOAD_PERCENTAGE,
-
-    ROUND(
-        CASE
-            WHEN TOTAL_METERS = 0
-            THEN 0
-            ELSE
-                (HES_FAILED * 100.0)
-                / TOTAL_METERS
-        END,
-        2
-    ) AS HES_FAILED_PERCENTAGE
-
-FROM FINAL_DATA";
+                 (
+                  SELECT TRIM( REGEXP_SUBSTR( :READING_MONTH,  '[^,]+', 1,LEVEL) )
+                  FROM DUAL CONNECT BY REGEXP_SUBSTR( :READING_MONTH,'[^,]+', 1, LEVEL) IS NOT NULL
+                 ),
+                 BILLING_DATA AS
+                 (
+                     SELECT * FROM RCMPA.SMART_METER_BILLING_DATA_SEP
+                     UNION ALL
+                     SELECT * FROM RCMPA.SMART_METER_BILLING_DATA
+                 ),
+                 DOWNLOAD AS
+                (
+                    SELECT  /*+ PARALLEL(SM,8) */ COUNT(DISTINCT TRIM(SM.METERNO)) AS HES_DOWNLOAD  FROM BILLING_DATA SM
+                    WHERE
+                    (
+                           SM.METERNO LIKE '91______'
+                        OR SM.METERNO LIKE '90______'
+                        OR SM.METERNO LIKE 'AL________'
+                        OR SM.METERNO LIKE 'KI________'
+                    )
+                    AND SM.READING_MONTH IN
+                    (
+                        SELECT M.READING_MONTH FROM MONTHS M
+                    )
+                    AND
+                    (
+                        :IS_SUPERADMIN = 1
+                        OR
+                        UPPER(
+                            CASE
+                                WHEN SM.SAP_DEPARTMENT = 'MLCC'  AND SM.CYCLE = '0N'
+                                THEN 'KCC'
+                                WHEN SM.CYCLE IN ('KA', 'KC', 'KG')
+                                THEN 'KCC'
+                                WHEN SM.SAP_DEPARTMENT IS NULL
+                                THEN 'SLCC'
+                                ELSE TRIM(SM.SAP_DEPARTMENT)
+                            END
+                        ) = :DEPARTMENT
+                    )
+                ),
+                FAILED AS
+                (
+                    SELECT NVL(SUM(HES_FAILED), 0) AS HES_FAILED FROM
+                    (
+                        SELECT /*+ PARALLEL(L,8) */ L.READING_MONTH, COUNT(DISTINCT TRIM(L.METERNO)) AS HES_FAILED
+                        FROM RCMPA.SMART_METER_SCHEDULER_LOGS L
+                        WHERE
+                        (
+                               L.METERNO LIKE '91______'
+                            OR L.METERNO LIKE '90______'
+                            OR L.METERNO LIKE 'AL________'
+                            OR L.METERNO LIKE 'KI________'
+                        )
+                        AND L.MESSAGE NOT LIKE 'Data%'
+                        AND L.READING_MONTH IN
+                        (
+                            SELECT M.READING_MONTH FROM MONTHS M
+                        )
+                        AND NOT EXISTS
+                        (
+                            SELECT /*+ INDEX(B IDX_SM_BILLING_CONSREF_MONTH) */  1 FROM BILLING_DATA B WHERE TRIM(B.METERNO) = TRIM(L.METERNO)
+                            AND B.READING_MONTH = L.READING_MONTH
+                        )
+                        AND
+                        (
+                            :IS_SUPERADMIN = 1
+                            OR
+                            UPPER(
+                                CASE
+                                    WHEN L.SAP_DEPARTMENT = 'MLCC' AND L.CYCLE = '0N'
+                                    THEN 'KCC'
+                                    WHEN L.CYCLE IN ('KA', 'KC', 'KG')
+                                    THEN 'KCC'
+                                    WHEN L.SAP_DEPARTMENT IS NULL
+                                    THEN 'SLCC'
+                                    ELSE TRIM(L.SAP_DEPARTMENT)
+                                END
+                            ) = :DEPARTMENT
+                        )
+                        GROUP BY L.READING_MONTH
+                    )
+                ),
+                FINAL_DATA AS
+                (
+                    SELECT NVL(D.HES_DOWNLOAD, 0) AS HES_DOWNLOAD,  NVL(F.HES_FAILED, 0) AS HES_FAILED,  NVL(D.HES_DOWNLOAD, 0) + NVL(F.HES_FAILED, 0) AS TOTAL_METERS
+                    FROM DOWNLOAD D CROSS JOIN FAILED F
+                )  
+                SELECT TOTAL_METERS, HES_DOWNLOAD, HES_FAILED,
+                    ROUND(
+                        CASE
+                            WHEN TOTAL_METERS = 0
+                            THEN 0
+                            ELSE (HES_DOWNLOAD * 100.0) / TOTAL_METERS
+                        END,
+                        2
+                    ) AS HES_DOWNLOAD_PERCENTAGE,
+                    ROUND(
+                        CASE
+                            WHEN TOTAL_METERS = 0
+                            THEN 0
+                            ELSE  (HES_FAILED * 100.0) / TOTAL_METERS
+                        END,
+                        2
+                    ) AS HES_FAILED_PERCENTAGE
+                FROM FINAL_DATA";
 
                 using (OracleCommand cmd = new OracleCommand(query, con))
                 {
@@ -933,353 +831,147 @@ FROM FINAL_DATA";
             using (OracleConnection con = _db.GetConnection())
             {
                 con.Open();
-                string query = @"WITH
-/* =========================================================
-   1. MONTHS
-   ========================================================= */
-MONTHS (READING_MONTH) AS
-(
-    SELECT TRIM(
-               REGEXP_SUBSTR(
-                   :READING_MONTH,
-                   '[^,]+',
-                   1,
-                   LEVEL
-               )
-           )
-    FROM DUAL
-    CONNECT BY REGEXP_SUBSTR(
-                   :READING_MONTH,
-                   '[^,]+',
-                   1,
-                   LEVEL
-               ) IS NOT NULL
-),
-
-/* =========================================================
-   2. LATEST FAILURE
-   FILTER AS EARLY AS POSSIBLE
-   ========================================================= */
-LATEST_FAILURE AS
-(
-    SELECT
-        TRIM(L.METERNO) AS METERNO,
-        L.CONS_REF,
-        L.MESSAGE,
-        L.ENTRY_DATE,
-        L.READING_MONTH,
-        L.SAP_DEPARTMENT,
-        L.CYCLE,
-
-        MIN(TRUNC(L.ENTRY_DATE)) OVER
-        (
-            PARTITION BY TRIM(L.METERNO), L.READING_MONTH
-        ) AS DOWNLOAD_FAILED_SINCE,
-
-        TRUNC(SYSDATE)
-        -
-        MIN(TRUNC(L.ENTRY_DATE)) OVER
-        (
-            PARTITION BY TRIM(L.METERNO), L.READING_MONTH
-        ) AS DOWNLOAD_FAILED_DAYS,
-
-        ROW_NUMBER() OVER
-        (
-            PARTITION BY TRIM(L.METERNO), L.READING_MONTH
-            ORDER BY L.ENTRY_DATE DESC
-        ) AS RN
-
-    FROM RCMPA.SMART_METER_SCHEDULER_LOGS L
-
-    WHERE L.READING_MONTH IN
-    (
-        SELECT READING_MONTH
-        FROM MONTHS
-    )
-
-    AND L.MESSAGE NOT LIKE 'Data%'
-
-    AND
-    (
-           L.METERNO LIKE '91______'
-        OR L.METERNO LIKE '90______'
-        OR L.METERNO LIKE 'AL________'
-        OR L.METERNO LIKE 'KI________'
-    )
-
-    AND
-    (
-        :IS_SUPERADMIN = 1
-
-        OR
-
-        UPPER(
-            CASE
-                WHEN L.SAP_DEPARTMENT = 'MLCC'
-                     AND L.CYCLE = '0N'
-                THEN 'KCC'
-
-                WHEN L.CYCLE IN ('KA', 'KC', 'KG')
-                THEN 'KCC'
-
-                WHEN L.SAP_DEPARTMENT IS NULL
-                THEN 'SLCC'
-
-                ELSE TRIM(L.SAP_DEPARTMENT)
-            END
-        ) = :DEPARTMENT
-    )
-),
-
-/* =========================================================
-   3. ONLY LATEST FAILURE ROWS
-   ========================================================= */
-FAILURE_DATA AS
-(
-    SELECT
-        L.METERNO,
-        L.CONS_REF,
-        L.MESSAGE,
-        L.ENTRY_DATE,
-        L.READING_MONTH,
-        L.SAP_DEPARTMENT,
-        L.CYCLE,
-        L.DOWNLOAD_FAILED_SINCE,
-        L.DOWNLOAD_FAILED_DAYS,
-
-        CASE
-            WHEN UPPER(L.MESSAGE) LIKE '%SYSTEM TITLE%'
-                THEN 'System Title Mismatch'
-
-            WHEN UPPER(L.MESSAGE) LIKE '%TCP%'
-                THEN 'TCP Connection Failed'
-
-            WHEN UPPER(L.MESSAGE) LIKE '%NO DATA%'
-                THEN 'No Data Found'
-
-            ELSE 'Others Failure Reason'
-        END AS FAILURE_REASON
-
-    FROM LATEST_FAILURE L
-
-    WHERE L.RN = 1
-
-    /* =====================================================
-       BILLING EXISTS CHECK
-
-       IMPORTANT:
-       We check both tables separately so Oracle can use
-       indexes on each table.
-       ===================================================== */
-
-    AND NOT EXISTS
-    (
-        SELECT 1
-        FROM RCMPA.SMART_METER_BILLING_DATA_SEP B
-        WHERE B.READING_MONTH = L.READING_MONTH
-          AND TRIM(B.METERNO) = L.METERNO
-    )
-
-    AND NOT EXISTS
-    (
-        SELECT 1
-        FROM RCMPA.SMART_METER_BILLING_DATA B
-        WHERE B.READING_MONTH = L.READING_MONTH
-          AND TRIM(B.METERNO) = L.METERNO
-    )
-),
-
-/* =========================================================
-   4. ONLY REQUIRED CONS_REF + MONTH FROM FAILURE_DATA
-   ========================================================= */
-FAILURE_KEYS AS
-(
-    SELECT DISTINCT
-        CONS_REF,
-        READING_MONTH
-    FROM FAILURE_DATA
-    WHERE CONS_REF IS NOT NULL
-),
-
-/* =========================================================
-   5. DEDUP SLCC ONLY FOR REQUIRED ROWS
-   ========================================================= */
-SLCC_DATA AS
-(
-    SELECT
-        CONS_REF,
-        READING_MONTH,
-        SAP_DIVISION,
-        SAP_SEQ_NO,
-        ADD1,
-        ADD2,
-        ADD3,
-        LAND_MARK,
-        FATHER_NAME
-    FROM
-    (
-        SELECT
-            S.CONS_REF,
-            S.READING_MONTH,
-            S.SAP_DIVISION,
-            S.SAP_SEQ_NO,
-            S.ADD1,
-            S.ADD2,
-            S.ADD3,
-            S.LAND_MARK,
-            S.FATHER_NAME,
-
-            ROW_NUMBER() OVER
-            (
-                PARTITION BY S.CONS_REF, S.READING_MONTH
-                ORDER BY S.ROWID
-            ) AS RN
-
-        FROM RCMPA.SAP_SLCC_FORMY S
-
-        INNER JOIN FAILURE_KEYS K
-            ON K.CONS_REF = S.CONS_REF
-           AND K.READING_MONTH = S.READING_MONTH
-    )
-    WHERE RN = 1
-),
-
-/* =========================================================
-   6. DEDUP FORMY ONLY FOR REQUIRED ROWS
-   ========================================================= */
-FORMY_DATA AS
-(
-    SELECT
-        CONS_REF,
-        READING_MONTH,
-        SAP_DIVISION,
-        SAP_SEQ_NO,
-        ADD1,
-        ADD2,
-        ADD3,
-        LAND_MARK,
-        FATHER_NAME
-    FROM
-    (
-        SELECT
-            FM.CONS_REF,
-            FM.READING_MONTH,
-            FM.SAP_DIVISION,
-            FM.SAP_SEQ_NO,
-            FM.ADD1,
-            FM.ADD2,
-            FM.ADD3,
-            FM.LAND_MARK,
-            FM.FATHER_NAME,
-
-            ROW_NUMBER() OVER
-            (
-                PARTITION BY FM.CONS_REF, FM.READING_MONTH
-                ORDER BY FM.ROWID
-            ) AS RN
-
-        FROM RCMPA.SAP_FORMY FM
-
-        INNER JOIN FAILURE_KEYS K
-            ON K.CONS_REF = FM.CONS_REF
-           AND K.READING_MONTH = FM.READING_MONTH
-    )
-    WHERE RN = 1
-)
-
-/* =========================================================
-   7. FINAL
-   ========================================================= */
-SELECT
-    F.METERNO,
-
-    F.CONS_REF,
-
-    CASE
-        WHEN F.SAP_DEPARTMENT = 'MLCC'
-             AND F.CYCLE = '0N'
-        THEN 'KCC'
-
-        WHEN F.CYCLE IN ('KA', 'KC', 'KG')
-        THEN 'KCC'
-
-        ELSE NVL(TRIM(F.SAP_DEPARTMENT), 'SLCC')
-    END AS SAP_DEPARTMENT,
-
-    F.CYCLE,
-
-    NVL(S.SAP_DIVISION, FM.SAP_DIVISION) AS SAP_DIVISION,
-
-    NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO) AS SAP_SEQ_NO,
-
-    RTRIM(
-        NVL(S.ADD1, FM.ADD1) || ', ' ||
-        NVL(S.ADD2, FM.ADD2) || ', ' ||
-        NVL(S.ADD3, FM.ADD3) || ', ' ||
-        NVL(S.LAND_MARK, FM.LAND_MARK) || ', ' ||
-        NVL(S.FATHER_NAME, FM.FATHER_NAME),
-        ', '
-    ) AS ADDRESS,
-
-    CASE
-        WHEN SUBSTR(F.METERNO, 1, 2) IN ('90', 'AL')
-        THEN 'ALLIED'
-
-        WHEN SUBSTR(F.METERNO, 1, 2) IN ('91', 'KI')
-        THEN 'KIMBAL'
-    END AS METER_TYPE,
-
-    CASE
-        WHEN SUBSTR(F.METERNO, 1, 4) IN
-             ('AL91', 'KI91', '9150', '9008', '9027')
-        THEN '1PH'
-
-        WHEN SUBSTR(F.METERNO, 1, 4) IN
-             ('AL90', 'KI90', '9026')
-        THEN '3PH'
-
-        ELSE 'UNKNOWN'
-    END AS PHASE_TYPE,
-
-    F.FAILURE_REASON,
-
-    F.MESSAGE AS SCHEDULER_MESSAGE,
-
-    F.ENTRY_DATE,
-
-    F.READING_MONTH,
-
-    F.DOWNLOAD_FAILED_SINCE,
-
-    F.DOWNLOAD_FAILED_DAYS
-
-FROM FAILURE_DATA F
-
-LEFT JOIN SLCC_DATA S
-    ON S.CONS_REF = F.CONS_REF
-   AND S.READING_MONTH = F.READING_MONTH
-
-LEFT JOIN FORMY_DATA FM
-    ON FM.CONS_REF = F.CONS_REF
-   AND FM.READING_MONTH = F.READING_MONTH
-
-ORDER BY
-    CASE
-        WHEN F.SAP_DEPARTMENT = 'MLCC'
-             AND F.CYCLE = '0N'
-        THEN 'KCC'
-
-        WHEN F.CYCLE IN ('KA', 'KC', 'KG')
-        THEN 'KCC'
-
-        ELSE NVL(TRIM(F.SAP_DEPARTMENT), 'SLCC')
-    END,
-
-    NVL(S.SAP_DIVISION, FM.SAP_DIVISION),
-
-    NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO),
-
-    F.METERNO";
+                string query = @"WITH MONTHS (READING_MONTH) AS
+                (
+                    SELECT TRIM(REGEXP_SUBSTR( :READING_MONTH,'[^,]+', 1,LEVEL))
+                    FROM DUAL CONNECT BY REGEXP_SUBSTR( :READING_MONTH, '[^,]+', 1,LEVEL) IS NOT NULL
+                ),
+                LATEST_FAILURE AS
+                (
+                    SELECT  TRIM(L.METERNO) AS METERNO, L.CONS_REF, L.MESSAGE, L.ENTRY_DATE, L.READING_MONTH, L.SAP_DEPARTMENT,L.CYCLE,
+                        MIN(TRUNC(L.ENTRY_DATE)) OVER (PARTITION BY TRIM(L.METERNO), L.READING_MONTH ) AS DOWNLOAD_FAILED_SINCE,
+                        TRUNC(SYSDATE) - MIN(TRUNC(L.ENTRY_DATE)) OVER ( PARTITION BY TRIM(L.METERNO), L.READING_MONTH ) AS DOWNLOAD_FAILED_DAYS,
+                        ROW_NUMBER() OVER
+                        (
+                            PARTITION BY TRIM(L.METERNO), L.READING_MONTH  ORDER BY L.ENTRY_DATE DESC
+                        ) AS RN
+                    FROM RCMPA.SMART_METER_SCHEDULER_LOGS L WHERE L.READING_MONTH IN
+                    (
+                        SELECT READING_MONTH FROM MONTHS
+                    )
+                    AND L.MESSAGE NOT LIKE 'Data%'
+                    AND
+                    (
+                           L.METERNO LIKE '91______'
+                        OR L.METERNO LIKE '90______'
+                        OR L.METERNO LIKE 'AL________'
+                        OR L.METERNO LIKE 'KI________'
+                    )
+                    AND
+                    (
+                        :IS_SUPERADMIN = 1
+                        OR
+                        UPPER(
+                            CASE
+                                WHEN L.SAP_DEPARTMENT = 'MLCC'  AND L.CYCLE = '0N'
+                                THEN 'KCC'
+                                WHEN L.CYCLE IN ('KA', 'KC', 'KG')
+                                THEN 'KCC'
+                                WHEN L.SAP_DEPARTMENT IS NULL
+                                THEN 'SLCC'
+                                ELSE TRIM(L.SAP_DEPARTMENT)
+                            END
+                        ) = :DEPARTMENT
+                    )
+                ),
+                FAILURE_DATA AS
+                (
+                    SELECT L.METERNO, L.CONS_REF, L.MESSAGE, L.ENTRY_DATE, L.READING_MONTH, L.SAP_DEPARTMENT, L.CYCLE, L.DOWNLOAD_FAILED_SINCE, L.DOWNLOAD_FAILED_DAYS,
+                        CASE
+                            WHEN UPPER(L.MESSAGE) LIKE '%SYSTEM TITLE%'
+                                THEN 'System Title Mismatch'
+                            WHEN UPPER(L.MESSAGE) LIKE '%TCP%'
+                                THEN 'TCP Connection Failed'
+                            WHEN UPPER(L.MESSAGE) LIKE '%NO DATA%'
+                                THEN 'No Data Found'
+                            ELSE 'Others Failure Reason'
+                        END AS FAILURE_REASON
+                    FROM LATEST_FAILURE L WHERE L.RN = 1
+                    AND NOT EXISTS
+                    (
+                        SELECT 1 FROM RCMPA.SMART_METER_BILLING_DATA_SEP B WHERE B.READING_MONTH = L.READING_MONTH AND TRIM(B.METERNO) = L.METERNO
+                    )
+                    AND NOT EXISTS
+                    (
+                        SELECT 1 FROM RCMPA.SMART_METER_BILLING_DATA B  WHERE B.READING_MONTH = L.READING_MONTH AND TRIM(B.METERNO) = L.METERNO
+                    )
+                ),
+                FAILURE_KEYS AS
+                (
+                    SELECT DISTINCT CONS_REF, READING_MONTH FROM FAILURE_DATA WHERE CONS_REF IS NOT NULL
+                ),
+                SLCC_DATA AS
+                (
+                    SELECT CONS_REF, READING_MONTH, SAP_DIVISION, SAP_SEQ_NO, ADD1, ADD2, ADD3,LAND_MARK, FATHER_NAME
+                    FROM
+                    (
+                        SELECT S.CONS_REF,  S.READING_MONTH, S.SAP_DIVISION, S.SAP_SEQ_NO, S.ADD1, S.ADD2, S.ADD3, S.LAND_MARK, S.FATHER_NAME,
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY S.CONS_REF, S.READING_MONTH ORDER BY S.ROWID
+                            ) AS RN
+                        FROM RCMPA.SAP_SLCC_FORMY S INNER JOIN FAILURE_KEYS K ON K.CONS_REF = S.CONS_REF AND K.READING_MONTH = S.READING_MONTH
+                    )
+                    WHERE RN = 1
+                ),
+                FORMY_DATA AS
+                (
+                    SELECT CONS_REF, READING_MONTH, SAP_DIVISION, SAP_SEQ_NO, ADD1, ADD2, ADD3, LAND_MARK,FATHER_NAME
+                    FROM
+                    (
+                        SELECT FM.CONS_REF, FM.READING_MONTH, FM.SAP_DIVISION, FM.SAP_SEQ_NO,  FM.ADD1, FM.ADD2, FM.ADD3, FM.LAND_MARK, FM.FATHER_NAME,
+                            ROW_NUMBER() OVER
+                            (
+                                PARTITION BY FM.CONS_REF, FM.READING_MONTH ORDER BY FM.ROWID
+                            ) AS RN
+                        FROM RCMPA.SAP_FORMY FM INNER JOIN FAILURE_KEYS K ON K.CONS_REF = FM.CONS_REF AND K.READING_MONTH = FM.READING_MONTH
+                    )
+                    WHERE RN = 1
+                )
+                SELECT F.METERNO, F.CONS_REF,
+                    CASE
+                        WHEN F.SAP_DEPARTMENT = 'MLCC' AND F.CYCLE = '0N'
+                        THEN 'KCC'
+                        WHEN F.CYCLE IN ('KA', 'KC', 'KG')
+                        THEN 'KCC'
+                        ELSE NVL(TRIM(F.SAP_DEPARTMENT), 'SLCC')
+                    END AS SAP_DEPARTMENT, F.CYCLE,
+                    NVL(S.SAP_DIVISION, FM.SAP_DIVISION) AS SAP_DIVISION,
+                    NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO) AS SAP_SEQ_NO,
+                    RTRIM(
+                        NVL(S.ADD1, FM.ADD1) || ', ' ||
+                        NVL(S.ADD2, FM.ADD2) || ', ' ||
+                        NVL(S.ADD3, FM.ADD3) || ', ' ||
+                        NVL(S.LAND_MARK, FM.LAND_MARK) || ', ' ||
+                        NVL(S.FATHER_NAME, FM.FATHER_NAME),
+                        ', '
+                    ) AS ADDRESS,
+                    CASE
+                        WHEN SUBSTR(F.METERNO, 1, 2) IN ('90', 'AL')
+                        THEN 'ALLIED'
+                        WHEN SUBSTR(F.METERNO, 1, 2) IN ('91', 'KI')
+                        THEN 'KIMBAL'
+                    END AS METER_TYPE,
+                    CASE
+                        WHEN SUBSTR(F.METERNO, 1, 4) IN ('AL91', 'KI91', '9150', '9008', '9027')
+                        THEN '1PH'
+                        WHEN SUBSTR(F.METERNO, 1, 4) IN ('AL90', 'KI90', '9026')
+                        THEN '3PH'
+                        ELSE 'UNKNOWN'
+                    END AS PHASE_TYPE,  F.FAILURE_REASON,  F.MESSAGE AS SCHEDULER_MESSAGE, F.ENTRY_DATE, F.READING_MONTH,  F.DOWNLOAD_FAILED_SINCE, F.DOWNLOAD_FAILED_DAYS
+                FROM FAILURE_DATA F LEFT JOIN SLCC_DATA S ON S.CONS_REF = F.CONS_REF AND S.READING_MONTH = F.READING_MONTH
+                LEFT JOIN FORMY_DATA FM ON FM.CONS_REF = F.CONS_REF AND FM.READING_MONTH = F.READING_MONTH
+                ORDER BY
+                    CASE
+                        WHEN F.SAP_DEPARTMENT = 'MLCC'  AND F.CYCLE = '0N'
+                        THEN 'KCC'
+                        WHEN F.CYCLE IN ('KA', 'KC', 'KG')
+                        THEN 'KCC'
+                        ELSE NVL(TRIM(F.SAP_DEPARTMENT), 'SLCC')
+                    END,
+                    NVL(S.SAP_DIVISION, FM.SAP_DIVISION),
+                    NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO),
+                    F.METERNO";
 
                 using (OracleCommand cmd = new OracleCommand(query, con))
                 {
@@ -1689,250 +1381,132 @@ ORDER BY
             {
                 conn.Open();
                 string query = @"WITH MONTHS (READING_MONTH) AS
-(
-    SELECT TRIM(
-               REGEXP_SUBSTR(
-                   :READING_MONTH,
-                   '[^,]+',
-                   1,
-                   LEVEL
-               )
-           )
-    FROM DUAL
-    CONNECT BY REGEXP_SUBSTR(
-                   :READING_MONTH,
-                   '[^,]+',
-                   1,
-                   LEVEL
-               ) IS NOT NULL
-),
-
-/* =========================================================
-   BILLING DATA
-   ========================================================= */
-BILLING_DATA AS
-(
-    SELECT *
-    FROM RCMPA.SMART_METER_BILLING_DATA_SEP
-
-    UNION ALL
-
-    SELECT *
-    FROM RCMPA.SMART_METER_BILLING_DATA
-),
-
-/* =========================================================
-   DISTINCT DOWNLOAD METERS
-   ONE METER + READING_MONTH ONLY
-   ========================================================= */
-DOWNLOAD AS
-(
-    SELECT
-        CASE
-            WHEN B.SAP_DEPARTMENT = 'MLCC'
-                 AND B.CYCLE = '0N'
-            THEN 'KCC'
-
-            WHEN B.CYCLE IN ('KA', 'KC', 'KG')
-            THEN 'KCC'
-
-            WHEN B.SAP_DEPARTMENT IS NULL
-            THEN 'SLCC'
-
-            ELSE TRIM(B.SAP_DEPARTMENT)
-        END AS DEPARTMENT,
-
-        COUNT(
-            DISTINCT
-            TRIM(B.METERNO) || '|' || B.READING_MONTH
-        ) AS HES_DOWNLOAD
-
-    FROM BILLING_DATA B
-
-    WHERE
-    (
-           B.METERNO LIKE '91______'
-        OR B.METERNO LIKE '90______'
-        OR B.METERNO LIKE 'AL________'
-        OR B.METERNO LIKE 'KI________'
-    )
-
-    AND B.READING_MONTH IN
-    (
-        SELECT M.READING_MONTH
-        FROM MONTHS M
-    )
-
-    AND
-    (
-        :IS_SUPERADMIN = 1
-
-        OR
-
-        UPPER(
-            TRIM(
-                CASE
-                    WHEN B.SAP_DEPARTMENT = 'MLCC'
-                         AND B.CYCLE = '0N'
-                    THEN 'KCC'
-
-                    WHEN B.CYCLE IN ('KA', 'KC', 'KG')
-                    THEN 'KCC'
-
-                    WHEN B.SAP_DEPARTMENT IS NULL
-                    THEN 'SLCC'
-
-                    ELSE B.SAP_DEPARTMENT
-                END
-            )
-        ) = UPPER(TRIM(:DEPARTMENT))
-    )
-
-    GROUP BY
-        CASE
-            WHEN B.SAP_DEPARTMENT = 'MLCC'
-                 AND B.CYCLE = '0N'
-            THEN 'KCC'
-
-            WHEN B.CYCLE IN ('KA', 'KC', 'KG')
-            THEN 'KCC'
-
-            WHEN B.SAP_DEPARTMENT IS NULL
-            THEN 'SLCC'
-
-            ELSE TRIM(B.SAP_DEPARTMENT)
-        END
-),
-
-/* =========================================================
-   DISTINCT FAILED METERS
-   ONE METER + READING_MONTH ONLY
-   ========================================================= */
-FAILED_METERS AS
-(
-    SELECT
-        TRIM(L.METERNO) AS METERNO,
-        L.READING_MONTH,
-
-        MAX(
-            CASE
-                WHEN L.SAP_DEPARTMENT = 'MLCC'
-                     AND L.CYCLE = '0N'
-                THEN 'KCC'
-
-                WHEN L.CYCLE IN ('KA', 'KC', 'KG')
-                THEN 'KCC'
-
-                WHEN L.SAP_DEPARTMENT IS NULL
-                THEN 'SLCC'
-
-                ELSE TRIM(L.SAP_DEPARTMENT)
-            END
-        ) AS DEPARTMENT
-
-    FROM RCMPA.SMART_METER_SCHEDULER_LOGS L
-
-    WHERE
-    (
-           L.METERNO LIKE '91______'
-        OR L.METERNO LIKE '90______'
-        OR L.METERNO LIKE 'AL________'
-        OR L.METERNO LIKE 'KI________'
-    )
-
-    AND L.MESSAGE NOT LIKE 'Data%'
-
-    AND L.READING_MONTH IN
-    (
-        SELECT M.READING_MONTH
-        FROM MONTHS M
-    )
-
-    /* =====================================================
-       DO NOT COUNT A METER AS FAILED IF IT DOWNLOADED
-       ===================================================== */
-    AND NOT EXISTS
-    (
-        SELECT 1
-        FROM BILLING_DATA B
-
-        WHERE TRIM(B.METERNO) = TRIM(L.METERNO)
-
-          AND B.READING_MONTH = L.READING_MONTH
-    )
-
-    AND
-    (
-        :IS_SUPERADMIN = 1
-
-        OR
-
-        UPPER(
-            TRIM(
-                CASE
-                    WHEN L.SAP_DEPARTMENT = 'MLCC'
-                         AND L.CYCLE = '0N'
-                    THEN 'KCC'
-
-                    WHEN L.CYCLE IN ('KA', 'KC', 'KG')
-                    THEN 'KCC'
-
-                    WHEN L.SAP_DEPARTMENT IS NULL
-                    THEN 'SLCC'
-
-                    ELSE L.SAP_DEPARTMENT
-                END
-            )
-        ) = UPPER(TRIM(:DEPARTMENT))
-    )
-
-    GROUP BY
-        TRIM(L.METERNO),
-        L.READING_MONTH
-),
-
-/* =========================================================
-   FAILED COUNT DEPARTMENT-WISE
-   ========================================================= */
-FAILED AS
-(
-    SELECT
-        DEPARTMENT,
-        COUNT(*) AS FAILED
-    FROM FAILED_METERS
-    GROUP BY DEPARTMENT
-)
-
-/* =========================================================
-   FINAL DEPARTMENT-WISE RESULT
-   ========================================================= */
-SELECT
-    COALESCE(
-        D.DEPARTMENT,
-        F.DEPARTMENT
-    ) AS DEPARTMENT,
-
-    NVL(
-        D.HES_DOWNLOAD,
-        0
-    ) AS HESDOWNLOAD,
-
-    NVL(
-        F.FAILED,
-        0
-    ) AS FAILED
-
-FROM DOWNLOAD D
-
-FULL OUTER JOIN FAILED F
-    ON UPPER(TRIM(D.DEPARTMENT))
-     = UPPER(TRIM(F.DEPARTMENT))
-
-ORDER BY
-    COALESCE(
-        D.DEPARTMENT,
-        F.DEPARTMENT
-    )";
+                (
+                    SELECT TRIM( REGEXP_SUBSTR( :READING_MONTH, '[^,]+', 1, LEVEL ) )
+                    FROM DUAL
+                    CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+', 1, LEVEL) IS NOT NULL
+                ),
+                BILLING_DATA AS
+                (
+                    SELECT * FROM RCMPA.SMART_METER_BILLING_DATA_SEP
+                    UNION ALL
+                    SELECT * FROM RCMPA.SMART_METER_BILLING_DATA
+                ),
+                DOWNLOAD AS
+                (
+                    SELECT
+                        CASE
+                            WHEN B.SAP_DEPARTMENT = 'MLCC' AND B.CYCLE = '0N'
+                            THEN 'KCC'
+                            WHEN B.CYCLE IN ('KA', 'KC', 'KG')
+                            THEN 'KCC'
+                            WHEN B.SAP_DEPARTMENT IS NULL
+                            THEN 'SLCC'
+                            ELSE TRIM(B.SAP_DEPARTMENT)
+                        END AS DEPARTMENT,
+                        COUNT( DISTINCT TRIM(B.METERNO) || '|' || B.READING_MONTH ) AS HES_DOWNLOAD
+                    FROM BILLING_DATA B
+                    WHERE
+                    (
+                           B.METERNO LIKE '91______'
+                        OR B.METERNO LIKE '90______'
+                        OR B.METERNO LIKE 'AL________'
+                        OR B.METERNO LIKE 'KI________'
+                    )
+                    AND B.READING_MONTH IN
+                    (
+                        SELECT M.READING_MONTH FROM MONTHS M
+                    )
+                    AND
+                    (
+                        :IS_SUPERADMIN = 1
+                        OR
+                        UPPER(
+                            TRIM(
+                                CASE
+                                    WHEN B.SAP_DEPARTMENT = 'MLCC' AND B.CYCLE = '0N'
+                                    THEN 'KCC'
+                                    WHEN B.CYCLE IN ('KA', 'KC', 'KG')
+                                    THEN 'KCC'
+                                    WHEN B.SAP_DEPARTMENT IS NULL
+                                    THEN 'SLCC'
+                                    ELSE B.SAP_DEPARTMENT
+                                END
+                            )
+                        ) = UPPER(TRIM(:DEPARTMENT))
+                    )
+                    GROUP BY
+                        CASE
+                            WHEN B.SAP_DEPARTMENT = 'MLCC'  AND B.CYCLE = '0N'
+                            THEN 'KCC'
+                            WHEN B.CYCLE IN ('KA', 'KC', 'KG')
+                            THEN 'KCC'
+                            WHEN B.SAP_DEPARTMENT IS NULL
+                            THEN 'SLCC'
+                            ELSE TRIM(B.SAP_DEPARTMENT)
+                        END
+                ),
+                FAILED_METERS AS
+                (
+                    SELECT TRIM(L.METERNO) AS METERNO, L.READING_MONTH,
+                        MAX(
+                            CASE
+                                WHEN L.SAP_DEPARTMENT = 'MLCC'  AND L.CYCLE = '0N'
+                                THEN 'KCC'
+                                WHEN L.CYCLE IN ('KA', 'KC', 'KG')
+                                THEN 'KCC'
+                                WHEN L.SAP_DEPARTMENT IS NULL
+                                THEN 'SLCC'
+                                ELSE TRIM(L.SAP_DEPARTMENT)
+                            END
+                        ) AS DEPARTMENT FROM RCMPA.SMART_METER_SCHEDULER_LOGS L
+                    WHERE
+                    (
+                           L.METERNO LIKE '91______'
+                        OR L.METERNO LIKE '90______'
+                        OR L.METERNO LIKE 'AL________'
+                        OR L.METERNO LIKE 'KI________'
+                    )
+                    AND L.MESSAGE NOT LIKE 'Data%'
+                    AND L.READING_MONTH IN
+                    (
+                        SELECT M.READING_MONTH FROM MONTHS M
+                    )
+                    AND NOT EXISTS
+                    (
+                        SELECT 1 FROM BILLING_DATA B WHERE TRIM(B.METERNO) = TRIM(L.METERNO)  AND B.READING_MONTH = L.READING_MONTH
+                    )
+                    AND
+                    (
+                        :IS_SUPERADMIN = 1
+                        OR
+                        UPPER(
+                            TRIM(
+                                CASE
+                                    WHEN L.SAP_DEPARTMENT = 'MLCC'  AND L.CYCLE = '0N'
+                                    THEN 'KCC'
+                                    WHEN L.CYCLE IN ('KA', 'KC', 'KG')
+                                    THEN 'KCC'
+                                    WHEN L.SAP_DEPARTMENT IS NULL
+                                    THEN 'SLCC'
+                                    ELSE L.SAP_DEPARTMENT
+                                END
+                            )
+                        ) = UPPER(TRIM(:DEPARTMENT))
+                    )
+                    GROUP BY TRIM(L.METERNO), L.READING_MONTH
+                ),
+                FAILED AS
+                (
+                    SELECT  DEPARTMENT, COUNT(*) AS FAILED FROM FAILED_METERS GROUP BY DEPARTMENT
+                )
+                SELECT
+                    COALESCE( D.DEPARTMENT, F.DEPARTMENT ) AS DEPARTMENT,
+                    NVL(  D.HES_DOWNLOAD,  0 ) AS HESDOWNLOAD,
+                    NVL( F.FAILED,  0) AS FAILED
+                FROM DOWNLOAD D
+                FULL OUTER JOIN FAILED F ON UPPER(TRIM(D.DEPARTMENT)) = UPPER(TRIM(F.DEPARTMENT))
+                ORDER BY COALESCE( D.DEPARTMENT, F.DEPARTMENT)";
                 using (OracleCommand cmd = new OracleCommand(query, conn))
                 {
                     cmd.BindByName = true;
@@ -2302,7 +1876,6 @@ ORDER BY
             }
         }
 
-
         //BRPL HES DOWNLOAD METERS Detailed Summary
         public List<HesDownloadMeter> HesDownloadMeterList(string readingMonth,UserAccessScope scope)
         {
@@ -2312,290 +1885,169 @@ ORDER BY
             {
                 con.Open();
 
-                string query = @"
-WITH MONTHS (READING_MONTH) AS
-(
-    SELECT TRIM(
-               REGEXP_SUBSTR(
-                   :READING_MONTH,
-                   '[^,]+',
-                   1,
-                   LEVEL
-               )
-           )
-    FROM DUAL
-    CONNECT BY REGEXP_SUBSTR(
-                   :READING_MONTH,
-                   '[^,]+',
-                   1,
-                   LEVEL
-               ) IS NOT NULL
-),
-BILLING_DATA AS
-(
-    SELECT
-        METERNO,
-        CONS_REF,
-        READING_MONTH,
-        SAP_DEPARTMENT,
-        CYCLE,
-        ENTRY_DATE
-    FROM RCMPA.SMART_METER_BILLING_DATA_SEP
-
-    UNION ALL
-
-    SELECT
-        METERNO,
-        CONS_REF,
-        READING_MONTH,
-        SAP_DEPARTMENT,
-        CYCLE,
-        ENTRY_DATE
-    FROM RCMPA.SMART_METER_BILLING_DATA
-),
-LATEST_DOWNLOAD AS
-(
-    SELECT
-        TRIM(SM.METERNO) AS METERNO,
-        SM.CONS_REF,
-        SM.READING_MONTH,
-
-        CASE
-            WHEN SM.SAP_DEPARTMENT = 'MLCC'
-                 AND SM.CYCLE = '0N'
-            THEN 'KCC'
-
-            WHEN SM.CYCLE IN ('KA', 'KC', 'KG')
-            THEN 'KCC'
-
-            WHEN SM.SAP_DEPARTMENT IS NULL
-            THEN 'SLCC'
-
-            ELSE TRIM(SM.SAP_DEPARTMENT)
-        END AS SAP_DEPARTMENT,
-
-        SM.CYCLE,
-
-        ROW_NUMBER() OVER
-        (
-            PARTITION BY
-                TRIM(SM.METERNO),
-                SM.READING_MONTH
-            ORDER BY
-                SM.ENTRY_DATE DESC
-        ) AS RN
-
-    FROM BILLING_DATA SM
-
-    WHERE
-    (
-           SM.METERNO LIKE '91______'
-        OR SM.METERNO LIKE '90______'
-        OR SM.METERNO LIKE 'AL________'
-        OR SM.METERNO LIKE 'KI________'
-    )
-
-    AND SM.READING_MONTH IN
-    (
-        SELECT READING_MONTH
-        FROM MONTHS
-    )
-
-    AND
-    (
-        :IS_SUPERADMIN = 1
-
-        OR
-
-        UPPER
-        (
-            TRIM
-            (
-                CASE
-                    WHEN SM.SAP_DEPARTMENT = 'MLCC'
-                         AND SM.CYCLE = '0N'
-                    THEN 'KCC'
-
-                    WHEN SM.CYCLE IN ('KA', 'KC', 'KG')
-                    THEN 'KCC'
-
-                    WHEN SM.SAP_DEPARTMENT IS NULL
-                    THEN 'SLCC'
-
-                    ELSE SM.SAP_DEPARTMENT
-                END
-            )
-        ) = UPPER(TRIM(:DEPARTMENT))
-    )
-),
-DOWNLOAD_DATA AS
-(
-    SELECT
-        METERNO,
-        CONS_REF,
-        READING_MONTH,
-        SAP_DEPARTMENT,
-        CYCLE
-    FROM LATEST_DOWNLOAD
-    WHERE RN = 1
-),
-SLCC_DATA AS
-(
-    SELECT
-        CONS_REF,
-        READING_MONTH,
-        SAP_DIVISION,
-        SAP_SEQ_NO,
-        ADD1,
-        ADD2,
-        ADD3,
-        LAND_MARK,
-        FATHER_NAME
-    FROM
-    (
-        SELECT
-            S.CONS_REF,
-            S.READING_MONTH,
-            S.SAP_DIVISION,
-            S.SAP_SEQ_NO,
-            S.ADD1,
-            S.ADD2,
-            S.ADD3,
-            S.LAND_MARK,
-            S.FATHER_NAME,
-
-            ROW_NUMBER() OVER
-            (
-                PARTITION BY
-                    S.CONS_REF,
-                    S.READING_MONTH
-                ORDER BY
-                    S.ROWID
-            ) AS RN
-
-        FROM RCMPA.SAP_SLCC_FORMY S
-
-        INNER JOIN DOWNLOAD_DATA D
-            ON D.CONS_REF = S.CONS_REF
-           AND D.READING_MONTH = S.READING_MONTH
-    )
-    WHERE RN = 1
-),
-FORMY_DATA AS
-(
-    SELECT
-        CONS_REF,
-        READING_MONTH,
-        SAP_DIVISION,
-        SAP_SEQ_NO,
-        ADD1,
-        ADD2,
-        ADD3,
-        LAND_MARK,
-        FATHER_NAME
-    FROM
-    (
-        SELECT
-            FM.CONS_REF,
-            FM.READING_MONTH,
-            FM.SAP_DIVISION,
-            FM.SAP_SEQ_NO,
-            FM.ADD1,
-            FM.ADD2,
-            FM.ADD3,
-            FM.LAND_MARK,
-            FM.FATHER_NAME,
-
-            ROW_NUMBER() OVER
-            (
-                PARTITION BY
-                    FM.CONS_REF,
-                    FM.READING_MONTH
-                ORDER BY
-                    FM.ROWID
-            ) AS RN
-
-        FROM RCMPA.SAP_FORMY FM
-
-        INNER JOIN DOWNLOAD_DATA D
-            ON D.CONS_REF = FM.CONS_REF
-           AND D.READING_MONTH = FM.READING_MONTH
-    )
-    WHERE RN = 1
-)
-
-SELECT
-    D.METERNO,
-    D.CONS_REF,
-    D.SAP_DEPARTMENT,
-    D.CYCLE,
-
-    NVL(
-        S.SAP_DIVISION,
-        FM.SAP_DIVISION
-    ) AS SAP_DIVISION,
-
-    NVL(
-        S.SAP_SEQ_NO,
-        FM.SAP_SEQ_NO
-    ) AS SAP_SEQ_NO,
-
-    RTRIM
-    (
-        NVL(S.ADD1, FM.ADD1) || ', ' ||
-        NVL(S.ADD2, FM.ADD2) || ', ' ||
-        NVL(S.ADD3, FM.ADD3) || ', ' ||
-        NVL(S.LAND_MARK, FM.LAND_MARK) || ', ' ||
-        NVL(S.FATHER_NAME, FM.FATHER_NAME),
-        ', '
-    ) AS ADDRESS,
-
-    CASE
-        WHEN SUBSTR(D.METERNO, 1, 2) IN ('90', 'AL')
-        THEN 'ALLIED'
-
-        WHEN SUBSTR(D.METERNO, 1, 2) IN ('91', 'KI')
-        THEN 'KIMBAL'
-    END AS METER_TYPE,
-
-    CASE
-        WHEN SUBSTR(D.METERNO, 1, 4) IN
-        (
-            'AL91',
-            'KI91',
-            '9150',
-            '9008',
-            '9027'
-        )
-        THEN '1PH'
-
-        WHEN SUBSTR(D.METERNO, 1, 4) IN
-        (
-            'AL90',
-            'KI90',
-            '9026'
-        )
-        THEN '3PH'
-
-        ELSE 'UNKNOWN'
-    END AS PHASE_TYPE
-
-FROM DOWNLOAD_DATA D
-
-LEFT JOIN SLCC_DATA S
-    ON S.CONS_REF = D.CONS_REF
-   AND S.READING_MONTH = D.READING_MONTH
-
-LEFT JOIN FORMY_DATA FM
-    ON FM.CONS_REF = D.CONS_REF
-   AND FM.READING_MONTH = D.READING_MONTH
-
-ORDER BY
-    D.SAP_DEPARTMENT,
-    D.CYCLE,
-    NVL(S.SAP_DIVISION, FM.SAP_DIVISION),
-    NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO),
-    D.METERNO";
+                string query = @"WITH MONTHS (READING_MONTH) AS 
+                ( 
+                    SELECT TRIM( REGEXP_SUBSTR(:READING_MONTH,  '[^,]+',  1,  LEVEL)) 
+                    FROM DUAL 
+                    CONNECT BY REGEXP_SUBSTR(:READING_MONTH,  '[^,]+', 1,  LEVEL ) IS NOT NULL 
+                ), 
+                BILLING_DATA AS 
+                ( 
+                    SELECT  METERNO,  CONS_REF, READING_MONTH,  SAP_DEPARTMENT,  CYCLE, ENTRY_DATE FROM RCMPA.SMART_METER_BILLING_DATA_SEP 
+                    UNION ALL 
+                    SELECT METERNO, CONS_REF,  READING_MONTH, SAP_DEPARTMENT,  CYCLE, ENTRY_DATE FROM RCMPA.SMART_METER_BILLING_DATA 
+                ), 
+                LATEST_DOWNLOAD AS 
+                ( 
+                    SELECT TRIM(SM.METERNO) AS METERNO, SM.CONS_REF,  SM.READING_MONTH, 
+                        CASE 
+                            WHEN SM.SAP_DEPARTMENT = 'MLCC' AND SM.CYCLE = '0N' 
+                            THEN 'KCC' 
+                            WHEN SM.CYCLE IN ('KA', 'KC', 'KG') 
+                            THEN 'KCC' 
+                            WHEN SM.SAP_DEPARTMENT IS NULL 
+                            THEN 'SLCC' 
+                            ELSE TRIM(SM.SAP_DEPARTMENT) 
+                        END AS SAP_DEPARTMENT,  SM.CYCLE, 
+                        ROW_NUMBER() OVER 
+                        ( 
+                            PARTITION BY  TRIM(SM.METERNO),  SM.READING_MONTH  ORDER BY  SM.ENTRY_DATE DESC 
+                        ) AS RN 
+                    FROM BILLING_DATA SM 
+                    WHERE 
+                    ( 
+                           SM.METERNO LIKE '91______' 
+                        OR SM.METERNO LIKE '90______' 
+                        OR SM.METERNO LIKE 'AL________' 
+                        OR SM.METERNO LIKE 'KI________' 
+                    ) 
+                    AND SM.READING_MONTH IN 
+                    ( 
+                        SELECT READING_MONTH FROM MONTHS 
+                    ) 
+                    AND 
+                    ( 
+                        :IS_SUPERADMIN = 1 
+                        OR 
+                        UPPER 
+                        ( 
+                            TRIM 
+                            ( 
+                                CASE 
+                                    WHEN SM.SAP_DEPARTMENT = 'MLCC'  AND SM.CYCLE = '0N' 
+                                    THEN 'KCC' 
+                                    WHEN SM.CYCLE IN ('KA', 'KC', 'KG') 
+                                    THEN 'KCC' 
+                                    WHEN SM.SAP_DEPARTMENT IS NULL 
+                                    THEN 'SLCC' 
+                                    ELSE SM.SAP_DEPARTMENT 
+                                END 
+                            ) 
+                        ) = UPPER(TRIM(:DEPARTMENT)) 
+                    )
+                ), 
+                DOWNLOAD_DATA AS 
+                ( 
+                    SELECT METERNO, CONS_REF, READING_MONTH, SAP_DEPARTMENT, CYCLE FROM LATEST_DOWNLOAD WHERE RN = 1 
+                ), 
+                SLCC_DATA AS 
+                ( 
+                    SELECT CONS_REF, READING_MONTH, SAP_DIVISION,  SAP_SEQ_NO,  ADD1,  ADD2,  ADD3, LAND_MARK,  FATHER_NAME 
+                    FROM 
+                    ( 
+                        SELECT  S.CONS_REF,   S.READING_MONTH,  S.SAP_DIVISION, S.SAP_SEQ_NO, S.ADD1,  S.ADD2,  S.ADD3,  S.LAND_MARK, S.FATHER_NAME, 
+                            ROW_NUMBER() OVER 
+                            ( 
+                                PARTITION BY  S.CONS_REF,  S.READING_MONTH  ORDER BY S.ROWID 
+                            ) AS RN 
+                        FROM RCMPA.SAP_SLCC_FORMY S INNER JOIN DOWNLOAD_DATA D  ON D.CONS_REF = S.CONS_REF AND D.READING_MONTH = S.READING_MONTH
+                        WHERE TO_DATE(D.READING_MONTH, 'YYYYMM')  = ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -1)
+                    )  WHERE RN = 1
+                    UNION ALL
+                    SELECT  CONS_REF,  READING_MONTH,  SAP_DIVISION,  SAP_SEQ_NO,  ADD1,  ADD2,  ADD3,  LAND_MARK, FATHER_NAME 
+                    FROM 
+                    ( 
+                        SELECT  S.CONS_REF, S.READING_MONTH,  S.SAP_DIVISION,  S.SAP_SEQ_NO,  S.ADD1, S.ADD2, S.ADD3, S.LAND_MARK,  S.FATHER_NAME, 
+                            ROW_NUMBER() OVER 
+                            ( 
+                                PARTITION BY S.CONS_REF,  S.READING_MONTH  ORDER BY S.ROWID 
+                            ) AS RN 
+                        FROM RCMPA.SAP_SLCC_FORMY S INNER JOIN DOWNLOAD_DATA D  ON D.CONS_REF = S.CONS_REF AND D.READING_MONTH = S.READING_MONTH
+                        WHERE  TO_DATE(D.READING_MONTH, 'YYYYMM') <> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -1)
+                    )  WHERE RN = 1
+                ), 
+                FORMY_DATA AS 
+                ( 
+                    SELECT  CONS_REF,  READING_MONTH, SAP_DIVISION,  SAP_SEQ_NO,  ADD1,  ADD2,  ADD3,  LAND_MARK, FATHER_NAME 
+                    FROM 
+                    ( 
+                        SELECT  FM.CONS_REF,  FM.READING_MONTH,  FM.SAP_DIVISION, FM.SAP_SEQ_NO,  FM.ADD1, FM.ADD2,  FM.ADD3,  FM.LAND_MARK,  FM.FATHER_NAME, 
+                            ROW_NUMBER() OVER 
+                            ( 
+                                PARTITION BY   FM.CONS_REF, FM.READING_MONTH ORDER BY FM.ROWID 
+                            ) AS RN 
+                        FROM RCMPA.SAP_FORMY_PREV FM INNER JOIN DOWNLOAD_DATA D  ON D.CONS_REF = FM.CONS_REF AND D.READING_MONTH = FM.READING_MONTH
+                        WHERE TO_DATE(D.READING_MONTH, 'YYYYMM') = ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -1)
+                    )  WHERE RN = 1
+                    UNION ALL
+                    SELECT  CONS_REF, READING_MONTH, SAP_DIVISION, SAP_SEQ_NO, ADD1,  ADD2,  ADD3, LAND_MARK, FATHER_NAME 
+                    FROM 
+                    ( 
+                        SELECT FM.CONS_REF,  FM.READING_MONTH,  FM.SAP_DIVISION, FM.SAP_SEQ_NO,  FM.ADD1,  FM.ADD2, FM.ADD3,  FM.LAND_MARK,  FM.FATHER_NAME, 
+                            ROW_NUMBER() OVER 
+                            ( 
+                                PARTITION BY  FM.CONS_REF,  FM.READING_MONTH  ORDER BY FM.ROWID 
+                            ) AS RN 
+                        FROM RCMPA.SAP_FORMY FM INNER JOIN DOWNLOAD_DATA D  ON D.CONS_REF = FM.CONS_REF  AND D.READING_MONTH = FM.READING_MONTH
+                        WHERE TO_DATE(D.READING_MONTH, 'YYYYMM') <> ADD_MONTHS(TRUNC(SYSDATE, 'MM'), -1)
+                    )  WHERE RN = 1
+                ) 
+                SELECT D.METERNO,  D.CONS_REF,  D.SAP_DEPARTMENT,  D.CYCLE, 
+                    NVL( 
+                        S.SAP_DIVISION, 
+                        FM.SAP_DIVISION 
+                    ) AS SAP_DIVISION, 
+                    NVL( 
+                        S.SAP_SEQ_NO, 
+                        FM.SAP_SEQ_NO 
+                    ) AS SAP_SEQ_NO, 
+                    RTRIM 
+                    ( 
+                        NVL(S.ADD1, FM.ADD1) || ', ' || 
+                        NVL(S.ADD2, FM.ADD2) || ', ' || 
+                        NVL(S.ADD3, FM.ADD3) || ', ' || 
+                        NVL(S.LAND_MARK, FM.LAND_MARK) || ', ' || 
+                        NVL(S.FATHER_NAME, FM.FATHER_NAME), 
+                        ', ' 
+                    ) AS ADDRESS, 
+                    CASE 
+                        WHEN SUBSTR(D.METERNO, 1, 2) IN ('90', 'AL') 
+                        THEN 'ALLIED' 
+                        WHEN SUBSTR(D.METERNO, 1, 2) IN ('91', 'KI') 
+                        THEN 'KIMBAL' 
+                    END AS METER_TYPE, 
+                    CASE 
+                        WHEN SUBSTR(D.METERNO, 1, 4) IN 
+                        ( 
+                            'AL91', 
+                            'KI91', 
+                            '9150', 
+                            '9008', 
+                            '9027' 
+                        ) 
+                        THEN '1PH' 
+                        WHEN SUBSTR(D.METERNO, 1, 4) IN 
+                        ( 
+                            'AL90', 
+                            'KI90', 
+                            '9026' 
+                        ) 
+                        THEN '3PH' 
+                        ELSE 'UNKNOWN' 
+                    END AS PHASE_TYPE FROM DOWNLOAD_DATA D 
+                LEFT JOIN SLCC_DATA S  ON S.CONS_REF = D.CONS_REF  AND S.READING_MONTH = D.READING_MONTH 
+                LEFT JOIN FORMY_DATA FM  ON FM.CONS_REF = D.CONS_REF AND FM.READING_MONTH = D.READING_MONTH 
+                ORDER BY  D.SAP_DEPARTMENT,  D.CYCLE, NVL(S.SAP_DIVISION, FM.SAP_DIVISION), NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO), D.METERNO";
 
                 using (OracleCommand cmd = new OracleCommand(query, con))
                 {
