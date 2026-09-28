@@ -1,40 +1,38 @@
-﻿
-
-let allHesDownloadData = [];
+﻿let allHesDownloadData = [];
 let filteredHesDownloadData = [];
-
 
 let hesCurrentUserAccess = null;
 
+
+// ============================================================
 // GET CURRENT USER ACCESS
+// ============================================================
 
-async function getHesUserAccess()
-{
+async function getHesUserAccess() {
 
-    if (hesCurrentUserAccess && hesCurrentUserAccess.authenticated)
-    {
+    if (
+        hesCurrentUserAccess &&
+        hesCurrentUserAccess.authenticated
+    ) {
         return hesCurrentUserAccess;
     }
 
-    const response = await fetch( getApiUrl("AuthApi/my-access"),
+    const response = await fetch(
+        getApiUrl("AuthApi/my-access"),
         {
             method: "GET",
-
             credentials: "same-origin",
-
             cache: "no-store",
-
             headers: {
                 "Accept": "application/json"
             }
         }
     );
 
-
-    if (!response.ok)
-    {
-
-        throw new Error( `Unable to determine user access. Status: ${response.status}`);
+    if (!response.ok) {
+        throw new Error(
+            `Unable to determine user access. Status: ${response.status}`
+        );
     }
 
     hesCurrentUserAccess = await response.json();
@@ -43,76 +41,81 @@ async function getHesUserAccess()
 }
 
 
+// ============================================================
 // CHECK BRPL ACCESS
+// ============================================================
 
-function hasHesBrplAccess(access)
-{
+function hasHesBrplAccess(access) {
 
-    if (!access)
-    {
+    if (!access) {
         return false;
     }
 
-
-    const role = String(access.role || "" )
+    const role =
+        String(access.role || "")
             .trim()
             .toUpperCase();
 
-
-    const company = String( access.company || "" )
+    const company =
+        String(access.company || "")
             .trim()
             .toUpperCase();
-
 
     // SUPERADMIN
-    if (role === "SUPERADMIN" || access.isSuperAdmin === true)
-    {
+    if (
+        role === "SUPERADMIN" ||
+        access.isSuperAdmin === true
+    ) {
         return true;
     }
-
 
     // BRPL ADMIN / USER
     return company === "BRPL";
 }
 
 
-function hasHesDepartmentRestriction(access)
-{
+// ============================================================
+// DEPARTMENT RESTRICTION
+// ============================================================
 
-    if (!access)
-    {
+function hasHesDepartmentRestriction(access) {
+
+    if (!access) {
         return false;
     }
 
     // SUPERADMIN can access all departments
-    if (access.isSuperAdmin === true)
-    {
+    if (access.isSuperAdmin === true) {
         return false;
     }
 
-    return String( access.department || "")
+    return String(access.department || "")
         .trim()
         .length > 0;
 }
 
 
-function getHesUserDepartment(access)
-{
+// ============================================================
+// GET USER DEPARTMENT
+// ============================================================
 
-    return String( access?.department || "")
+function getHesUserDepartment(access) {
+
+    return String(access?.department || "")
         .trim()
         .toUpperCase();
 }
 
 
+// ============================================================
 // SHOW HES ACCESS ERROR
+// ============================================================
 
-function showHesAccessError(message)
-{
+function showHesAccessError(message) {
 
     $("#hesDownloadSummaryBody").html(`
         <tr>
-            <td colspan="9"
+            <td colspan="10"
                 class="text-center text-danger py-4">
 
                 <div class="fw-semibold mb-1">
@@ -128,40 +131,58 @@ function showHesAccessError(message)
     `);
 }
 
+
+// ============================================================
 // OPEN HES DOWNLOAD MODAL
+// ============================================================
 
 $("#hesDownload")
     .off("click.hesDownload")
     .on(
         "click.hesDownload",
-        async function (e)
-        {
-            e.preventDefault();
-            const modalElement =  document.getElementById( "HesDownloadSummaryModal");
+        async function (e) {
 
-            if (!modalElement)
-            {
-                 console.error(  "HES Download modal not found." );
+            e.preventDefault();
+
+            const modalElement =
+                document.getElementById(
+                    "HesDownloadSummaryModal"
+                );
+
+            if (!modalElement) {
+
+                console.error(
+                    "HES Download modal not found."
+                );
+
                 return;
             }
-            const modal =  bootstrap.Modal.getOrCreateInstance( modalElement );
-            modal.show();
-            await loadHesDownloadSummary();
 
+            const modal =
+                bootstrap.Modal.getOrCreateInstance(
+                    modalElement
+                );
+
+            modal.show();
+
+            await loadHesDownloadSummary();
         }
     );
 
-// LOAD HES DOWNLOAD SUMMARY
 
-async function loadHesDownloadSummary()
-{
+// ============================================================
+// LOAD HES DOWNLOAD SUMMARY
+// ============================================================
+
+async function loadHesDownloadSummary() {
 
     try {
+
         // Loading state
 
         $("#hesDownloadSummaryBody").html(`
             <tr>
-                <td colspan="9"
+                <td colspan="10"
                     class="text-center py-4">
 
                     <div class="spinner-border spinner-border-sm text-primary">
@@ -175,40 +196,55 @@ async function loadHesDownloadSummary()
             </tr>
         `);
 
+
         // Get user access
 
-        const access = await getHesUserAccess();
-        
-        // Verify BRPL access BEFORE API CALL
-        
-        if (!hasHesBrplAccess(access))
-        {
+        const access =
+            await getHesUserAccess();
 
-            showHesAccessError( "You do not have access to BRPL HES download data.");
+
+        // Verify BRPL access BEFORE API CALL
+
+        if (!hasHesBrplAccess(access)) {
+
+            showHesAccessError(
+                "You do not have access to BRPL HES download data."
+            );
 
             return;
         }
+
 
         // Reading month
 
+        const readingMonth =
+            getReadingMonth();
 
-        const readingMonth = getReadingMonth();
 
+        if (!readingMonth) {
 
-        if (!readingMonth)
-        {
-            showHesAccessError( "Reading month is not selected."  );
+            showHesAccessError(
+                "Reading month is not selected."
+            );
+
             return;
         }
 
+
         // API URL
 
-        const apiUrl =  `${getApiUrl( "DashboardApi/hes-download-meters-details" )}?ReadingMonth=${encodeURIComponent( readingMonth)}`;
+        const apiUrl =
+            `${getApiUrl(
+                "DashboardApi/hes-download-meters-details"
+            )}?ReadingMonth=${encodeURIComponent(
+                readingMonth
+            )}`;
+
 
         // API CALL
 
-
-        const response =  await fetch(
+        const response =
+            await fetch(
                 apiUrl,
                 {
                     method: "GET",
@@ -217,54 +253,73 @@ async function loadHesDownloadSummary()
 
                     cache: "no-store",
 
-                    headers: { "Accept":  "application/json"}
+                    headers: {
+                        "Accept": "application/json"
+                    }
                 }
             );
 
+
         // Unauthorized
 
+        if (response.status === 401) {
 
-        if (response.status === 401)
-        {
-
-            throw new Error(  "Your session has expired. Please login again." );
+            throw new Error(
+                "Your session has expired. Please login again."
+            );
         }
+
 
         // Forbidden
 
-        if (response.status === 403)
-        {
+        if (response.status === 403) {
 
-            throw new Error( "You are not authorized to access BRPL HES download data." );
+            throw new Error(
+                "You are not authorized to access BRPL HES download data."
+            );
         }
 
 
         // Other HTTP errors
 
-        if (!response.ok)
-        {
+        if (!response.ok) {
 
-            const errorText =  await response.text();
-
-            throw new Error(  `Unable to load HES download data (${response.status})` );
+            throw new Error(
+                `Unable to load HES download data (${response.status})`
+            );
         }
+
 
         // Parse response
 
-        const result =  await response.json();
+        const result =
+            await response.json();
 
 
-        allHesDownloadData =  Array.isArray(result) ? result  : [];
+        allHesDownloadData =
+            Array.isArray(result)
+                ? result
+                : [];
 
-        const userDepartment =  getHesUserDepartment( access );
 
-        const departmentRestricted =  (  access?.isSuperAdmin !== true &&  userDepartment !== "" );
+        const userDepartment =
+            getHesUserDepartment(access);
 
-        if (departmentRestricted)
-        {
 
-            allHesDownloadData = allHesDownloadData.filter(item =>
-            {
+        const departmentRestricted =
+            (
+                access?.isSuperAdmin !== true &&
+                userDepartment !== ""
+            );
+
+
+        // Apply department restriction
+
+        if (departmentRestricted) {
+
+            allHesDownloadData =
+                allHesDownloadData.filter(
+                    item => {
 
                         const itemDepartment =
                             String(
@@ -279,16 +334,20 @@ async function loadHesDownloadSummary()
                             itemDepartment ===
                             userDepartment
                         );
-
                     }
                 );
-
         }
 
-        filteredHesDownloadData = [...allHesDownloadData  ];
 
-        loadHesDepartmentFilter(access );
+        filteredHesDownloadData =
+            [
+                ...allHesDownloadData
+            ];
 
+
+        // Load filters
+
+        loadHesDepartmentFilter(access);
 
         loadHesDivisionFilter();
 
@@ -296,39 +355,55 @@ async function loadHesDownloadSummary()
 
         loadHesMeterMakeFilter();
 
+        // Cycle filter
+        loadHesCycleFilter();
+
+
         // Apply default department restriction
 
-        if (departmentRestricted)
-        {
+        if (departmentRestricted) {
+
             $("#hesDepartmentFilter")
-                .val(  userDepartment )
-                .prop(  "disabled",  true);
+                .val(userDepartment)
+                .prop(
+                    "disabled",
+                    true
+                );
+
         }
-        else
-        {
+        else {
 
             $("#hesDepartmentFilter")
                 .prop(
                     "disabled",
                     false
                 );
-
         }
+
 
         // Clear all other filters
 
-        clearHesFilters(departmentRestricted );
-        // Render
-        renderHesDownloadTable( filteredHesDownloadData );
-    }
-    catch (err)
-    {
+        clearHesFilters(
+            departmentRestricted
+        );
 
-        console.error( "HES Download Summary Error:", err );
+
+        // Render
+
+        renderHesDownloadTable(
+            filteredHesDownloadData
+        );
+    }
+    catch (err) {
+
+        console.error(
+            "HES Download Summary Error:",
+            err
+        );
 
         $("#hesDownloadSummaryBody").html(`
             <tr>
-                <td colspan="9"
+                <td colspan="10"
                     class="text-center text-danger py-4">
 
                     <div class="fw-semibold mb-1">
@@ -336,61 +411,77 @@ async function loadHesDownloadSummary()
                     </div>
 
                     <div>
-                        ${escapeHesHtml( err.message)}
+                        ${escapeHesHtml(
+            err.message
+        )}
                     </div>
 
                 </td>
             </tr>
         `);
-
     }
 }
 
-function loadHesDepartmentFilter(access = hesCurrentUserAccess)
-{
 
-    const ddl = $("#hesDepartmentFilter");
+// ============================================================
+// DEPARTMENT FILTER
+// ============================================================
+
+function loadHesDepartmentFilter(
+    access = hesCurrentUserAccess
+) {
+
+    const ddl =
+        $("#hesDepartmentFilter");
 
     ddl.empty();
 
-    const role =  String(  access?.role || "" )
+    const role =
+        String(access?.role || "")
             .trim()
             .toUpperCase();
 
-
-    const department = String(  access?.department || "" )
+    const department =
+        String(access?.department || "")
             .trim()
             .toUpperCase();
 
-
-    const isSuperAdmin = role === "SUPERADMIN" || access?.isSuperAdmin === true;
+    const isSuperAdmin =
+        role === "SUPERADMIN" ||
+        access?.isSuperAdmin === true;
 
 
     // Department restricted user
 
-    if (!isSuperAdmin && department !== "")
-    {
+    if (
+        !isSuperAdmin &&
+        department !== ""
+    ) {
 
-        ddl.append($("<option>",
-            {
-                value:  department,
+        ddl.append(
+            $("<option>", {
+                value: department,
                 text: department
             })
         );
 
+        ddl.val(department);
 
-        ddl.val( department );
-
-        ddl.prop( "disabled",  true );
-
+        ddl.prop(
+            "disabled",
+            true
+        );
 
         return;
     }
 
+
     // SUPERADMIN / unrestricted BRPL admin
 
-    ddl.prop( "disabled",  false);
-
+    ddl.prop(
+        "disabled",
+        false
+    );
 
     ddl.append(`
         <option value="">
@@ -399,43 +490,52 @@ function loadHesDepartmentFilter(access = hesCurrentUserAccess)
     `);
 
 
-    const departments = [ ...new Set(
+    const departments =
+        [
+            ...new Set(
+                allHesDownloadData
+                    .map(
+                        x =>
+                            String(
+                                x.sapDepartment ||
+                                ""
+                            ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
 
-            allHesDownloadData .map( x =>String(  x.sapDepartment || "" ).trim()
-                ) .filter(Boolean)
 
-        )
-    ];
-
-    departments.sort( (a, b) =>  a.localeCompare(b) );
-
-    departments.forEach(departmentName =>
-    {
-
-        ddl.append($("<option>",
-            {
-                    value:   departmentName,
-
-                    text: departmentName
-
-                })
-            );
-
-        }
+    departments.sort(
+        (a, b) =>
+            a.localeCompare(b)
     );
 
+
+    departments.forEach(
+        departmentName => {
+
+            ddl.append(
+                $("<option>", {
+                    value: departmentName,
+                    text: departmentName
+                })
+            );
+        }
+    );
 }
 
+
+// ============================================================
 // DIVISION FILTER
+// ============================================================
 
 function loadHesDivisionFilter() {
 
     const ddl =
         $("#hesDivisionFilter");
 
-
     ddl.empty();
-
 
     ddl.append(`
         <option value="">
@@ -444,26 +544,20 @@ function loadHesDivisionFilter() {
     `);
 
 
-    const divisions = [
-
-        ...new Set(
-
-            allHesDownloadData
-
-                .map(
-                    x =>
-                        String(
-                            x.sapDivision ||
-                            ""
-                        )
-                            .trim()
-                )
-
-                .filter(Boolean)
-
-        )
-
-    ];
+    const divisions =
+        [
+            ...new Set(
+                allHesDownloadData
+                    .map(
+                        x =>
+                            String(
+                                x.sapDivision ||
+                                ""
+                            ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
 
 
     divisions.sort(
@@ -478,26 +572,25 @@ function loadHesDivisionFilter() {
             ddl.append(
                 $("<option>", {
 
-                    value:
-                        division,
+                    value: division,
 
-                    text:
-                        division
+                    text: division
 
                 })
             );
-
         }
     );
-
 }
 
+
+// ============================================================
 // PHASE FILTER
+// ============================================================
 
-function loadHesPhaseFilter()
-{
+function loadHesPhaseFilter() {
 
-    const ddl = $("#hesPhaseFilter");
+    const ddl =
+        $("#hesPhaseFilter");
 
     ddl.empty();
 
@@ -507,35 +600,30 @@ function loadHesPhaseFilter()
         </option>
     `);
 
-    const phases = [
 
-        ...new Set(
-
-            allHesDownloadData
-
-                .map(
-                    x =>
-                        String(
-                            x.phase ||
-                            ""
-                        )
-                            .trim()
-                )
-
-                .filter(Boolean)
-
-        )
-
-    ];
+    const phases =
+        [
+            ...new Set(
+                allHesDownloadData
+                    .map(
+                        x =>
+                            String(
+                                x.phase ||
+                                ""
+                            ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
 
 
-    phases.sort( (a, b) =>
+    phases.sort(
+        (a, b) =>
             a.localeCompare(
                 b,
                 undefined,
                 {
-                    numeric:
-                        true
+                    numeric: true
                 }
             )
     );
@@ -547,26 +635,25 @@ function loadHesPhaseFilter()
             ddl.append(
                 $("<option>", {
 
-                    value:
-                        phase,
+                    value: phase,
 
-                    text:
-                        phase
+                    text: phase
 
                 })
             );
-
         }
     );
-
 }
 
+
+// ============================================================
 // METER MAKE FILTER
+// ============================================================
 
-function loadHesMeterMakeFilter()
-{
+function loadHesMeterMakeFilter() {
 
-    const ddl = $("#hesMeterMakeFilter");
+    const ddl =
+        $("#hesMeterMakeFilter");
 
     ddl.empty();
 
@@ -577,26 +664,20 @@ function loadHesMeterMakeFilter()
     `);
 
 
-    const meterMakes = [
-
-        ...new Set(
-
-            allHesDownloadData
-
-                .map(
-                    x =>
-                        String(
-                            x.meterType ||
-                            ""
-                        )
-                            .trim()
-                )
-
-                .filter(Boolean)
-
-        )
-
-    ];
+    const meterMakes =
+        [
+            ...new Set(
+                allHesDownloadData
+                    .map(
+                        x =>
+                            String(
+                                x.meterType ||
+                                ""
+                            ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
 
 
     meterMakes.sort(
@@ -611,18 +692,81 @@ function loadHesMeterMakeFilter()
             ddl.append(
                 $("<option>", {
 
-                    value:
-                        make,
+                    value: make,
 
-                    text:
-                        make
+                    text: make
 
                 })
             );
-
         }
     );
+}
 
+
+// ============================================================
+// CYCLE FILTER
+// ============================================================
+
+function loadHesCycleFilter() {
+
+    const ddl =
+        $("#hesCycleFilter");
+
+    if (!ddl.length) {
+        return;
+    }
+
+    ddl.empty();
+
+    ddl.append(`
+        <option value="">
+            All Cycles
+        </option>
+    `);
+
+
+    const cycles =
+        [
+            ...new Set(
+                allHesDownloadData
+                    .map(
+                        x =>
+                            String(
+                                x.cycle ||
+                                ""
+                            ).trim()
+                    )
+                    .filter(Boolean)
+            )
+        ];
+
+
+    cycles.sort(
+        (a, b) =>
+            a.localeCompare(
+                b,
+                undefined,
+                {
+                    numeric: true
+                }
+            )
+    );
+
+
+    cycles.forEach(
+        cycle => {
+
+            ddl.append(
+                $("<option>", {
+
+                    value: cycle,
+
+                    text: cycle
+
+                })
+            );
+        }
+    );
 }
 
 
@@ -631,9 +775,7 @@ function loadHesMeterMakeFilter()
 // ============================================================
 
 $("#hesDepartmentFilter")
-    .off(
-        "change.hesDepartment"
-    )
+    .off("change.hesDepartment")
     .on(
         "change.hesDepartment",
         applyHesFilters
@@ -641,9 +783,7 @@ $("#hesDepartmentFilter")
 
 
 $("#hesDivisionFilter")
-    .off(
-        "change.hesDivision"
-    )
+    .off("change.hesDivision")
     .on(
         "change.hesDivision",
         applyHesFilters
@@ -651,9 +791,7 @@ $("#hesDivisionFilter")
 
 
 $("#hesPhaseFilter")
-    .off(
-        "change.hesPhase"
-    )
+    .off("change.hesPhase")
     .on(
         "change.hesPhase",
         applyHesFilters
@@ -661,11 +799,19 @@ $("#hesPhaseFilter")
 
 
 $("#hesMeterMakeFilter")
-    .off(
-        "change.hesMeterMake"
-    )
+    .off("change.hesMeterMake")
     .on(
         "change.hesMeterMake",
+        applyHesFilters
+    );
+
+
+// CYCLE FILTER EVENT
+
+$("#hesCycleFilter")
+    .off("change.hesCycle")
+    .on(
+        "change.hesCycle",
         applyHesFilters
     );
 
@@ -675,9 +821,7 @@ $("#hesMeterMakeFilter")
 // ============================================================
 
 $("#btnClearHesDownloadFilters")
-    .off(
-        "click.hesClear"
-    )
+    .off("click.hesClear")
     .on(
         "click.hesClear",
         function () {
@@ -725,7 +869,6 @@ $("#btnClearHesDownloadFilters")
                                 itemDepartment ===
                                 department
                             );
-
                         }
                     );
 
@@ -736,14 +879,12 @@ $("#btnClearHesDownloadFilters")
                     [
                         ...allHesDownloadData
                     ];
-
             }
 
 
             renderHesDownloadTable(
                 filteredHesDownloadData
             );
-
         }
     );
 
@@ -776,7 +917,6 @@ function clearHesFilters(
 
         $("#hesDepartmentFilter")
             .val("");
-
     }
 
 
@@ -791,6 +931,11 @@ function clearHesFilters(
     $("#hesMeterMakeFilter")
         .val("");
 
+
+    // CYCLE
+
+    $("#hesCycleFilter")
+        .val("");
 }
 
 
@@ -830,6 +975,17 @@ function applyHesFilters() {
     const meterMake =
         String(
             $("#hesMeterMakeFilter")
+                .val() || ""
+        )
+            .trim()
+            .toUpperCase();
+
+
+    // CYCLE
+
+    const cycle =
+        String(
+            $("#hesCycleFilter")
                 .val() || ""
         )
             .trim()
@@ -927,13 +1083,30 @@ function applyHesFilters() {
                     meterMake;
 
 
+                // CYCLE
+
+                const itemCycle =
+                    String(
+                        item.cycle ||
+                        ""
+                    )
+                        .trim()
+                        .toUpperCase();
+
+
+                const cycleMatch =
+                    cycle === "" ||
+                    itemCycle ===
+                    cycle;
+
+
                 return (
                     departmentMatch &&
                     divisionMatch &&
                     phaseMatch &&
-                    meterMakeMatch
+                    meterMakeMatch &&
+                    cycleMatch
                 );
-
             }
         );
 
@@ -941,7 +1114,6 @@ function applyHesFilters() {
     renderHesDownloadTable(
         filteredHesDownloadData
     );
-
 }
 
 
@@ -967,7 +1139,7 @@ function renderHesDownloadTable(
 
         tbody.html(`
             <tr>
-                <td colspan="9"
+                <td colspan="10"
                     class="text-center py-4">
 
                     No Records Found
@@ -975,7 +1147,6 @@ function renderHesDownloadTable(
                 </td>
             </tr>
         `);
-
 
         return;
     }
@@ -1015,6 +1186,12 @@ function renderHesDownloadTable(
             )}
                     </td>
 
+                    <td class="text-center">
+                        ${escapeHesHtml(
+                x.cycle
+            )}
+                    </td>
+
                     <td>
                         ${escapeHesHtml(
                 x.sapDivision
@@ -1042,16 +1219,10 @@ function renderHesDownloadTable(
 
                 </tr>
             `);
-
         }
     );
-
 }
 
-
-// ============================================================
-// EXCEL EXPORT
-// ============================================================
 
 // ============================================================
 // EXCEL EXPORT - BRPL HES DOWNLOAD
@@ -1088,17 +1259,22 @@ function exportHesDownloadBrplTableToExcel() {
     let hasData = false;
 
 
-    bodyRows.forEach(row => {
+    bodyRows.forEach(
+        row => {
 
-        const cells =
-            row.querySelectorAll("td");
+            const cells =
+                row.querySelectorAll(
+                    "td"
+                );
 
 
-        if (cells.length === 9) {
-            hasData = true;
+            if (
+                cells.length === 10
+            ) {
+                hasData = true;
+            }
         }
-
-    });
+    );
 
 
     if (!hasData) {
@@ -1179,7 +1355,6 @@ function exportHesDownloadBrplTableToExcel() {
                 rgb: BORDER_COLOR
             }
         }
-
     };
 
 
@@ -1191,6 +1366,7 @@ function exportHesDownloadBrplTableToExcel() {
 
         fill: {
             patternType: "solid",
+
             fgColor: {
                 rgb: NAVY_BLUE
             }
@@ -1198,8 +1374,11 @@ function exportHesDownloadBrplTableToExcel() {
 
         font: {
             name: "Calibri",
+
             sz: 11,
+
             bold: true,
+
             color: {
                 rgb: WHITE
             }
@@ -1207,12 +1386,13 @@ function exportHesDownloadBrplTableToExcel() {
 
         alignment: {
             horizontal: "center",
+
             vertical: "center",
+
             wrapText: true
         },
 
         border: allBorders
-
     };
 
 
@@ -1224,7 +1404,9 @@ function exportHesDownloadBrplTableToExcel() {
 
         font: {
             name: "Calibri",
+
             sz: 10,
+
             color: {
                 rgb: BLACK
             }
@@ -1232,11 +1414,11 @@ function exportHesDownloadBrplTableToExcel() {
 
         alignment: {
             vertical: "center",
+
             wrapText: true
         },
 
         border: allBorders
-
     };
 
 
@@ -1248,7 +1430,9 @@ function exportHesDownloadBrplTableToExcel() {
 
         font: {
             name: "Calibri",
+
             sz: 10,
+
             color: {
                 rgb: BLACK
             }
@@ -1256,12 +1440,13 @@ function exportHesDownloadBrplTableToExcel() {
 
         alignment: {
             horizontal: "center",
+
             vertical: "center",
+
             wrapText: true
         },
 
         border: allBorders
-
     };
 
 
@@ -1271,7 +1456,7 @@ function exportHesDownloadBrplTableToExcel() {
 
     for (
         let col = 0;
-        col < 9;
+        col < 10;
         col++
     ) {
 
@@ -1286,9 +1471,7 @@ function exportHesDownloadBrplTableToExcel() {
 
             ws[address].s =
                 headerStyle;
-
         }
-
     }
 
 
@@ -1304,7 +1487,7 @@ function exportHesDownloadBrplTableToExcel() {
 
         for (
             let col = 0;
-            col < 9;
+            col < 10;
             col++
         ) {
 
@@ -1324,13 +1507,15 @@ function exportHesDownloadBrplTableToExcel() {
             // CENTER:
             // S.No.
             // Phase
+            // Cycle
             // Seq No
             // ----------------------------------------------------
 
             if (
                 col === 0 ||
                 col === 3 ||
-                col === 6
+                col === 5 ||
+                col === 7
             ) {
 
                 ws[address].s =
@@ -1341,11 +1526,8 @@ function exportHesDownloadBrplTableToExcel() {
 
                 ws[address].s =
                     normalStyle;
-
             }
-
         }
-
     }
 
 
@@ -1376,6 +1558,10 @@ function exportHesDownloadBrplTableToExcel() {
         },     // Department
 
         {
+            wch: 10
+        },     // Cycle
+
+        {
             wch: 18
         },     // Division
 
@@ -1402,12 +1588,14 @@ function exportHesDownloadBrplTableToExcel() {
 
 
     // Header
+
     ws["!rows"][0] = {
         hpt: 32
     };
 
 
     // Data rows
+
     for (
         let i = 1;
         i < bodyRows.length + 1;
@@ -1417,7 +1605,6 @@ function exportHesDownloadBrplTableToExcel() {
         ws["!rows"][i] = {
             hpt: 30
         };
-
     }
 
 
@@ -1428,8 +1615,7 @@ function exportHesDownloadBrplTableToExcel() {
     ws["!autofilter"] = {
 
         ref:
-            `A1:I${bodyRows.length + 1}`
-
+            `A1:J${bodyRows.length + 1}`
     };
 
 
@@ -1440,8 +1626,8 @@ function exportHesDownloadBrplTableToExcel() {
     ws["!freeze"] = {
 
         xSplit: 0,
-        ySplit: 1
 
+        ySplit: 1
     };
 
 
@@ -1483,7 +1669,6 @@ function exportHesDownloadBrplTableToExcel() {
         wb,
         `HES_Download_Summary_BRPL_${date}.xlsx`
     );
-
 }
 
 
@@ -1521,7 +1706,6 @@ function exportHesDownloadBrplTableToCSV() {
                 row.style.display ===
                 "none"
             ) {
-
                 return;
             }
 
@@ -1557,7 +1741,6 @@ function exportHesDownloadBrplTableToCSV() {
                     data.push(
                         `"${value}"`
                     );
-
                 }
             );
 
@@ -1565,7 +1748,6 @@ function exportHesDownloadBrplTableToCSV() {
             csv.push(
                 data.join(",")
             );
-
         }
     );
 
@@ -1624,7 +1806,6 @@ function exportHesDownloadBrplTableToCSV() {
     URL.revokeObjectURL(
         url
     );
-
 }
 
 
@@ -1673,5 +1854,4 @@ function escapeHesHtml(
             /'/g,
             "&#039;"
         );
-
 }

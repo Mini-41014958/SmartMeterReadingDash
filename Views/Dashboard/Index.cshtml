@@ -429,12 +429,7 @@
 </div>
 
 <!-- HES DOWNLOAD SUMMARY MODAL -->
-<div class="modal fade"
-     id="HesDownloadSummaryModal"
-     tabindex="-1"
-     role="dialog"
-     aria-labelledby="HesdownloadSummaryModalLabel"
-     aria-hidden="true">
+<div class="modal fade" id="HesDownloadSummaryModal"  tabindex="-1" role="dialog" aria-labelledby="HesdownloadSummaryModalLabel" aria-hidden="true">
 
     <div class="modal-dialog modal-xl" role="document">
 
@@ -443,16 +438,9 @@
             <!-- HEADER -->
             <div class="modal-header">
 
-                <h5 class="modal-title"
-                    id="HesdownloadSummaryModalLabel">
-                    Meter Download Summary
-                </h5>
+                <h5 class="modal-title" id="HesdownloadSummaryModalLabel">  Meter Download Summary </h5>
 
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close">
-                </button>
+                <button type="button"class="btn-close"data-bs-dismiss="modal" aria-label="Close"> </button>
 
             </div>
 
@@ -465,24 +453,77 @@
 
                     <div class="row align-items-end g-2">
 
-                        <!-- DEPARTMENT -->
+                        @if(User.IsInRole("SUPERADMIN"))
+                        {
+                            <!-- DEPARTMENT -->
+                            <div class="col-lg-3 col-md-6">
+
+                                <label class="form-label fw-bold">
+                                    Department
+                                </label>
+
+                                <select id="hesDepartmentFilter"
+                                        class="form-select">
+
+                                    <option value="">
+                                        All Departments
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                            <!-- PHASE -->
+                            <div class="col-lg-3 col-md-6">
+
+                                <label class="form-label fw-bold">
+                                    Phase
+                                </label>
+
+                                <select id="hesPhaseFilter"
+                                        class="form-select">
+
+                                    <option value="">
+                                        All Phases
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- METER MAKE -->
+                            <div class="col-lg-3 col-md-6">
+
+                                <label class="form-label fw-bold">
+                                    Meter Make
+                                </label>
+
+                                <select id="hesMeterMakeFilter"
+                                        class="form-select">
+
+                                    <option value="">
+                                        All Meter Makes
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+                        }
+                     
+                        <!-- Cycle -->
                         <div class="col-lg-3 col-md-6">
 
-                            <label class="form-label fw-bold">
-                                Department
-                            </label>
+                            <label class="form-label fw-bold"> Cycle </label>
 
-                            <select id="hesDepartmentFilter"
-                                    class="form-select">
+                            <select id="hesCycleFilter" class="form-select">
 
-                                <option value="">
-                                    All Departments
-                                </option>
+                                <option value=""> All Cycles </option>
 
                             </select>
 
                         </div>
-
 
                         <!-- DIVISION -->
                         <div class="col-lg-3 col-md-6">
@@ -500,46 +541,7 @@
 
                             </select>
 
-                        </div>
-
-
-                        <!-- PHASE -->
-                        <div class="col-lg-3 col-md-6">
-
-                            <label class="form-label fw-bold">
-                                Phase
-                            </label>
-
-                            <select id="hesPhaseFilter"
-                                    class="form-select">
-
-                                <option value="">
-                                    All Phases
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- METER MAKE -->
-                        <div class="col-lg-3 col-md-6">
-
-                            <label class="form-label fw-bold">
-                                Meter Make
-                            </label>
-
-                            <select id="hesMeterMakeFilter"
-                                    class="form-select">
-
-                                <option value="">
-                                    All Meter Makes
-                                </option>
-
-                            </select>
-
-                        </div>
-
+                        </div>   
 
                         <!-- BUTTONS -->
                         <div class="col-12 d-flex justify-content-between align-items-center mt-2">
@@ -615,6 +617,8 @@
                                 <th>Phase</th>
 
                                 <th>Department</th>
+
+                                <th>Cycle</th>
 
                                 <th>Division</th>
 
@@ -699,7 +703,7 @@
                     <div class="row align-items-end g-2">
 
                         <!-- DEPARTMENT -->
-                        <div class="col-lg-3 col-md-6">
+                        @* <div class="col-lg-3 col-md-6">
 
                             <label class="form-label fw-bold">
                                 Department
@@ -714,7 +718,7 @@
 
                             </select>
 
-                        </div>
+                        </div> *@
 
 
                         <!-- DIVISION -->
@@ -737,7 +741,7 @@
 
 
                         <!-- PHASE -->
-                        <div class="col-lg-3 col-md-6">
+                        @* <div class="col-lg-3 col-md-6">
 
                             <label class="form-label fw-bold">
                                 Phase
@@ -748,6 +752,24 @@
 
                                 <option value="">
                                     All Phases
+                                </option>
+
+                            </select>
+
+                        </div> *@
+
+                        <!-- PHASE -->
+                        <div class="col-lg-3 col-md-6">
+
+                            <label class="form-label fw-bold">
+                                Cycle
+                            </label>
+
+                            <select id="hesCycleFilterBypl"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Cycles
                                 </option>
 
                             </select>
@@ -849,6 +871,8 @@
 
                                 <th>Department</th>
 
+                                <th>Cycle</th>
+
                                 <th>Division</th>
 
                                 <th>Seq No</th>
@@ -902,7 +926,8 @@
 
                 <h5 class="modal-title"
                     id="downloadSummaryModalLabel">
-                  Download Failed Detailed Summary
+                    Download Failed Detailed Summary - ( <span id="currentMonth"></span> )
+         
                 </h5>
 
                 <button type="button"
@@ -921,23 +946,27 @@
 
                     <div class="row align-items-end g-2">
 
-                        <!-- Department -->
-                        <div class="col-lg-2 col-md-4">
+                        @if (User.IsInRole("SUPERADMIN"))
+                        {
+                            <!-- Department -->
+                            <div class="col-lg-2 col-md-4">
 
-                            <label class="form-label fw-bold">
-                                Department
-                            </label>
+                                <label class="form-label fw-bold">
+                                    Department
+                                </label>
 
-                            <select id="departmentFilter"
-                                    class="form-select">
+                                <select id="departmentFilter"
+                                        class="form-select">
 
-                                <option value="">
-                                    All Departments
-                                </option>
+                                    <option value="">
+                                        All Departments
+                                    </option>
 
-                            </select>
+                                </select>
 
-                        </div>
+                            </div>
+                        }
+               
 
                         <div class="col-lg-2 col-md-4">
 
@@ -952,63 +981,66 @@
 
                    
 
-                        <!-- Failed Reason -->
+                        <!-- Cycle -->
                         <div class="col-lg-2 col-md-4">
 
                             <label class="form-label fw-bold">
-                                Failed Reason
+                              Cycle
                             </label>
 
-                            <select id="reasonFilter"
+                            <select id="cycleFilter"
                                     class="form-select">
 
                                 <option value="">
-                                    All Reasons
+                                    All Cycle
                                 </option>
 
                             </select>
 
-                        </div>
+                        </div> 
+
+                        @if (User.IsInRole("SUPERADMIN"))
+                        {
+                            <!-- Phase -->
+                            <div class="col-lg-2 col-md-4">
+
+                                <label class="form-label fw-bold">
+                                    Phase
+                                </label>
+
+                                <select id="phaseFilter"
+                                        class="form-select">
+
+                                    <option value="">
+                                        All Phases
+                                    </option>
+
+                                </select>
+
+                            </div>
 
 
-                        <!-- Phase -->
-                        <div class="col-lg-2 col-md-4">
+                            <!-- Meter Make -->
+                            <div class="col-lg-2 col-md-4">
 
-                            <label class="form-label fw-bold">
-                                Phase
-                            </label>
+                                <label class="form-label fw-bold">
+                                    Meter Make
+                                </label>
 
-                            <select id="phaseFilter"
-                                    class="form-select">
+                                <select id="meterMakeFilter"
+                                        class="form-select">
 
-                                <option value="">
-                                    All Phases
-                                </option>
+                                    <option value="">
+                                        All Meter Makes
+                                    </option>
 
-                            </select>
+                                </select>
 
-                        </div>
+                            </div>
 
+                        }
 
-                        <!-- Meter Make -->
-                        <div class="col-lg-2 col-md-4">
-
-                            <label class="form-label fw-bold">
-                                Meter Make
-                            </label>
-
-                            <select id="meterMakeFilter"
-                                    class="form-select">
-
-                                <option value="">
-                                    All Meter Makes
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
+                      
                         <!-- Entry Date From -->
                         <div class="col-lg-2 col-md-4">
 
@@ -1104,6 +1136,7 @@
                                 <th>Meter Number</th>
                                 <th>Phase</th>
                                 <th>Department</th>
+                                <th>Cycle</th>
                                 <th>Division</th>
                                 <th>Seq No</th>     
                                 <th>Meter Make</th>

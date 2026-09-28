@@ -4,6 +4,7 @@
     {
         public string MeterNumber { get; set; }
         public string SapDepartment { get; set; }
+        public string Cycle { get; set; }
         public string MeterType { get; set; }
         public string Phase { get; set; }
         public string ConsRef { get; set; }

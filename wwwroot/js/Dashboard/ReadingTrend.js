@@ -1374,12 +1374,6 @@ async function loadFailureReasonChart(
                 });
 
 
-            console.log(
-                "BRPL failure reason API response:",
-                response
-            );
-
-
             brplData =
                 normalizeBRPLFailureData(
                     response
@@ -1584,12 +1578,6 @@ async function loadFailureReasonChart(
                 canvas.height
             );
 
-
-            console.warn(
-                "BRPL failure reason chart: no failure data."
-            );
-
-
             return;
 
         }
@@ -1656,36 +1644,7 @@ async function loadFailureReasonChart(
                     };
 
                 }
-            );
-
-
-        // =====================================================
-        // DEBUG COUNTS
-        // =====================================================
-
-        console.table(
-            brpl.map(
-                function (item) {
-
-                    return {
-
-                        "Failure Reason":
-                            item.reason,
-
-                        "Count":
-                            Number(item.count) || 0
-
-                    };
-
-                }
             )
-        );
-
-
-        console.log(
-            "BRPL failure reason totals:",
-            brpl
-        );
 
 
         // =====================================================

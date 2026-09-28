@@ -1,31 +1,23 @@
-﻿
-
-let currentReadingMonth = "";
-
+﻿let currentReadingMonth = "";
 let currentUserAccess = null;
 
-
-// ============================================================
-// API URL HELPER
-// ============================================================
-
-function getApiUrl(endpoint) {
+function getApiUrl(endpoint)
+{
 
     const basePath = window.location.pathname
-        .toLowerCase()
-        .startsWith("/smartmeter/")
-        ? "/SmartMeter"
-        : "";
+            .toLowerCase()
+            .startsWith("/smartmeter/")
+            ? "/SmartMeter"
+            : "";
 
     return `${basePath}/api/${endpoint}`;
 }
 
 
-// ============================================================
 // NORMALIZE ACCESS VALUE
-// ============================================================
 
-function normalizeAccessValue(value) {
+function normalizeAccessValue(value)
+{
 
     return String(value ?? "")
         .trim()
@@ -33,57 +25,45 @@ function normalizeAccessValue(value) {
 
 }
 
-
-// ============================================================
 // CHECK SUPER ADMIN
-// ============================================================
 
-function isSuperAdmin() {
+function isSuperAdmin()
+{
 
-    return normalizeAccessValue(
-        currentUserAccess?.role
-    ) === "SUPERADMIN";
+    return normalizeAccessValue( currentUserAccess?.role ) === "SUPERADMIN";
 
 }
 
-
-// ============================================================
 // GET USER COMPANY
-// ============================================================
 
-function getUserCompany() {
+function getUserCompany()
+{
 
-    return normalizeAccessValue(
-        currentUserAccess?.company
-    );
+    return normalizeAccessValue( currentUserAccess?.company);
 
 }
 
-
-// ============================================================
 // GET USER DEPARTMENT
-// ============================================================
 
-function getUserDepartment() {
+function getUserDepartment()
+{
 
-    return normalizeAccessValue(
-        currentUserAccess?.department
-    );
+    return normalizeAccessValue( currentUserAccess?.department );
 
 }
 
-
-// ============================================================
 // CHECK DEPARTMENT RESTRICTION
-// ============================================================
 
-function hasDepartmentRestriction() {
+function hasDepartmentRestriction()
+{
 
-    if (!currentUserAccess) {
+    if (!currentUserAccess)
+    {
         return false;
     }
 
-    if (isSuperAdmin()) {
+    if (isSuperAdmin())
+    {
         return false;
     }
 
@@ -91,30 +71,23 @@ function hasDepartmentRestriction() {
 
 }
 
+function canAccessCompany(company)
+{
 
-// ============================================================
-// COMPANY ACCESS CHECK
-//
-// SUPERADMIN -> BRPL + BYPL
-// BRPL       -> BRPL only
-// BYPL       -> BYPL only
-// ============================================================
-
-function canAccessCompany(company) {
-
-    if (!currentUserAccess) {
+    if (!currentUserAccess)
+    {
         return false;
     }
 
-    const requestedCompany =
-        normalizeAccessValue(company);
+    const requestedCompany =  normalizeAccessValue(company);
 
-    if (!requestedCompany) {
+    if (!requestedCompany)
+    {
         return false;
     }
 
-    // SUPERADMIN has access to both companies
-    if (isSuperAdmin()) {
+    if (isSuperAdmin())
+    {
         return true;
     }
 
@@ -123,223 +96,141 @@ function canAccessCompany(company) {
 }
 
 
-// ============================================================
-// BRPL ACCESS
-// ============================================================
-
-function canAccessBrpl() {
-
+function canAccessBrpl()
+{
     return canAccessCompany("BRPL");
-
 }
 
-
-// ============================================================
 // BYPL ACCESS
-// ============================================================
 
-function canAccessBypl() {
-
+function canAccessBypl()
+{
     return canAccessCompany("BYPL");
-
 }
 
-
-// ============================================================
 // LOAD CURRENT USER ACCESS
-// ============================================================
 
-async function loadCurrentUserAccess() {
+async function loadCurrentUserAccess()
+{
 
-    const url =
-        getApiUrl("AuthApi/my-access");
-
-    const response = await fetch(
-        url,
-        {
-            method: "GET",
-            credentials: "same-origin",
-            headers: {
-                "Accept": "application/json"
-            },
-            cache: "no-store"
-        }
-    );
-
-    if (!response.ok) {
-
-        throw new Error(
-            `Unable to load user access. HTTP ${response.status}`
+    const url = getApiUrl("AuthApi/my-access");
+    const response = await fetch( url,
+            {
+                method: "GET",
+                credentials: "same-origin",
+                headers: { "Accept": "application/json"},
+                cache: "no-store"
+            }
         );
 
+    if (!response.ok)
+    {
+        throw new Error( `Unable to load user access. HTTP ${response.status}` );
     }
 
     const access = await response.json();
 
-    if (!access) {
-
-        throw new Error(
-            "User access information is empty."
-        );
-
+    if (!access)
+    {
+        throw new Error( "User access information is empty.");
     }
+
 
     currentUserAccess = {
 
-        userId:
-            access.userId ??
-            access.UserId,
+        userId: access.userId ??access.UserId,
 
-        username:
-            access.username ??
-            access.Username ??
-            "",
+        username: access.username ??  access.Username ??  "",
 
-        role:
-            normalizeAccessValue(
-                access.role ??
-                access.Role
-            ),
+        role:normalizeAccessValue( access.role ?? access.Role ),
 
-        company:
-            normalizeAccessValue(
-                access.company ??
-                access.Company
-            ),
+        company:  normalizeAccessValue(access.company ?? access.Company),
 
-        department:
-            normalizeAccessValue(
-                access.department ??
-                access.Department
-            )
+        department: normalizeAccessValue( access.department ?? access.Department)
 
     };
 
 }
 
+function applyDashboardAccess()
+{
 
-// ============================================================
-// APPLY COMPANY ACCESS TO DASHBOARD UI
-// ============================================================
+    const brplAllowed =  canAccessBrpl();
 
-function applyDashboardAccess() {
-
-    const brplAllowed =
-        canAccessBrpl();
-
-    const byplAllowed =
-        canAccessBypl();
+    const byplAllowed = canAccessBypl();
 
 
-    // --------------------------------------------------------
-    // BRPL SECTIONS
-    // --------------------------------------------------------
+    // BRPL
 
-    $(".brpl-section").toggle(
-        brplAllowed
-    );
+    $(".brpl-section").toggle( brplAllowed );
 
-    $("#brplDashboardSection").toggle(
-        brplAllowed
-    );
+    $("#brplDashboardSection").toggle( brplAllowed);
 
-    $("#brplSection").toggle(
-        brplAllowed
-    );
+    $("#brplSection").toggle( brplAllowed);
 
+    // BYPL
 
-    // --------------------------------------------------------
-    // BYPL SECTIONS
-    // --------------------------------------------------------
+    $(".bypl-section").toggle( byplAllowed );
 
-    $(".bypl-section").toggle(
-        byplAllowed
-    );
+    $("#byplDashboardSection").toggle( byplAllowed);
 
-    $("#byplDashboardSection").toggle(
-        byplAllowed
-    );
+    $("#byplSection").toggle(byplAllowed );
 
-    $("#byplSection").toggle(
-        byplAllowed
-    );
-
-
-    // --------------------------------------------------------
     // COMPANY SPECIFIC ELEMENTS
-    // --------------------------------------------------------
 
-    $("[data-company='BRPL']").toggle(
-        brplAllowed
-    );
+    $("[data-company='BRPL']").toggle( brplAllowed);
 
-    $("[data-company='BYPL']").toggle(
-        byplAllowed
-    );
+    $("[data-company='BYPL']").toggle( byplAllowed );
 
 }
 
-
-// ============================================================
-// GET CURRENT READING MONTH
-// ============================================================
-
-function getReadingMonth() {
-
+function getReadingMonth()
+{
     return currentReadingMonth;
-
 }
 
-function getPreviousReadingMonth() {
+// GET PREVIOUS READING MONTH
+
+function getPreviousReadingMonth()
+{
 
     const today = new Date();
 
-    const previousDate = new Date(
-        today.getFullYear(),
-        today.getMonth() - 1,
-        1
-    );
+    const previousDate =  new Date(  today.getFullYear(),today.getMonth() - 1,  1 );
 
-    const year =
-        previousDate
+    const year = previousDate
             .getFullYear()
             .toString();
 
-    const month =
-        String(
-            previousDate.getMonth() + 1
-        ).padStart(2, "0");
+    const month = String(previousDate.getMonth() + 1).padStart(2, "0");
 
     return year + month;
 
 }
 
+// FORMAT READING MONTH
 
-function formatReadingMonth(month) {
 
-    if (!month || month.length !== 6) {
+function formatReadingMonth(month)
+{
+
+    if (!month || month.length !== 6)
+    {
         return "";
     }
 
-    const year =
-        month.substring(0, 4);
+    const year = month.substring(0, 4);
 
-    const monthNumber =
-        month.substring(4, 6);
+    const monthNumber = month.substring(4, 6);
 
-    const date =
-        new Date(
-            Number(year),
-            Number(monthNumber) - 1,
-            1
-        );
+    const date =new Date( Number(year), Number(monthNumber) - 1, 1);
 
-    if (isNaN(date.getTime())) {
+    if (isNaN(date.getTime()))
+    {
         return month;
     }
 
-    return date.toLocaleString(
-        "en-US",
+    return date.toLocaleString("en-US",
         {
             month: "long",
             year: "numeric"
@@ -348,15 +239,12 @@ function formatReadingMonth(month) {
 
 }
 
-
-// ============================================================
 // UPDATE READING MONTH DISPLAY
-// ============================================================
 
-function updateReadingMonthDisplay() {
+function updateReadingMonthDisplay()
+{
 
-    const formatted =
-        formatReadingMonth(
+    const formatted =  formatReadingMonth(
             currentReadingMonth
         );
 
@@ -380,24 +268,35 @@ function setReadingMonthFromInput() {
             "readingMonth"
         );
 
-    if (!input || !input.value) {
+
+    if (
+        !input ||
+        !input.value
+    ) {
         return false;
     }
+
 
     const value =
         input.value.trim();
 
-    // HTML month input returns YYYY-MM
+
     if (
         !/^\d{4}-\d{2}$/.test(value)
     ) {
         return false;
     }
 
+
     currentReadingMonth =
-        value.replace("-", "");
+        value.replace(
+            "-",
+            ""
+        );
+
 
     updateReadingMonthDisplay();
+
 
     return true;
 
@@ -406,9 +305,6 @@ function setReadingMonthFromInput() {
 
 // ============================================================
 // NORMALIZE FAILURE DATA
-//
-// This is intentionally global because ReadingTrend.js
-// uses it.
 // ============================================================
 
 function normalizeFailureData(data) {
@@ -416,6 +312,7 @@ function normalizeFailureData(data) {
     if (!Array.isArray(data)) {
         return [];
     }
+
 
     return data.map(function (item) {
 
@@ -460,106 +357,309 @@ function normalizeFailureData(data) {
 // SAFE JSON FETCH
 // ============================================================
 
-async function fetchDashboardApi(endpoint, readingMonth) {
+async function fetchDashboardApi(
+    endpoint,
+    readingMonth
+) {
+
+    if (!readingMonth) {
+
+        throw new Error(
+            "Reading month is required."
+        );
+
+    }
+
 
     const url =
         `${getApiUrl(endpoint)}` +
         `?ReadingMonth=${encodeURIComponent(readingMonth)}`;
 
 
-    const response = await fetch(url, {
-        method: "GET",
-        credentials: "same-origin",
-        headers: {
-            "Accept": "application/json"
-        },
-        cache: "no-store"
-    });
+
+    const response =
+        await fetch(
+            url,
+            {
+                method: "GET",
+                credentials: "same-origin",
+                headers: {
+                    "Accept": "application/json"
+                },
+                cache: "no-store"
+            }
+        );
+
 
     if (response.status === 401) {
+
         throw new Error(
             "Session expired. Please login again."
         );
+
     }
 
+
     if (response.status === 403) {
+
         throw new Error(
             "Access denied for this company."
         );
+
     }
 
+
     if (!response.ok) {
+
         throw new Error(
             `Dashboard API failed. HTTP ${response.status}`
         );
+
     }
 
-    const data = await response.json();
 
-    if (data && data.success === false) {
+    let data;
+
+    try {
+
+        data =
+            await response.json();
+
+    }
+    catch (error) {
+
+        console.error(
+            "Dashboard API returned invalid JSON:",
+            error
+        );
+
+        throw new Error(
+            "Dashboard API returned invalid JSON."
+        );
+
+    }
+
+
+    if (
+        data &&
+        data.success === false
+    ) {
+
         throw new Error(
             data.message ||
             "Dashboard API returned success=false."
         );
+
     }
 
+
     return data;
+
+}
+
+
+// ============================================================
+// DASHBOARD LOAD STATE
+// ============================================================
+
+let dashboardLoading = false;
+
+let dashboardReloadPending = false;
+
+let dashboardRetryCount = 0;
+
+
+// ============================================================
+// DELAY
+// ============================================================
+
+function delay(ms) {
+
+    return new Promise(
+        function (resolve) {
+
+            setTimeout(
+                resolve,
+                ms
+            );
+
+        }
+    );
+
 }
 
 
 // ============================================================
 // LOAD DASHBOARD
 // ============================================================
-let dashboardLoading = false;
 
 async function loadDashboard() {
 
-    if (dashboardLoading)
-    {
+    // --------------------------------------------------------
+    // IMPORTANT:
+    // Never silently discard another load request.
+    // Queue it instead.
+    // --------------------------------------------------------
+
+    if (dashboardLoading) {
+
+        dashboardReloadPending = true;
 
         return;
     }
 
+
     dashboardLoading = true;
 
-    $("#dashboardSkeleton").show();
-    $("#dashboardContent").hide();
+    dashboardReloadPending = false;
+
+
+    // --------------------------------------------------------
+    // SHOW LOADING STATE
+    // --------------------------------------------------------
+
+    $("#dashboardSkeleton")
+        .stop(true, true)
+        .show();
+
+    $("#dashboardContent")
+        .stop(true, true)
+        .hide();
+
 
     try {
+
+        // ----------------------------------------------------
+        // LOAD USER ACCESS
+        // ----------------------------------------------------
 
         await loadCurrentUserAccess();
 
         applyDashboardAccess();
 
+
+        // ----------------------------------------------------
+        // ENSURE READING MONTH
+        // ----------------------------------------------------
+
         if (!currentReadingMonth) {
+
             currentReadingMonth =
                 getPreviousReadingMonth();
+
         }
+
 
         updateReadingMonthDisplay();
 
-        const results = await Promise.allSettled([
 
-            loadMeterSummary(),
-            loadMeterDownloadSummary(),
-            loadDepartmentDistribution(),
-            loadFailureReasonChart()
+        // ----------------------------------------------------
+        // CAPTURE MONTH
+        //
+        // Every API call in this cycle works with the
+        // same reading month.
+        // ----------------------------------------------------
 
-        ]);
+        const readingMonth = currentReadingMonth;
 
-        results.forEach(function (result, index) {
+        // ----------------------------------------------------
+        // LOAD DASHBOARD COMPONENTS
+        // ----------------------------------------------------
 
-            if (result.status === "rejected") {
+        const results =
+            await Promise.allSettled(
+                [
 
-                const names = [
-                    "Meter Summary",
-                    "Meter MRO Summary",
-                    "Department Distribution",
-                    "Failure Reason Chart"
-                ];
+                    loadMeterSummary(),
+
+                    loadMeterDownloadSummary(),
+
+                    loadDepartmentDistribution(),
+
+                    loadFailureReasonChart()
+
+                ]
+            );
+
+
+        // ----------------------------------------------------
+        // CHECK API RESULTS
+        // ----------------------------------------------------
+
+        const names = [
+
+            "Meter Summary",
+
+            "Meter MRO Summary",
+
+            "Department Distribution",
+
+            "Failure Reason Chart"
+
+        ];
+
+
+        let hasError = false;
+
+
+        results.forEach(
+            function (result, index) {
+
+                if (
+                    result.status === "rejected"
+                ) {
+
+                    hasError = true;
+
+
+                    console.error(
+                        `${names[index]} failed:`,
+                        result.reason
+                    );
+
+                }
+                else {
+
+                    console.log(
+                        `${names[index]} loaded successfully.`
+                    );
+
+                }
+
             }
+        );
 
-        });
+
+        // ----------------------------------------------------
+        // RETRY ONCE
+        // ----------------------------------------------------
+
+        if (
+            hasError &&
+            dashboardRetryCount < 1
+        ) {
+
+            dashboardRetryCount++;
+
+
+            console.warn(
+                "One or more dashboard APIs failed. " +
+                "Retrying once..."
+            );
+
+
+            await delay(500);
+
+
+            dashboardReloadPending = true;
+
+        }
+        else {
+
+            dashboardRetryCount = 0;
+
+        }
+
 
     }
     catch (err) {
@@ -569,11 +669,17 @@ async function loadDashboard() {
             err
         );
 
+
         if (
             err.message &&
             (
-                err.message.includes("Session expired") ||
-                err.message.includes("Unable to load user access")
+                err.message.includes(
+                    "Session expired"
+                ) ||
+
+                err.message.includes(
+                    "Unable to load user access"
+                )
             )
         ) {
 
@@ -583,22 +689,66 @@ async function loadDashboard() {
             return;
         }
 
+
+        console.error(
+            "Dashboard failed to load:",
+            err.message
+        );
+
     }
     finally {
 
         dashboardLoading = false;
 
-        $("#dashboardSkeleton").fadeOut(
-            300,
-            function () {
 
-                $("#dashboardContent")
-                    .fadeIn(300);
+        // ----------------------------------------------------
+        // HIDE LOADING
+        // ----------------------------------------------------
 
-            }
-        );
+        $("#dashboardSkeleton")
+            .stop(true, true)
+            .fadeOut(
+                200,
+                function () {
+
+                    $("#dashboardContent")
+                        .stop(true, true)
+                        .fadeIn(200);
+
+                }
+            );
+
+
+        // ----------------------------------------------------
+        // RUN QUEUED LOAD
+        // ----------------------------------------------------
+
+        if (
+            dashboardReloadPending
+        ) {
+
+            dashboardReloadPending = false;
+
+
+
+            setTimeout(
+                function () {
+
+                    loadDashboard();
+
+                },
+                0
+            );
+
+        }
+        else {
+
+            dashboardRetryCount = 0;
+
+        }
 
     }
+
 }
 
 
@@ -608,19 +758,8 @@ async function loadDashboard() {
 
 async function refreshDashboard() {
 
-    try {
 
-        await loadDashboard();
-
-    }
-    catch (err) {
-
-        console.error(
-            "Dashboard Refresh Error:",
-            err
-        );
-
-    }
+    await loadDashboard();
 
 }
 
@@ -634,7 +773,7 @@ document.addEventListener(
     function () {
 
         // ----------------------------------------------------
-        // Default month = previous month
+        // DEFAULT MONTH = PREVIOUS MONTH
         // ----------------------------------------------------
 
         currentReadingMonth =
@@ -642,13 +781,14 @@ document.addEventListener(
 
 
         // ----------------------------------------------------
-        // Set month input
+        // SET MONTH INPUT
         // ----------------------------------------------------
 
         const monthInput =
             document.getElementById(
                 "readingMonth"
             );
+
 
         if (monthInput) {
 
@@ -660,17 +800,27 @@ document.addEventListener(
 
 
         // ----------------------------------------------------
-        // Display month
+        // DISPLAY MONTH
         // ----------------------------------------------------
 
         updateReadingMonthDisplay();
 
 
         // ----------------------------------------------------
-        // Load dashboard
+        // INITIAL DASHBOARD LOAD
         // ----------------------------------------------------
 
-        loadDashboard();
+        loadDashboard()
+            .catch(
+                function (err) {
+
+                    console.error(
+                        "Initial dashboard load failed:",
+                        err
+                    );
+
+                }
+            );
 
 
         // ----------------------------------------------------
@@ -686,34 +836,46 @@ document.addEventListener(
                     e.preventDefault();
 
 
-                    // -------------------------------
-                    // Read selected month
-                    // -------------------------------
+                    // ----------------------------------------
+                    // GET SELECTED MONTH
+                    // ----------------------------------------
 
-                    if (!setReadingMonthFromInput())
-                    {
+                    if (
+                        !setReadingMonthFromInput()
+                    ) {
 
                         console.warn(
                             "Invalid reading month."
                         );
 
                         return;
-
                     }
 
 
-                    // -------------------------------
-                    // Reload dashboard
-                    // -------------------------------
+                    // ----------------------------------------
+                    // LOAD DASHBOARD
+                    // ----------------------------------------
 
-                    await loadDashboard();
+                    try {
+
+                        await loadDashboard();
+
+                    }
+                    catch (err) {
+
+                        console.error(
+                            "Dashboard Apply Error:",
+                            err
+                        );
+
+                    }
 
                 }
             );
 
 
         // ----------------------------------------------------
-        // ENTER KEY ON MONTH INPUT
+        // ENTER KEY
         // ----------------------------------------------------
 
         $("#readingMonth")
@@ -722,9 +884,12 @@ document.addEventListener(
                 "keydown.dashboard",
                 function (e) {
 
-                    if (e.key === "Enter") {
+                    if (
+                        e.key === "Enter"
+                    ) {
 
                         e.preventDefault();
+
 
                         $("#btnLoadDashboard")
                             .trigger("click");

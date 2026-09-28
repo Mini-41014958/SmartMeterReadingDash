@@ -623,7 +623,7 @@ canvas {
 #hesDownloadSummaryTable,
 #hesDownloadSummaryTableBypl {
     width: max-content;
-    min-width: 1650px;
+    min-width: 1735px;
     table-layout: fixed;
     border-collapse: collapse;
     font-size: 12px;
@@ -645,7 +645,18 @@ canvas {
         padding: 8px 6px;
     }
 
+    /* =========================================================
+   CYCLE CELL
+   ========================================================= */
 
+    #downloadSummaryTable .cycle-cell,
+    #downloadSummaryTableBYPL .cycle-cell,
+    #hesDownloadSummaryTable .cycle-cell,
+    #hesDownloadSummaryTableBypl .cycle-cell {
+        text-align: center;
+        font-weight: 600;
+        white-space: nowrap;
+    }
     /* =========================================================
    COMMON BODY
    ========================================================= */
@@ -659,7 +670,6 @@ canvas {
         word-break: break-word;
         overflow-wrap: anywhere;
     }
-
 
         /* =========================================================
    1. S.NO.
@@ -751,7 +761,7 @@ canvas {
 
 
         /* =========================================================
-   6. DIVISION
+   6. CYCLE
    ========================================================= */
 
         #downloadSummaryTable th:nth-child(6),
@@ -762,13 +772,16 @@ canvas {
         #hesDownloadSummaryTable td:nth-child(6),
         #hesDownloadSummaryTableBypl th:nth-child(6),
         #hesDownloadSummaryTableBypl td:nth-child(6) {
-            width: 120px;
-            min-width: 120px;
+            width: 85px;
+            min-width: 85px;
+            max-width: 85px;
+            text-align: center;
+            white-space: nowrap;
         }
 
 
         /* =========================================================
-   7. SEQ NO
+   7. DIVISION
    ========================================================= */
 
         #downloadSummaryTable th:nth-child(7),
@@ -779,14 +792,13 @@ canvas {
         #hesDownloadSummaryTable td:nth-child(7),
         #hesDownloadSummaryTableBypl th:nth-child(7),
         #hesDownloadSummaryTableBypl td:nth-child(7) {
-            width: 80px;
-            min-width: 80px;
-            text-align: center;
+            width: 120px;
+            min-width: 120px;
         }
 
 
         /* =========================================================
-   8. METER MAKE
+   8. SEQ NO
    ========================================================= */
 
         #downloadSummaryTable th:nth-child(8),
@@ -797,14 +809,14 @@ canvas {
         #hesDownloadSummaryTable td:nth-child(8),
         #hesDownloadSummaryTableBypl th:nth-child(8),
         #hesDownloadSummaryTableBypl td:nth-child(8) {
-            width: 120px;
-            min-width: 120px;
-            white-space: nowrap;
+            width: 80px;
+            min-width: 80px;
+            text-align: center;
         }
 
 
         /* =========================================================
-   9. FAILED SINCE
+   9. METER MAKE
    ========================================================= */
 
         #downloadSummaryTable th:nth-child(9),
@@ -815,16 +827,14 @@ canvas {
         #hesDownloadSummaryTable td:nth-child(9),
         #hesDownloadSummaryTableBypl th:nth-child(9),
         #hesDownloadSummaryTableBypl td:nth-child(9) {
-            width: 130px;
-            min-width: 130px;
-            max-width: 130px;
-            text-align: center;
+            width: 120px;
+            min-width: 120px;
             white-space: nowrap;
         }
 
 
         /* =========================================================
-   10. TOTAL FAILED DAYS
+   10. FAILED SINCE
    ========================================================= */
 
         #downloadSummaryTable th:nth-child(10),
@@ -835,16 +845,16 @@ canvas {
         #hesDownloadSummaryTable td:nth-child(10),
         #hesDownloadSummaryTableBypl th:nth-child(10),
         #hesDownloadSummaryTableBypl td:nth-child(10) {
-            width: 145px;
-            min-width: 145px;
-            max-width: 145px;
+            width: 130px;
+            min-width: 130px;
+            max-width: 130px;
             text-align: center;
             white-space: nowrap;
         }
 
 
         /* =========================================================
-   11. STATUS
+   11. TOTAL FAILED DAYS
    ========================================================= */
 
         #downloadSummaryTable th:nth-child(11),
@@ -855,14 +865,16 @@ canvas {
         #hesDownloadSummaryTable td:nth-child(11),
         #hesDownloadSummaryTableBypl th:nth-child(11),
         #hesDownloadSummaryTableBypl td:nth-child(11) {
-            width: 260px;
-            min-width: 260px;
-            max-width: 260px;
+            width: 145px;
+            min-width: 145px;
+            max-width: 145px;
+            text-align: center;
+            white-space: nowrap;
         }
 
 
         /* =========================================================
-   12. LAST ENTRY DATE
+   12. STATUS
    ========================================================= */
 
         #downloadSummaryTable th:nth-child(12),
@@ -873,16 +885,14 @@ canvas {
         #hesDownloadSummaryTable td:nth-child(12),
         #hesDownloadSummaryTableBypl th:nth-child(12),
         #hesDownloadSummaryTableBypl td:nth-child(12) {
-            width: 160px;
-            min-width: 160px;
-            max-width: 160px;
-            text-align: center;
-            white-space: nowrap;
+            width: 260px;
+            min-width: 260px;
+            max-width: 260px;
         }
 
 
         /* =========================================================
-   13. ADDRESS
+   13. LAST ENTRY DATE
    ========================================================= */
 
         #downloadSummaryTable th:nth-child(13),
@@ -893,6 +903,26 @@ canvas {
         #hesDownloadSummaryTable td:nth-child(13),
         #hesDownloadSummaryTableBypl th:nth-child(13),
         #hesDownloadSummaryTableBypl td:nth-child(13) {
+            width: 160px;
+            min-width: 160px;
+            max-width: 160px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+
+        /* =========================================================
+   14. ADDRESS
+   ========================================================= */
+
+        #downloadSummaryTable th:nth-child(14),
+        #downloadSummaryTable td:nth-child(14),
+        #downloadSummaryTableBYPL th:nth-child(14),
+        #downloadSummaryTableBYPL td:nth-child(14),
+        #hesDownloadSummaryTable th:nth-child(14),
+        #hesDownloadSummaryTable td:nth-child(14),
+        #hesDownloadSummaryTableBypl th:nth-child(14),
+        #hesDownloadSummaryTableBypl td:nth-child(14) {
             width: 300px;
             min-width: 300px;
             max-width: 300px;
@@ -900,30 +930,6 @@ canvas {
             word-break: break-word;
             overflow-wrap: anywhere;
         }
-
-
-    /* =========================================================
-   FAILED SINCE / FAILED DAYS
-   ========================================================= */
-
-    #downloadSummaryTable .download-failed-danger,
-    #downloadSummaryTableBYPL .download-failed-danger,
-    #hesDownloadSummaryTable .download-failed-danger,
-    #hesDownloadSummaryTableBypl .download-failed-danger {
-        background-color: #dc3545 !important;
-        color: #ffffff !important;
-        font-weight: 700;
-        text-align: center;
-    }
-
-
-    #downloadSummaryTable .download-failed-normal,
-    #downloadSummaryTableBYPL .download-failed-normal,
-    #hesDownloadSummaryTable .download-failed-normal,
-    #hesDownloadSummaryTableBypl .download-failed-normal {
-        text-align: center;
-        font-weight: 600;
-    }
 
 
 /* =========================================================

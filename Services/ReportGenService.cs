@@ -53,10 +53,6 @@ namespace SmartMeterReadingDash.Services
                 bool isSuperAdmin = userScope.IsSuperAdmin;
                 string company = userScope.Company?.Trim().ToUpperInvariant() ?? "";
 
-                // ============================================================
-                // BRPL ONLY
-                // BYPL report generation is intentionally disabled.
-                // ============================================================
                 bool showBrpl = isSuperAdmin || company == "BRPL";
                 bool showBypl = false;
 
@@ -137,8 +133,7 @@ namespace SmartMeterReadingDash.Services
                         .Replace(" ", "");
 
                 var companySuffix = "BRPL";
-                var fileName =
-                    $"Smart_Meter_Reading_Dashboard_{companySuffix}_{safeMonth}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                var fileName =  $"Smart_Meter_Reading_Dashboard_{companySuffix}_{safeMonth}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
                 return new DashboardReport
                 {
@@ -154,12 +149,7 @@ namespace SmartMeterReadingDash.Services
             }
         }
 
-        private void CreateDashboardSheet(
-            XLWorkbook workbook,
-            string readingMonth,
-            TotalMeterSummary? brplMeter,
-            MeterReceivedSummary? brplReceived,
-            UserAccessScope scope)
+        private void CreateDashboardSheet( XLWorkbook workbook,string readingMonth, TotalMeterSummary? brplMeter, MeterReceivedSummary? brplReceived,UserAccessScope scope)
         {
             var ws = workbook.Worksheets.Add("Dashboard");
 
@@ -170,11 +160,9 @@ namespace SmartMeterReadingDash.Services
             bool showBrpl = true;
             bool showBypl = false;
 
-            var brplDepartment =
-                _dashboard.GetDepartmentSummary(readingMonth, scope) ?? new();
+            var brplDepartment = _dashboard.GetDepartmentSummary(readingMonth, scope) ?? new();
 
-            var brplFailureReasons =
-                _dashboard.FailureReasonCounts(readingMonth, scope) ?? new();
+            var brplFailureReasons =  _dashboard.FailureReasonCounts(readingMonth, scope) ?? new();
 
             ws.TabColor = Palette.Blue;
             ws.ShowGridLines = false;
@@ -186,7 +174,6 @@ namespace SmartMeterReadingDash.Services
             ws.PageSetup.Margins.Right = 0.15;
             ws.PageSetup.FitToPages(1, 0);
 
-            // Keep B:F and G:K visually balanced.
             ws.Column("A").Width = 2;
             ws.Column("B").Width = 16;
             ws.Column("C").Width = 14;
@@ -208,34 +195,27 @@ namespace SmartMeterReadingDash.Services
 
             ws.Range("B2:K4").Merge();
 
-            ws.Cell("B2").Value =
-                "RCM - SMART METER READING DASHBOARD";
+            ws.Cell("B2").Value = "RCM - SMART METER READING DASHBOARD";
 
-            ws.Range("B2:K4").Style.Fill.BackgroundColor =
-                Palette.Navy;
+            ws.Range("B2:K4").Style.Fill.BackgroundColor =  Palette.Navy;
 
-            ws.Range("B2:K4").Style.Font.FontColor =
-                Palette.White;
+            ws.Range("B2:K4").Style.Font.FontColor = Palette.White;
 
             ws.Range("B2:K4").Style.Font.Bold = true;
 
             ws.Range("B2:K4").Style.Font.FontSize = 17;
 
             // CENTER TITLE
-            ws.Range("B2:K4").Style.Alignment.Horizontal =
-                XLAlignmentHorizontalValues.Center;
+            ws.Range("B2:K4").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-            ws.Range("B2:K4").Style.Alignment.Vertical =
-                XLAlignmentVerticalValues.Center;
+            ws.Range("B2:K4").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
             // IMPORTANT: remove indentation
             ws.Range("B2:K4").Style.Alignment.Indent = 0;
 
-            ws.Range("B2:K4").Style.Border.BottomBorder =
-                XLBorderStyleValues.Medium;
+            ws.Range("B2:K4").Style.Border.BottomBorder =  XLBorderStyleValues.Medium;
 
-            ws.Range("B2:K4").Style.Border.BottomBorderColor =
-                Palette.Blue;
+            ws.Range("B2:K4").Style.Border.BottomBorderColor = Palette.Blue;
 
             // Make the merged title area taller
             ws.Row(2).Height = 20;
@@ -243,25 +223,19 @@ namespace SmartMeterReadingDash.Services
             ws.Row(4).Height = 20;
 
 
-            string logoPath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "images",
-                "bses-logo.png");
+            string logoPath = Path.Combine( Directory.GetCurrentDirectory(),"wwwroot","images", "bses-logo.png");
 
             if (System.IO.File.Exists(logoPath))
             {
                 var picture = ws.AddPicture(logoPath)
                     .WithPlacement(XLPicturePlacement.FreeFloating)
-                    .WithSize(70, 60);
+                    .WithSize(70, 60); //logo size
 
                 picture.MoveTo(ws.Cell("B2"), 5, 4);
             }
 
             ws.Range("B5:K5").Merge();
-            ws.Cell("B5").Value =
-                $"READING MONTH: {readingMonth}   |   " +
-                $"REPORT GENERATED: {DateTime.Now:dd MMM yyyy HH:mm}";
+            ws.Cell("B5").Value = $"READING MONTH: {readingMonth}  |  " +  $"REPORT GENERATED: {DateTime.Now:dd MMM yyyy HH:mm}";
 
             ws.Range("B5:K5")
                 .Style
@@ -290,9 +264,8 @@ namespace SmartMeterReadingDash.Services
 
             ws.Row(5).Height = 18;
 
-            // ============================================================
             // READING OVERVIEW
-            // ============================================================
+
             int brplTotal = brplReceived?.totalMetersCount ?? 0;
             int brplDownloaded = brplReceived?.hesDownloadCount ?? 0;
             int brplFailed = brplReceived?.manualForwardinCount ?? 0;
@@ -301,46 +274,23 @@ namespace SmartMeterReadingDash.Services
             int totalDownloaded = brplDownloaded;
             int totalFailed = brplFailed;
 
-            double downloadRate =
-                totalMeters > 0
+            double downloadRate = totalMeters > 0
                     ? (double)totalDownloaded / totalMeters
                     : 0;
 
-            double failureRate =
-                totalMeters > 0
+            double failureRate = totalMeters > 0
                     ? (double)totalFailed / totalMeters
                     : 0;
 
-            WriteDashboardBanner(
-                ws,
-                7,
-                "READING OVERVIEW – BRPL",
-                Palette.Navy,
-                Palette.White);
+            WriteDashboardBanner( ws, 7, "READING OVERVIEW – BRPL", Palette.Navy, Palette.White);
 
-            CreateModernKpiCard(
-                ws, 8, 2, 3,
-                "TOTAL METERS",
-                totalMeters.ToString("#,##0"),
-                Palette.Blue);
+            CreateModernKpiCard( ws, 8, 2, 3, "TOTAL METERS", totalMeters.ToString("#,##0"), Palette.Blue);
 
-            CreateModernKpiCard(
-                ws, 8, 4, 5,
-                "DOWNLOADED",
-                totalDownloaded.ToString("#,##0"),
-                Palette.Green);
+            CreateModernKpiCard( ws, 8, 4, 5, "DOWNLOADED", totalDownloaded.ToString("#,##0"), Palette.Green);
 
-            CreateModernKpiCard(
-                ws, 8, 6, 7,
-                "FAILED",
-                totalFailed.ToString("#,##0"),
-                Palette.Red);
+            CreateModernKpiCard(ws, 8, 6, 7,"FAILED", totalFailed.ToString("#,##0"), Palette.Red);
 
-            CreateModernKpiCard(
-                ws, 8, 8, 9,
-                "DOWNLOAD RATE",
-                downloadRate.ToString("0.0%"),
-                Palette.Blue);
+            CreateModernKpiCard(ws, 8, 8, 9, "DOWNLOAD RATE", downloadRate.ToString("0.0%"),Palette.Blue);
 
             CreateModernKpiCard(
                 ws, 8, 10, 11,
@@ -388,7 +338,6 @@ namespace SmartMeterReadingDash.Services
                 Palette.Red,
                 Palette.White);
 
-            // Department table: B:F
             SetCompactHeader(
                 ws,
                 tableHeaderRow,

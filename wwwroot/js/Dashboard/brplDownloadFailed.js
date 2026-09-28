@@ -43,6 +43,8 @@ async function loadDownloadSummary() {
 
         const response = await fetch(apiUrl);
 
+        const title = document.getElementById("currentMonth");
+        title.textContent = ` ${readingMonth}`;
         if (!response.ok) {
 
             const errorText = await response.text();
@@ -70,6 +72,7 @@ async function loadDownloadSummary() {
         /* LOAD FILTERS */
 
         loadDepartmentFilter();
+        loadCycleFilter();
         loadDivisionFilter();
         loadReasonFilter();
         loadPhaseFilter();
@@ -162,7 +165,56 @@ function loadDepartmentFilter() {
 
     });
 }
+/* ============================================================
+   CYCLE FILTER
+   ============================================================ */
 
+function loadCycleFilter() {
+
+    const ddl = $("#cycleFilter");
+
+    ddl.empty();
+
+    ddl.append(`
+        <option value="">
+            All Cycles
+        </option>
+    `);
+
+    const cycles = [
+        ...new Set(
+            allDownloadData
+                .map(x => x.cycle)
+                .filter(
+                    x =>
+                        x !== null &&
+                        x !== undefined &&
+                        String(x).trim() !== ""
+                )
+                .map(x => String(x).trim())
+        )
+    ];
+
+    cycles.sort((a, b) =>
+        a.localeCompare(
+            b,
+            undefined,
+            {
+                numeric: true
+            }
+        )
+    );
+
+    cycles.forEach(cycle => {
+
+        ddl.append(`
+            <option value="${escapeHtml(cycle)}">
+                ${escapeHtml(cycle)}
+            </option>
+        `);
+
+    });
+}
 
 /* ============================================================
    DIVISION FILTER
@@ -357,16 +409,14 @@ function loadMeterMakeFilter() {
     });
 }
 
+   //FILTER EVENTS
 
-/* ============================================================
-   FILTER EVENTS
-   ============================================================ */
+$("#departmentFilter").on( "change", applyFilters);
 
-$("#departmentFilter").on(
+$("#cycleFilter").on(
     "change",
     applyFilters
 );
-
 $("#divisionFilter").on(
     "change",
     applyFilters
@@ -425,6 +475,8 @@ function clearFilters() {
 
     $("#departmentFilter").val("");
 
+    $("#cycleFilter").val("");
+
     $("#divisionFilter").val("");
 
     $("#reasonFilter").val("");
@@ -453,6 +505,10 @@ function applyFilters() {
         String(
             $("#departmentFilter").val() || ""
         ).trim().toUpperCase();
+
+    const cycle = String(
+        $("#cycleFilter").val() || ""
+    ).trim().toUpperCase();
 
     const division =
         String(
@@ -525,7 +581,20 @@ function applyFilters() {
                 department === "" ||
                 itemDepartment === department;
 
+            /* --------------------------------
+               CYCLE
+            -------------------------------- */
 
+            const itemCycle =
+                String(
+                    item.cycle || ""
+                )
+                    .trim()
+                    .toUpperCase();
+
+            const cycleMatch =
+                cycle === "" ||
+                itemCycle === cycle;
             /* --------------------------------
                DIVISION
             -------------------------------- */
@@ -668,6 +737,7 @@ function applyFilters() {
 
             return (
                 departmentMatch &&
+                cycleMatch &&
                 divisionMatch &&
                 reasonMatch &&
                 phaseMatch &&
@@ -875,94 +945,104 @@ function renderTable(data)
            13 Address
            ===================================================== */
 
+        /* =====================================================
+      TABLE ROW
+   
+      1  S.No.
+      2  Cons Ref
+      3  Meter Number
+      4  Phase
+      5  Department
+      6  Cycle
+      7  Division
+      8  Seq No
+      9  Meter Make
+      10 Failed Since
+      11 Total Failed Days
+      12 Status
+      13 Last Entry Date
+      14 Address
+      ===================================================== */
+
         tbody.append(`
-            <tr>
+    <tr>
 
-                <!-- 1. S.No. -->
-                <td class="text-center fw-semibold">
-                    ${index + 1}
-                </td>
+        <!-- 1. S.No. -->
+        <td class="text-center fw-semibold">
+            ${index + 1}
+        </td>
 
+        <!-- 2. Cons Ref -->
+        <td>
+            ${escapeHtml(x.consRef ?? "--")}
+        </td>
 
-                <!-- 2. Cons Ref -->
-                <td>
-                    ${escapeHtml(x.consRef ?? "--")}
-                </td>
+        <!-- 3. Meter Number -->
+        <td class="meter-number-cell">
+            ${escapeHtml(x.meterNumber ?? "--")}
+        </td>
 
+        <!-- 4. Phase -->
+        <td class="text-center">
+            ${escapeHtml(x.phase ?? "--")}
+        </td>
 
-                <!-- 3. Meter Number -->
-                <td class="meter-number-cell">
-                    ${escapeHtml(x.meterNumber ?? "--")}
-                </td>
+        <!-- 5. Department -->
+        <td>
+            ${escapeHtml(x.sapDepartment ?? "--")}
+        </td>
 
+        <!-- 6. Cycle -->
+        <td class="cycle-cell text-center">
+            ${escapeHtml(x.cycle ?? "--")}
+        </td>
 
-                <!-- 4. Phase -->
-                <td class="text-center">
-                    ${escapeHtml(x.phase ?? "--")}
-                </td>
+        <!-- 7. Division -->
+        <td>
+            ${escapeHtml(x.sapDivision ?? "--")}
+        </td>
 
+        <!-- 8. Seq No -->
+        <td class="text-center">
+            ${escapeHtml(x.sapSeqNo ?? "--")}
+        </td>
 
-                <!-- 5. Department -->
-                <td>
-                    ${escapeHtml(x.sapDepartment ?? "--")}
-                </td>
+        <!-- 9. Meter Make -->
+        <td class="meter-make-cell">
+            ${escapeHtml(x.meterType ?? "--")}
+        </td>
 
+        <!-- 10. Failed Since -->
+        <td class="${failedSinceClass} text-center">
+            ${escapeHtml(downloadFailedSince)}
+        </td>
 
-                <!-- 6. Division -->
-                <td>
-                    ${escapeHtml(x.sapDivision ?? "--")}
-                </td>
+        <!-- 11. Total Failed Days -->
+        <td class="${failedDaysClass} text-center">
+            ${escapeHtml(downloadFailedDays)}
+        </td>
 
-
-                <!-- 7. Seq No -->
-                <td class="text-center">
-                    ${escapeHtml(x.sapSeqNo ?? "--")}
-                </td>
-
-
-                <!-- 8. Meter Make -->
-                <td class="meter-make-cell">
-                    ${escapeHtml(x.meterType ?? "--")}
-                </td>
-
-
-                <!-- 9. Failed Since -->
-                <td class="${failedSinceClass} text-center">
-                    ${escapeHtml(downloadFailedSince)}
-                </td>
-
-
-                <!-- 10. Total Failed Days -->
-                <td class="${failedDaysClass} text-center">
-                    ${escapeHtml(downloadFailedDays)}
-                </td>
-
-
-                <!-- 11. Status -->
-                <td class="status-cell">
-
-                    <span class="download-status-badge ${badgeClass}">
-                        ${escapeHtml(
+        <!-- 12. Status -->
+        <td class="status-cell">
+            <span class="download-status-badge ${badgeClass}">
+                ${escapeHtml(
             x.schedulerMessage ?? "--"
         )}
-                    </span>
+            </span>
+        </td>
 
-                </td>
+        <!-- 13. Last Entry Date -->
+        <td class="entry-date-cell text-center">
+            ${escapeHtml(entryDate)}
+        </td>
 
+        <!-- 14. Address -->
+        <td class="address-cell">
+            ${escapeHtml(x.address ?? "--")}
+        </td>
 
-                <!-- 12. Last Entry Date -->
-                <td class="entry-date-cell text-center">
-                    ${escapeHtml(entryDate)}
-                </td>
-
-
-                <!-- 13. Address -->
-                <td class="address-cell">
-                    ${escapeHtml(x.address ?? "--")}
-                </td>
-
-            </tr>
-        `);
+    </tr>
+`);
 
     });
 }
@@ -971,22 +1051,39 @@ function renderTable(data)
 /* ============================================================
    EXPORT TO EXCEL
    ============================================================ */
-
 function exportTableToExcel() {
 
-    const table = document.getElementById("downloadSummaryTable");
+    const table =
+        document.getElementById(
+            "downloadSummaryTable"
+        );
 
     if (!table) {
-        console.error("Download summary table not found.");
+
+        console.error(
+            "Download summary table not found."
+        );
+
+        alert(
+            "Download summary table not found."
+        );
+
         return;
     }
 
 
-    const tbody = table.querySelector("tbody");
+    const tbody =
+        table.querySelector("tbody");
 
-    if (!tbody || tbody.rows.length === 0) {
 
-        alert("No data available to export.");
+    if (
+        !tbody ||
+        tbody.rows.length === 0
+    ) {
+
+        alert(
+            "No data available to export."
+        );
 
         return;
     }
@@ -1003,15 +1100,31 @@ function exportTableToExcel() {
             .includes("no records found")
     ) {
 
-        alert("No data available to export.");
+        alert(
+            "No data available to export."
+        );
 
         return;
     }
 
 
     /* =========================================================
-       EXCEL DATA
-       COLUMN ORDER MUST MATCH TABLE
+       EXPORT DATA
+       
+       1  S.No.
+       2  Cons Ref
+       3  Meter Number
+       4  Phase
+       5  Department
+       6  Cycle
+       7  Division
+       8  Seq No
+       9  Meter Make
+       10 Failed Since
+       11 Total Failed Days
+       12 Status
+       13 Last Entry Date
+       14 Address
        ========================================================= */
 
     const excelData = [];
@@ -1022,11 +1135,13 @@ function exportTableToExcel() {
        ========================================================= */
 
     excelData.push([
+
         "S.No.",
         "Cons Ref",
         "Meter Number",
         "Phase",
         "Department",
+        "Cycle",
         "Division",
         "Seq No",
         "Meter Make",
@@ -1035,6 +1150,7 @@ function exportTableToExcel() {
         "Status",
         "Last Entry Date",
         "Address"
+
     ]);
 
 
@@ -1042,58 +1158,54 @@ function exportTableToExcel() {
        BODY
        ========================================================= */
 
-    Array.from(tbody.rows).forEach((row) => {
+    Array.from(
+        tbody.rows
+    ).forEach(row => {
 
-        const cells = row.querySelectorAll("td");
+        const cells =
+            row.querySelectorAll("td");
 
-        if (cells.length < 13) {
+
+        if (
+            cells.length < 14
+        ) {
+
             return;
         }
 
 
         excelData.push([
 
-            /* 1. S.No. */
-            cells[0].innerText.trim(),
+            cells[0].innerText.trim(),   // S.No.
+            cells[1].innerText.trim(),   // Cons Ref
+            cells[2].innerText.trim(),   // Meter Number
+            cells[3].innerText.trim(),   // Phase
+            cells[4].innerText.trim(),   // Department
+            cells[5].innerText.trim(),   // Cycle
+            cells[6].innerText.trim(),   // Division
+            cells[7].innerText.trim(),   // Seq No
+            cells[8].innerText.trim(),   // Meter Make
+            cells[9].innerText.trim(),   // Failed Since
+            cells[10].innerText.trim(),  // Total Failed Days
+            cells[11].innerText.trim(),  // Status
+            cells[12].innerText.trim(),  // Last Entry Date
+            cells[13].innerText.trim()   // Address
 
-            /* 2. Cons Ref */
-            cells[1].innerText.trim(),
-
-            /* 3. Meter Number */
-            cells[2].innerText.trim(),
-
-            /* 4. Phase */
-            cells[3].innerText.trim(),
-
-            /* 5. Department */
-            cells[4].innerText.trim(),
-
-            /* 6. Division */
-            cells[5].innerText.trim(),
-
-            /* 7. Seq No */
-            cells[6].innerText.trim(),
-
-            /* 8. Meter Make */
-            cells[7].innerText.trim(),
-
-            /* 9. Failed Since */
-            cells[8].innerText.trim(),
-
-            /* 10. Total Failed Days */
-            cells[9].innerText.trim(),
-
-            /* 11. Status */
-            cells[10].innerText.trim(),
-
-            /* 12. Last Entry Date */
-            cells[11].innerText.trim(),
-
-            /* 13. Address */
-            cells[12].innerText.trim()
         ]);
 
     });
+
+
+    if (
+        excelData.length <= 1
+    ) {
+
+        alert(
+            "No data available to export."
+        );
+
+        return;
+    }
 
 
     /* =========================================================
@@ -1101,7 +1213,9 @@ function exportTableToExcel() {
        ========================================================= */
 
     const worksheet =
-        XLSX.utils.aoa_to_sheet(excelData);
+        XLSX.utils.aoa_to_sheet(
+            excelData
+        );
 
 
     /* =========================================================
@@ -1110,133 +1224,228 @@ function exportTableToExcel() {
 
     worksheet["!cols"] = [
 
-        { wch: 7 },      // S.No.
+        { wch: 8 },      // S.No.
         { wch: 18 },     // Cons Ref
         { wch: 20 },     // Meter Number
         { wch: 10 },     // Phase
         { wch: 18 },     // Department
+        { wch: 12 },     // Cycle
         { wch: 18 },     // Division
         { wch: 10 },     // Seq No
         { wch: 18 },     // Meter Make
-        { wch: 16 },     // Failed Since
+        { wch: 18 },     // Failed Since
         { wch: 20 },     // Total Failed Days
         { wch: 40 },     // Status
         { wch: 22 },     // Last Entry Date
-        { wch: 45 }      // Address
+        { wch: 50 }      // Address
 
     ];
+
+
+    /* =========================================================
+       COMMON BORDER
+       ========================================================= */
+
+    const thinBorder = {
+
+        top: {
+            style: "thin",
+            color: {
+                rgb: "000000"
+            }
+        },
+
+        bottom: {
+            style: "thin",
+            color: {
+                rgb: "000000"
+            }
+        },
+
+        left: {
+            style: "thin",
+            color: {
+                rgb: "000000"
+            }
+        },
+
+        right: {
+            style: "thin",
+            color: {
+                rgb: "000000"
+            }
+        }
+
+    };
 
 
     /* =========================================================
        HEADER STYLE
        ========================================================= */
 
-    const headerRange =
-        XLSX.utils.decode_range(
-            worksheet["!ref"]
-        );
+    const headerStyle = {
 
+        font: {
+            bold: true,
+            color: {
+                rgb: "FFFFFF"
+            },
+            sz: 11
+        },
+
+        fill: {
+            patternType: "solid",
+            fgColor: {
+                rgb: "1F4E78"
+            }
+        },
+
+        alignment: {
+            horizontal: "center",
+            vertical: "center",
+            wrapText: true
+        },
+
+        border: thinBorder
+
+    };
+
+
+    /* =========================================================
+       NORMAL BODY STYLE
+       ========================================================= */
+
+    const bodyStyle = {
+
+        font: {
+            color: {
+                rgb: "000000"
+            },
+            sz: 10
+        },
+
+        alignment: {
+            vertical: "top",
+            wrapText: true
+        },
+
+        border: thinBorder
+
+    };
+
+
+    /* =========================================================
+       CENTER STYLE
+       ========================================================= */
+
+    const centerBodyStyle = {
+
+        font: {
+            color: {
+                rgb: "000000"
+            },
+            sz: 10
+        },
+
+        alignment: {
+            horizontal: "center",
+            vertical: "center",
+            wrapText: true
+        },
+
+        border: thinBorder
+
+    };
+
+
+    /* =========================================================
+       RED FAILED DAYS STYLE
+       
+       APPLIED WHEN TOTAL FAILED DAYS > 5
+       ========================================================= */
+
+    const failedDaysRedStyle = {
+
+        font: {
+            bold: true,
+            color: {
+                rgb: "FF0000"
+            },
+            sz: 10
+        },
+
+        fill: {
+            patternType: "solid",
+            fgColor: {
+                rgb: "FFC7CE"
+            }
+        },
+
+        alignment: {
+            horizontal: "center",
+            vertical: "center",
+            wrapText: true
+        },
+
+        border: thinBorder
+
+    };
+
+
+    /* =========================================================
+       APPLY HEADER STYLE
+       ========================================================= */
 
     for (
-        let col = headerRange.s.c;
-        col <= headerRange.e.c;
+        let col = 0;
+        col < 14;
         col++
     ) {
 
-        const cellAddress =
+        const address =
             XLSX.utils.encode_cell({
                 r: 0,
                 c: col
             });
 
-        const cell =
-            worksheet[cellAddress];
 
+        if (
+            worksheet[address]
+        ) {
 
-        if (!cell) {
-            continue;
+            worksheet[address].s =
+                headerStyle;
+
         }
 
-
-        cell.s = {
-
-            font: {
-                bold: true,
-                color: {
-                    rgb: "FFFFFF"
-                }
-            },
-
-            fill: {
-                fgColor: {
-                    rgb: "1F4E78"
-                }
-            },
-
-            alignment: {
-                horizontal: "center",
-                vertical: "center",
-                wrapText: true
-            },
-
-            border: {
-
-                top: {
-                    style: "thin",
-                    color: {
-                        rgb: "000000"
-                    }
-                },
-
-                bottom: {
-                    style: "thin",
-                    color: {
-                        rgb: "000000"
-                    }
-                },
-
-                left: {
-                    style: "thin",
-                    color: {
-                        rgb: "000000"
-                    }
-                },
-
-                right: {
-                    style: "thin",
-                    color: {
-                        rgb: "000000"
-                    }
-                }
-            }
-        };
     }
 
 
     /* =========================================================
-       BODY STYLE
+       APPLY BODY STYLE
        ========================================================= */
 
     for (
         let row = 1;
-        row <= headerRange.e.r;
+        row < excelData.length;
         row++
     ) {
 
         for (
             let col = 0;
-            col <= headerRange.e.c;
+            col < 14;
             col++
         ) {
 
-            const cellAddress =
+            const address =
                 XLSX.utils.encode_cell({
                     r: row,
                     c: col
                 });
 
+
             const cell =
-                worksheet[cellAddress];
+                worksheet[address];
 
 
             if (!cell) {
@@ -1244,66 +1453,137 @@ function exportTableToExcel() {
             }
 
 
-            cell.s = {
+            /* =================================================
+               CENTER COLUMNS
 
-                alignment: {
-                    vertical: "top",
-                    wrapText: true
-                },
-
-                border: {
-
-                    top: {
-                        style: "thin",
-                        color: {
-                            rgb: "D9D9D9"
-                        }
-                    },
-
-                    bottom: {
-                        style: "thin",
-                        color: {
-                            rgb: "D9D9D9"
-                        }
-                    },
-
-                    left: {
-                        style: "thin",
-                        color: {
-                            rgb: "D9D9D9"
-                        }
-                    },
-
-                    right: {
-                        style: "thin",
-                        color: {
-                            rgb: "D9D9D9"
-                        }
-                    }
-                }
-            };
-
-
-            /* Center specific columns */
+               0  S.No.
+               3  Phase
+               5  Cycle
+               7  Seq No
+               9  Failed Since
+               10 Failed Days
+               12 Last Entry Date
+               ================================================= */
 
             if (
                 col === 0 ||
                 col === 3 ||
-                col === 6 ||
-                col === 8 ||
+                col === 5 ||
+                col === 7 ||
                 col === 9 ||
-                col === 11
+                col === 10 ||
+                col === 12
             ) {
 
-                cell.s.alignment.horizontal =
-                    "center";
+                cell.s =
+                    centerBodyStyle;
+
             }
+            else {
+
+                cell.s =
+                    bodyStyle;
+
+            }
+
+
+            /* =================================================
+               TOTAL FAILED DAYS
+
+               Column index = 10
+
+               If > 5:
+               - RED FONT
+               - LIGHT RED BACKGROUND
+               - BOLD
+               - ALL BORDERS
+               ================================================= */
+
+            if (
+                col === 10
+            ) {
+
+                const rawValue =
+                    excelData[row][10];
+
+
+                const failedDays =
+                    parseInt(
+                        String(
+                            rawValue
+                        )
+                            .replace(
+                                /[^0-9-]/g,
+                                ""
+                            ),
+                        10
+                    );
+
+
+                if (
+                    !isNaN(failedDays) &&
+                    failedDays > 5
+                ) {
+
+                    cell.s =
+                        failedDaysRedStyle;
+
+                }
+
+            }
+
         }
+
     }
 
 
     /* =========================================================
-       WORKBOOK
+       ROW HEIGHT
+       ========================================================= */
+
+    worksheet["!rows"] = [];
+
+
+    worksheet["!rows"][0] = {
+        hpt: 25
+    };
+
+
+    for (
+        let row = 1;
+        row < excelData.length;
+        row++
+    ) {
+
+        worksheet["!rows"][row] = {
+            hpt: 22
+        };
+
+    }
+
+
+    /* =========================================================
+       AUTOFILTER
+       ========================================================= */
+
+    worksheet["!autofilter"] = {
+        ref:
+            `A1:N${excelData.length}`
+    };
+
+
+    /* =========================================================
+       FREEZE HEADER ROW
+       ========================================================= */
+
+    worksheet["!freeze"] = {
+        xSplit: 0,
+        ySplit: 1
+    };
+
+
+    /* =========================================================
+       CREATE WORKBOOK
        ========================================================= */
 
     const workbook =
@@ -1317,32 +1597,63 @@ function exportTableToExcel() {
     );
 
 
-    worksheet["!freeze"] = {
-        xSplit: 0,
-        ySplit: 1
-    };
-
-
     /* =========================================================
-       DOWNLOAD
+       FILE NAME
        ========================================================= */
 
     const now =
         new Date();
 
+
     const timestamp =
+
         now.getFullYear() +
-        String(now.getMonth() + 1).padStart(2, "0") +
-        String(now.getDate()).padStart(2, "0") +
+
+        String(
+            now.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        ) +
+
+        String(
+            now.getDate()
+        ).padStart(
+            2,
+            "0"
+        ) +
+
         "_" +
-        String(now.getHours()).padStart(2, "0") +
-        String(now.getMinutes()).padStart(2, "0") +
-        String(now.getSeconds()).padStart(2, "0");
+
+        String(
+            now.getHours()
+        ).padStart(
+            2,
+            "0"
+        ) +
+
+        String(
+            now.getMinutes()
+        ).padStart(
+            2,
+            "0"
+        ) +
+
+        String(
+            now.getSeconds()
+        ).padStart(
+            2,
+            "0"
+        );
 
 
     const fileName =
         `Download_Failed_Summary_${timestamp}.xlsx`;
 
+
+    /* =========================================================
+       WRITE FILE
+       ========================================================= */
 
     XLSX.writeFile(
         workbook,
