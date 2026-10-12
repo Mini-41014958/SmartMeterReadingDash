@@ -2,11 +2,8 @@
 let filteredData = [];
 
 
-/* ============================================================
-   OPEN DOWNLOAD SUMMARY MODAL
-   ============================================================ */
-
-$("#btnViewDownloadDetails").on("click", function () {
+$("#btnViewDownloadDetails").on("click", function ()
+{
 
     const modal = new bootstrap.Modal(
         document.getElementById("downloadSummaryModal")
@@ -18,11 +15,8 @@ $("#btnViewDownloadDetails").on("click", function () {
 });
 
 
-/* ============================================================
-   LOAD DOWNLOAD SUMMARY
-   ============================================================ */
-
-async function loadDownloadSummary() {
+async function loadDownloadSummary()
+{
 
     try {
 
@@ -37,39 +31,25 @@ async function loadDownloadSummary() {
 
         const readingMonth = getReadingMonth();
 
-        const apiUrl =
-            `${getApiUrl("dashboardapi/meter-download-detailed-summary")}` +
-            `?readingMonth=${encodeURIComponent(readingMonth)}`;
+        const apiUrl = `${getApiUrl("dashboardapi/meter-download-detailed-summary")}` +  `?readingMonth=${encodeURIComponent(readingMonth)}`;
 
         const response = await fetch(apiUrl);
 
         const title = document.getElementById("currentMonth");
         title.textContent = ` ${readingMonth}`;
-        if (!response.ok) {
+
+        if (!response.ok)
+        {
 
             const errorText = await response.text();
+            console.error(  "API Error:", response.status,  errorText );
 
-            console.error(
-                "API Error:",
-                response.status,
-                errorText
-            );
-
-            throw new Error(
-                `Unable to load data (${response.status})`
-            );
+            throw new Error( `Unable to load data (${response.status})`);
         }
 
         const result = await response.json();
-
-        allDownloadData = Array.isArray(result)
-            ? result
-            : [];
-
+        allDownloadData = Array.isArray(result)  ? result : [];
         filteredData = [...allDownloadData];
-
-
-        /* LOAD FILTERS */
 
         loadDepartmentFilter();
         loadCycleFilter();
@@ -77,77 +57,50 @@ async function loadDownloadSummary() {
         loadReasonFilter();
         loadPhaseFilter();
         loadMeterMakeFilter();
-
-
-        /* RESET FILTER VALUES */
-
         clearFilters();
-
-
-        /* RENDER */
 
         renderTable(filteredData);
 
     }
-    catch (err) {
-
-        console.error(
-            "loadDownloadSummary error:",
-            err
-        );
+    catch (err)
+    {
+        console.error( "loadDownloadSummary error:",  err );
 
         $("#downloadSummaryBody").html(`
             <tr>
                 <td colspan="13"
                     class="text-center text-danger py-4">
-
                     Failed to load data.
-
                     <br>
 
-                    Error:
-                    ${escapeHtml(err.message)}
+                    Error: ${escapeHtml(err.message)}
 
                 </td>
             </tr>
         `);
     }
 }
-
-
-/* ============================================================
-   DEPARTMENT FILTER
-   ============================================================ */
-
-function loadDepartmentFilter() {
+function loadDepartmentFilter()
+{
 
     const ddl = $("#departmentFilter");
-
     ddl.empty();
-
     ddl.append(`
         <option value="">
             All Departments
         </option>
     `);
-
     const departments = [
         ...new Set(
             allDownloadData
                 .map(x => x.sapDepartment)
-                .filter(
-                    x =>
-                        x !== null &&
-                        x !== undefined &&
-                        String(x).trim() !== ""
-                )
-                .map(x => String(x).trim())
+                .filter (
+                    x => x !== null &&  x !== undefined && String(x).trim() !== ""
+                ) .map(x => String(x).trim())
         )
     ];
 
-    departments.sort((a, b) =>
-        a.localeCompare(
-            b,
+    departments.sort((a, b) => a.localeCompare( b,
             undefined,
             {
                 numeric: true
@@ -155,7 +108,8 @@ function loadDepartmentFilter() {
         )
     );
 
-    departments.forEach(department => {
+    departments.forEach(department =>
+    {
 
         ddl.append(`
             <option value="${escapeHtml(department)}">
@@ -167,121 +121,73 @@ function loadDepartmentFilter() {
 }
 
 
-function loadCycleFilter() {
+function loadCycleFilter()
+{
 
     const ddl = $("#cycleFilter");
 
-    /*
-     * Save currently selected cycle
-     * BEFORE clearing dropdown.
-     */
-    const previousCycle =
-        String(
-            ddl.val() || ""
-        )
-            .trim()
-            .toUpperCase();
+    if (!ddl.length)
+    {
+        return;
+    }
 
+    const previousCycle = String( ddl.val() || "")
+        .trim()
+        .toUpperCase();
 
-    /*
-     * Get selected department
-     */
-    const selectedDepartment =
-        String(
-            $("#departmentFilter").val() || ""
-        )
-            .trim()
-            .toUpperCase();
+    const selectedDivision = String($("#divisionFilter").val() || "" )
+        .trim()
+        .toUpperCase();
 
-
-    /*
-     * Clear dropdown
-     */
     ddl.empty();
 
-
-    /*
-     * Default option
-     */
     ddl.append(`
         <option value="">
             All Cycles
         </option>
     `);
 
-
-    /*
-     * Start with all records
-     */
     let sourceData = allDownloadData;
 
+    if (selectedDivision !== "")
+    {
 
-    /*
-     * Department-dependent cycles
-     *
-     * Example:
-     * SLCC -> only SLCC cycles
-     * MLCC -> only MLCC cycles
-     * GCC  -> only GCC cycles
-     * KCC  -> only KCC cycles
-     */
-    if (selectedDepartment !== "") {
+        sourceData = allDownloadData.filter(item =>
+        {
 
-        sourceData =
-            allDownloadData.filter(item => {
+            const itemDivision = String( item.sapDivision || "" )
+                .trim()
+                .toUpperCase();
 
-                const itemDepartment =
-                    String(
-                        item.sapDepartment || ""
-                    )
-                        .trim()
-                        .toUpperCase();
-
-                return (
-                    itemDepartment ===
-                    selectedDepartment
-                );
-            });
+            return itemDivision === selectedDivision;
+        });
     }
 
-
-    /*
-     * Get unique cycles
-     */
     const cycles = [
         ...new Set(
             sourceData
-                .map(item =>
-                    String(
-                        item.cycle || ""
-                    ).trim()
-                )
-                .filter(Boolean)
+                .map(item => String(item.cycle || "")
+                        .trim()
+                        .toUpperCase()
+                ) .filter(Boolean)
         )
     ];
 
-
-    /*
-     * Sort cycles numerically
-     */
-    cycles.sort((a, b) =>
-        a.localeCompare(
+    cycles.sort((a, b) => a.localeCompare(
             b,
             undefined,
             {
-                numeric: true
+                numeric: true,
+                sensitivity: "base"
             }
         )
     );
 
+    cycles.forEach(cycle =>
+    {
 
-    /*
-     * Populate cycle dropdown
-     */
-    cycles.forEach(cycle => {
-
-        ddl.append(
-            $("<option>", {
+        ddl.append($("<option>",
+            {
                 value: cycle,
                 text: cycle
             })
@@ -289,51 +195,27 @@ function loadCycleFilter() {
 
     });
 
-
-    /*
-     * Restore previous cycle ONLY if it
-     * belongs to the selected department.
-     */
-    if (
-        previousCycle !== "" &&
-        cycles.some(
-            cycle =>
-                String(cycle)
-                    .trim()
-                    .toUpperCase() ===
-                previousCycle
-        )
-    ) {
-
+    if (previousCycle !== "" && cycles.includes(previousCycle))
+    {
         ddl.val(previousCycle);
-
     }
-    else {
-
-        /*
-         * Previous cycle does not belong
-         * to selected department.
-         */
+    else
+    {
         ddl.val("");
     }
 }
 
-/* ============================================================
-   DIVISION FILTER
-   ============================================================ */
 
-function loadDivisionFilter() {
+function loadDivisionFilter()
+{
 
     const ddl = $("#divisionFilter");
-
     ddl.empty();
-
     ddl.append(`
         <option value="">
             All Divisions
         </option>
     `);
-
     const divisions = [
         ...new Set(
             allDownloadData
@@ -348,9 +230,7 @@ function loadDivisionFilter() {
         )
     ];
 
-    divisions.sort((a, b) =>
-        a.localeCompare(
-            b,
+    divisions.sort((a, b) => a.localeCompare(b,
             undefined,
             {
                 numeric: true
@@ -369,12 +249,8 @@ function loadDivisionFilter() {
     });
 }
 
-
-/* ============================================================
-   REASON FILTER
-   ============================================================ */
-
-function loadReasonFilter() {
+function loadReasonFilter()
+{
 
     const ddl = $("#reasonFilter");
 
@@ -407,12 +283,8 @@ function loadReasonFilter() {
     `);
 }
 
-
-/* ============================================================
-   PHASE FILTER
-   ============================================================ */
-
-function loadPhaseFilter() {
+function loadPhaseFilter()
+{
 
     const ddl = $("#phaseFilter");
 
@@ -460,11 +332,8 @@ function loadPhaseFilter() {
 }
 
 
-/* ============================================================
-   METER MAKE FILTER
-   ============================================================ */
-
-function loadMeterMakeFilter() {
+function loadMeterMakeFilter()
+{
 
     const ddl = $("#meterMakeFilter");
 
@@ -490,9 +359,7 @@ function loadMeterMakeFilter() {
         )
     ];
 
-    meterMakes.sort((a, b) =>
-        a.localeCompare(
-            b,
+    meterMakes.sort((a, b) => a.localeCompare(  b,
             undefined,
             {
                 numeric: true
@@ -500,7 +367,8 @@ function loadMeterMakeFilter() {
         )
     );
 
-    meterMakes.forEach(make => {
+    meterMakes.forEach(make =>
+    {
 
         ddl.append(`
             <option value="${escapeHtml(make)}">
@@ -514,76 +382,48 @@ function loadMeterMakeFilter() {
    //FILTER EVENTS
 $("#departmentFilter").on("change", function ()
 {
-
-        loadCycleFilter();
+    loadCycleFilter();
     applyFilters();
 });
 
-$("#cycleFilter").on(
-    "change",
-    applyFilters
-);
-$("#divisionFilter").on(
-    "change",
-    applyFilters
-);
+$("#cycleFilter").on("change", applyFilters);
 
-$("#reasonFilter").on(
-    "change",
-    applyFilters
-);
+$("#divisionFilter").on("change", function ()
+{
+    loadCycleFilter();
+    applyFilters();
+});
 
-$("#phaseFilter").on(
-    "change",
-    applyFilters
-);
+$("#reasonFilter").on( "change", applyFilters);
 
-$("#meterMakeFilter").on(
-    "change",
-    applyFilters
-);
+$("#phaseFilter").on( "change", applyFilters);
 
-$("#entryDateFrom").on(
-    "change",
-    applyFilters
-);
+$("#meterMakeFilter").on( "change", applyFilters);
 
-$("#entryDateTo").on(
-    "change",
-    applyFilters
-);
+$("#entryDateFrom").on( "change", applyFilters);
+
+$("#entryDateTo").on( "change", applyFilters);
 
 
-/* ============================================================
-   CLEAR FILTER BUTTON
-   ============================================================ */
-
-$("#btnClearDownloadFilters").on(
-    "click",
-    function () {
-
+$("#btnClearDownloadFilters").on("click", function ()
+{
         clearFilters();
-
         filteredData = [
             ...allDownloadData
         ];
-
         renderTable(filteredData);
     }
 );
 
 
-/* ============================================================
-   CLEAR FILTERS
-   ============================================================ */
-
-function clearFilters() {
+function clearFilters()
+{
 
     $("#departmentFilter").val("");
 
-    $("#cycleFilter").val("");
-
     $("#divisionFilter").val("");
+
+    $("#cycleFilter").val("");
 
     $("#reasonFilter").val("");
 
@@ -595,65 +435,34 @@ function clearFilters() {
 
     $("#entryDateTo").val("");
 
-    $("#entryDateTo").removeClass(
-        "is-invalid"
-    );
+    $("#entryDateTo").removeClass("is-invalid");
+
+    loadCycleFilter();
 }
 
+function applyFilters()
+ {
 
-/* ============================================================
-   APPLY FILTERS
-   ============================================================ */
+    const department = String( $("#departmentFilter").val() || "" ).trim().toUpperCase();
 
-function applyFilters() {
+    const cycle = String( $("#cycleFilter").val() || "" ).trim().toUpperCase();
 
-    const department =
-        String(
-            $("#departmentFilter").val() || ""
-        ).trim().toUpperCase();
+    const division = String(  $("#divisionFilter").val() || "" ).trim().toUpperCase();
 
-    const cycle = String(
-        $("#cycleFilter").val() || ""
-    ).trim().toUpperCase();
+    const reason = String( $("#reasonFilter").val() || "" ).trim().toUpperCase();
 
-    const division =
-        String(
-            $("#divisionFilter").val() || ""
-        ).trim().toUpperCase();
+    const phase = String( $("#phaseFilter").val() || "" ).trim().toUpperCase();
 
-    const reason =
-        String(
-            $("#reasonFilter").val() || ""
-        ).trim().toUpperCase();
+    const meterMake = String( $("#meterMakeFilter").val() || "" ).trim().toUpperCase();
 
-    const phase =
-        String(
-            $("#phaseFilter").val() || ""
-        ).trim().toUpperCase();
+    const dateFrom = $("#entryDateFrom").val();
 
-    const meterMake =
-        String(
-            $("#meterMakeFilter").val() || ""
-        ).trim().toUpperCase();
+    const dateTo = $("#entryDateTo").val();
 
-    const dateFrom =
-        $("#entryDateFrom").val();
+    if (dateFrom && dateTo && dateFrom > dateTo)
+    {
 
-    const dateTo =
-        $("#entryDateTo").val();
-
-
-    /* DATE VALIDATION */
-
-    if (
-        dateFrom &&
-        dateTo &&
-        dateFrom > dateTo
-    ) {
-
-        $("#entryDateTo").addClass(
-            "is-invalid"
-        );
+        $("#entryDateTo").addClass(  "is-invalid");
 
         filteredData = [];
 
@@ -662,201 +471,123 @@ function applyFilters() {
         return;
     }
 
-    $("#entryDateTo").removeClass(
-        "is-invalid"
-    );
+    $("#entryDateTo").removeClass(  "is-invalid" );
 
 
-    /* FILTER DATA */
+    filteredData = allDownloadData.filter(item =>
+    {
 
-    filteredData = allDownloadData.filter(
-        item => {
+               // DEPARTMENT
 
-            /* --------------------------------
-               DEPARTMENT
-            -------------------------------- */
-
-            const itemDepartment =
-                String(
-                    item.sapDepartment || ""
-                )
+            const itemDepartment = String(  item.sapDepartment || "" )
                     .trim()
                     .toUpperCase();
 
-            const departmentMatch =
-                department === "" ||
-                itemDepartment === department;
+            const departmentMatch =  department === "" || itemDepartment === department;
 
-            /* --------------------------------
-               CYCLE
-            -------------------------------- */
+               // CYCLE
 
-            const itemCycle =
-                String(
-                    item.cycle || ""
-                )
+            const itemCycle = String( item.cycle || "")
                     .trim()
                     .toUpperCase();
 
-            const cycleMatch =
-                cycle === "" ||
-                itemCycle === cycle;
-            /* --------------------------------
-               DIVISION
-            -------------------------------- */
+            const cycleMatch = cycle === "" || itemCycle === cycle;
 
-            const itemDivision =
-                String(
-                    item.sapDivision || ""
-                )
+               // DIVISION
+
+
+            const itemDivision =  String( item.sapDivision || "")
                     .trim()
                     .toUpperCase();
 
-            const divisionMatch =
-                division === "" ||
-                itemDivision === division;
+            const divisionMatch = division === "" || itemDivision === division;
+
+               // FAILED REASON
 
 
-            /* --------------------------------
-               FAILED REASON
-            -------------------------------- */
-
-            const message =
-                String(
-                    item.schedulerMessage || ""
-                )
+            const message = String( item.schedulerMessage || "" )
                     .trim()
                     .toUpperCase();
 
             let reasonMatch = true;
 
-            if (reason !== "") {
+            if (reason !== "")
+            {
 
-                if (reason === "OTHER") {
-
-                    reasonMatch =
-                        !message.includes("SYSTEM TITLE") &&
-                        !message.includes("TCP") &&
-                        !message.includes("NO DATA") &&
-                        !message.includes("TIMEOUT");
-
+                if (reason === "OTHER")
+                {
+                        reasonMatch =  !message.includes("SYSTEM TITLE") && !message.includes("TCP") &&  !message.includes("NO DATA") && !message.includes("TIMEOUT");
                 }
-                else {
-
-                    reasonMatch =
-                        message.includes(reason);
-
+                else
+                {
+                        reasonMatch =  message.includes(reason);
                 }
             }
 
+               // PHASE
 
-            /* --------------------------------
-               PHASE
-            -------------------------------- */
-
-            const itemPhase =
-                String(
-                    item.phase || ""
-                )
+            const itemPhase = String( item.phase || ""  )
                     .trim()
                     .toUpperCase();
 
-            const phaseMatch =
-                phase === "" ||
-                itemPhase === phase;
+            const phaseMatch = phase === "" || itemPhase === phase;
 
 
-            /* --------------------------------
-               METER MAKE
-            -------------------------------- */
+               // METER MAKE
 
-            const itemMeterMake =
-                String(
-                    item.meterType || ""
-                )
+            const itemMeterMake = String(item.meterType || "" )
                     .trim()
                     .toUpperCase();
 
-            const meterMakeMatch =
-                meterMake === "" ||
-                itemMeterMake === meterMake;
+            const meterMakeMatch = meterMake === "" || itemMeterMake === meterMake;
 
+               // ENTRY DATE
 
-            /* --------------------------------
-               ENTRY DATE
-            -------------------------------- */
 
             let dateMatch = true;
 
-            if (
-                dateFrom ||
-                dateTo
-            ) {
+        if (dateFrom || dateTo)
+        {
 
-                if (!item.entryDate) {
-
+            if (!item.entryDate)
+            {
                     dateMatch = false;
+            }
+            else
+            {
 
-                }
-                else {
+                const entryDate = new Date(  item.entryDate);
 
-                    const entryDate =
-                        new Date(
-                            item.entryDate
-                        );
-
-                    if (
-                        isNaN(
-                            entryDate.getTime()
-                        )
-                    ) {
-
+                if (isNaN(entryDate.getTime()))
+                {
                         dateMatch = false;
+                }
+                else
+                {
 
-                    }
-                    else {
+                     const entryDateString = formatDateForFilter( item.entryDate );
 
-                        const entryDateString =
-                            formatDateForFilter(
-                                item.entryDate
-                            );
-
-                        if (
-                            dateFrom &&
-                            entryDateString < dateFrom
-                        ) {
+                    if (dateFrom && entryDateString < dateFrom)
+                    {
 
                             dateMatch = false;
-                        }
+                    }
 
-                        if (
-                            dateTo &&
-                            entryDateString > dateTo
-                        ) {
+                    if (dateTo && entryDateString > dateTo)
+                    {
 
                             dateMatch = false;
-                        }
-                    }
+                     }
                 }
             }
+        }
 
 
-            return (
-                departmentMatch &&
-                cycleMatch &&
-                divisionMatch &&
-                reasonMatch &&
-                phaseMatch &&
-                meterMakeMatch &&
-                dateMatch
-            );
+            return ( departmentMatch &&  cycleMatch &&  divisionMatch && reasonMatch && phaseMatch &&  meterMakeMatch &&  dateMatch );
         }
     );
 
-
-    renderTable(
-        filteredData
-    );
+    renderTable( filteredData );
 }
 
 
@@ -867,12 +598,8 @@ function renderTable(data)
 
     tbody.empty();
 
-
-    /* =========================================================
-       NO DATA
-       ========================================================= */
-
-    if (!data || data.length === 0) {
+    if (!data || data.length === 0)
+    {
 
         tbody.html(`
             <tr>
@@ -889,137 +616,85 @@ function renderTable(data)
         return;
     }
 
-
-    /* =========================================================
-       RENDER ROWS
-       ========================================================= */
-
-    data.forEach((x, index) => {
-
-
-        /* =====================================================
-           FAILED SINCE
-           ===================================================== */
+    data.forEach((x, index) =>
+    {
 
         let downloadFailedSince = "--";
 
         if (x.downloadFailedSince) {
 
-            const failedSinceDate =
-                new Date(x.downloadFailedSince);
+            const failedSinceDate =  new Date(x.downloadFailedSince);
 
-            if (!isNaN(failedSinceDate.getTime())) {
+            if (!isNaN(failedSinceDate.getTime()))
+            {
 
-                downloadFailedSince =
-                    failedSinceDate.toLocaleDateString(
-                        "en-GB"
-                    );
+                downloadFailedSince =  failedSinceDate.toLocaleDateString(  "en-GB");
             }
         }
 
-
-        /* =====================================================
-           TOTAL FAILED DAYS
-           ===================================================== */
-
         let downloadFailedDays = "--";
 
-        if (
-            x.downloadFailedDays !== null &&
-            x.downloadFailedDays !== undefined &&
-            String(x.downloadFailedDays).trim() !== ""
-        ) {
+        if (x.downloadFailedDays !== null && x.downloadFailedDays !== undefined && String(x.downloadFailedDays).trim() !== "")
+        {
 
-            const numericDays =
-                Number(x.downloadFailedDays);
+            const numericDays = Number(x.downloadFailedDays);
 
-            downloadFailedDays =
-                isNaN(numericDays)
+            downloadFailedDays =  isNaN(numericDays)
                     ? String(x.downloadFailedDays)
                     : numericDays;
         }
 
+        const failedDaysNumber = Number(x.downloadFailedDays);
 
-        /* =====================================================
-           FAILED DAYS NUMBER
-           ===================================================== */
+        const isMoreThan5Days =  !isNaN(failedDaysNumber) && failedDaysNumber > 5;
 
-        const failedDaysNumber =
-            Number(x.downloadFailedDays);
+        const failedSinceClass = isMoreThan5Days  ? "download-failed-danger" : "download-failed-normal";
 
-        const isMoreThan5Days =
-            !isNaN(failedDaysNumber) &&
-            failedDaysNumber > 5;
+        const failedDaysClass =  isMoreThan5Days ? "download-failed-danger" : "download-failed-normal";
 
 
-        /* =====================================================
-           FAILED SINCE / FAILED DAYS CLASS
-           ===================================================== */
-
-        const failedSinceClass =
-            isMoreThan5Days
-                ? "download-failed-danger"
-                : "download-failed-normal";
-
-        const failedDaysClass =
-            isMoreThan5Days
-                ? "download-failed-danger"
-                : "download-failed-normal";
-
-
-        /* =====================================================
-           STATUS
-           ===================================================== */
-
-        const message =
-            String(x.schedulerMessage || "")
+        const message = String(x.schedulerMessage || "")
                 .trim()
                 .toUpperCase();
 
-        let badgeClass =
-            "download-status-other";
+        let badgeClass =  "download-status-other";
 
 
-        if (message.includes("SYSTEM TITLE")) {
+        if (message.includes("SYSTEM TITLE"))
+        {
 
-            badgeClass =
-                "download-status-system";
-
-        }
-        else if (message.includes("TCP")) {
-
-            badgeClass =
-                "download-status-tcp";
+            badgeClass = "download-status-system";
 
         }
-        else if (message.includes("NO DATA")) {
+        else if (message.includes("TCP"))
+        {
 
-            badgeClass =
-                "download-status-nodata";
+            badgeClass = "download-status-tcp";
 
         }
-        else if (message.includes("TIMEOUT")) {
+        else if (message.includes("NO DATA"))
+        {
 
-            badgeClass =
-                "download-status-timeout";
+            badgeClass = "download-status-nodata";
+
         }
+        else if (message.includes("TIMEOUT"))
+        {
 
-
-        /* =====================================================
-           LAST ENTRY DATE
-           ===================================================== */
+            badgeClass = "download-status-timeout";
+        }
 
         let entryDate = "--";
 
-        if (x.entryDate) {
+        if (x.entryDate)
+        {
 
-            const parsedDate =
-                new Date(x.entryDate);
+            const parsedDate =  new Date(x.entryDate);
 
-            if (!isNaN(parsedDate.getTime())) {
+            if (!isNaN(parsedDate.getTime()))
+            {
 
-                entryDate =
-                    parsedDate.toLocaleString(
+                entryDate = parsedDate.toLocaleString(
                         "en-GB",
                         {
                             day: "2-digit",
@@ -1031,44 +706,6 @@ function renderTable(data)
                     );
             }
         }
-
-
-        /* =====================================================
-           TABLE ROW
-
-           1  S.No.
-           2  Cons Ref
-           3  Meter Number
-           4  Phase
-           5  Department
-           6  Division
-           7  Seq No
-           8  Meter Make
-           9  Failed Since
-           10 Total Failed Days
-           11 Status
-           12 Last Entry Date
-           13 Address
-           ===================================================== */
-
-        /* =====================================================
-      TABLE ROW
-   
-      1  S.No.
-      2  Cons Ref
-      3  Meter Number
-      4  Phase
-      5  Department
-      6  Cycle
-      7  Division
-      8  Seq No
-      9  Meter Make
-      10 Failed Since
-      11 Total Failed Days
-      12 Status
-      13 Last Entry Date
-      14 Address
-      ===================================================== */
 
         tbody.append(`
     <tr>
@@ -1131,9 +768,7 @@ function renderTable(data)
         <!-- 12. Status -->
         <td class="status-cell">
             <span class="download-status-badge ${badgeClass}">
-                ${escapeHtml(
-            x.schedulerMessage ?? "--"
-        )}
+                ${escapeHtml(   x.schedulerMessage ?? "--"  )}
             </span>
         </td>
 
@@ -1153,92 +788,43 @@ function renderTable(data)
     });
 }
 
+// Export to Excel
+function exportTableToExcel()
+{
 
-/* ============================================================
-   EXPORT TO EXCEL
-   ============================================================ */
-function exportTableToExcel() {
+    const table = document.getElementById( "downloadSummaryTable");
 
-    const table =
-        document.getElementById(
-            "downloadSummaryTable"
-        );
+    if (!table)
+    {
 
-    if (!table) {
+        console.error("Download summary table not found." );
 
-        console.error(
-            "Download summary table not found."
-        );
-
-        alert(
-            "Download summary table not found."
-        );
+        alert( "Download summary table not found.");
 
         return;
     }
 
 
-    const tbody =
-        table.querySelector("tbody");
+    const tbody = table.querySelector("tbody");
 
 
-    if (
-        !tbody ||
-        tbody.rows.length === 0
-    ) {
+    if (!tbody || tbody.rows.length === 0)
+    {
 
-        alert(
-            "No data available to export."
-        );
+        alert( "No data available to export." );
 
         return;
     }
 
+    if ( tbody.rows.length === 1 &&  tbody.rows[0].innerText .toLowerCase() .includes("no records found"))
+    {
 
-    /* =========================================================
-       CHECK FOR NO RECORDS
-       ========================================================= */
-
-    if (
-        tbody.rows.length === 1 &&
-        tbody.rows[0].innerText
-            .toLowerCase()
-            .includes("no records found")
-    ) {
-
-        alert(
-            "No data available to export."
-        );
+        alert( "No data available to export.");
 
         return;
     }
-
-
-    /* =========================================================
-       EXPORT DATA
-       
-       1  S.No.
-       2  Cons Ref
-       3  Meter Number
-       4  Phase
-       5  Department
-       6  Cycle
-       7  Division
-       8  Seq No
-       9  Meter Make
-       10 Failed Since
-       11 Total Failed Days
-       12 Status
-       13 Last Entry Date
-       14 Address
-       ========================================================= */
 
     const excelData = [];
-
-
-    /* =========================================================
-       HEADER
-       ========================================================= */
 
     excelData.push([
 
@@ -1259,26 +845,17 @@ function exportTableToExcel() {
 
     ]);
 
+    Array.from(tbody.rows).forEach(row =>
+    {
 
-    /* =========================================================
-       BODY
-       ========================================================= */
-
-    Array.from(
-        tbody.rows
-    ).forEach(row => {
-
-        const cells =
-            row.querySelectorAll("td");
+        const cells =   row.querySelectorAll("td");
 
 
-        if (
-            cells.length < 14
-        ) {
+        if (cells.length < 14)
+        {
 
             return;
         }
-
 
         excelData.push([
 
@@ -1302,31 +879,13 @@ function exportTableToExcel() {
     });
 
 
-    if (
-        excelData.length <= 1
-    ) {
-
-        alert(
-            "No data available to export."
-        );
-
+    if (excelData.length <= 1)
+    {
+        alert( "No data available to export." );
         return;
     }
 
-
-    /* =========================================================
-       CREATE WORKSHEET
-       ========================================================= */
-
-    const worksheet =
-        XLSX.utils.aoa_to_sheet(
-            excelData
-        );
-
-
-    /* =========================================================
-       COLUMN WIDTHS
-       ========================================================= */
+    const worksheet =  XLSX.utils.aoa_to_sheet(excelData);
 
     worksheet["!cols"] = [
 
@@ -1347,53 +906,50 @@ function exportTableToExcel() {
 
     ];
 
-
-    /* =========================================================
-       COMMON BORDER
-       ========================================================= */
-
-    const thinBorder = {
+    const thinBorder =
+    {
 
         top: {
             style: "thin",
-            color: {
+            color:
+            {
                 rgb: "000000"
             }
         },
 
         bottom: {
             style: "thin",
-            color: {
+            color:
+            {
                 rgb: "000000"
             }
         },
 
         left: {
             style: "thin",
-            color: {
+            color:
+            {
                 rgb: "000000"
             }
         },
 
         right: {
             style: "thin",
-            color: {
+            color:
+            {
                 rgb: "000000"
             }
         }
 
     };
 
-
-    /* =========================================================
-       HEADER STYLE
-       ========================================================= */
-
-    const headerStyle = {
+    const headerStyle =
+    {
 
         font: {
             bold: true,
-            color: {
+            color:
+            {
                 rgb: "FFFFFF"
             },
             sz: 11
@@ -1401,12 +957,14 @@ function exportTableToExcel() {
 
         fill: {
             patternType: "solid",
-            fgColor: {
+            fgColor:
+            {
                 rgb: "1F4E78"
             }
         },
 
-        alignment: {
+        alignment:
+        {
             horizontal: "center",
             vertical: "center",
             wrapText: true
@@ -1416,15 +974,13 @@ function exportTableToExcel() {
 
     };
 
+    const bodyStyle =
+    {
 
-    /* =========================================================
-       NORMAL BODY STYLE
-       ========================================================= */
-
-    const bodyStyle = {
-
-        font: {
-            color: {
+        font:
+        {
+            color:
+            {
                 rgb: "000000"
             },
             sz: 10
@@ -1439,21 +995,19 @@ function exportTableToExcel() {
 
     };
 
-
-    /* =========================================================
-       CENTER STYLE
-       ========================================================= */
-
-    const centerBodyStyle = {
+    const centerBodyStyle =
+    {
 
         font: {
-            color: {
+            color:
+            {
                 rgb: "000000"
             },
             sz: 10
         },
 
-        alignment: {
+        alignment:
+        {
             horizontal: "center",
             vertical: "center",
             wrapText: true
@@ -1463,18 +1017,13 @@ function exportTableToExcel() {
 
     };
 
-
-    /* =========================================================
-       RED FAILED DAYS STYLE
-       
-       APPLIED WHEN TOTAL FAILED DAYS > 5
-       ========================================================= */
-
-    const failedDaysRedStyle = {
+    const failedDaysRedStyle =
+    {
 
         font: {
             bold: true,
-            color: {
+            color:
+            {
                 rgb: "FF0000"
             },
             sz: 10
@@ -1482,7 +1031,8 @@ function exportTableToExcel() {
 
         fill: {
             patternType: "solid",
-            fgColor: {
+            fgColor:
+            {
                 rgb: "FFC7CE"
             }
         },
@@ -1497,127 +1047,56 @@ function exportTableToExcel() {
 
     };
 
+    for (let col = 0; col < 14; col++)
+    {
 
-    /* =========================================================
-       APPLY HEADER STYLE
-       ========================================================= */
-
-    for (
-        let col = 0;
-        col < 14;
-        col++
-    ) {
-
-        const address =
-            XLSX.utils.encode_cell({
+        const address =  XLSX.utils.encode_cell({
                 r: 0,
                 c: col
             });
 
 
-        if (
-            worksheet[address]
-        ) {
-
-            worksheet[address].s =
-                headerStyle;
-
+        if (worksheet[address])
+        {
+            worksheet[address].s = headerStyle;
         }
 
     }
 
+    for (let row = 1; row < excelData.length; row++)
+    {
 
-    /* =========================================================
-       APPLY BODY STYLE
-       ========================================================= */
+        for (let col = 0; col < 14; col++)
+        {
 
-    for (
-        let row = 1;
-        row < excelData.length;
-        row++
-    ) {
-
-        for (
-            let col = 0;
-            col < 14;
-            col++
-        ) {
-
-            const address =
-                XLSX.utils.encode_cell({
+            const address =  XLSX.utils.encode_cell({
                     r: row,
                     c: col
                 });
 
+            const cell = worksheet[address];
 
-            const cell =
-                worksheet[address];
-
-
-            if (!cell) {
+            if (!cell)
+            {
                 continue;
             }
 
-
-            /* =================================================
-               CENTER COLUMNS
-
-               0  S.No.
-               3  Phase
-               5  Cycle
-               7  Seq No
-               9  Failed Since
-               10 Failed Days
-               12 Last Entry Date
-               ================================================= */
-
-            if (
-                col === 0 ||
-                col === 3 ||
-                col === 5 ||
-                col === 7 ||
-                col === 9 ||
-                col === 10 ||
-                col === 12
-            ) {
-
-                cell.s =
-                    centerBodyStyle;
-
+            if (col === 0 || col === 3 || col === 5 || col === 7 || col === 9 || col === 10 || col === 12)
+            {
+                cell.s = centerBodyStyle;
             }
-            else {
-
-                cell.s =
-                    bodyStyle;
-
+            else
+            {
+                cell.s = bodyStyle;
             }
 
+            if (col === 10)
+            {
 
-            /* =================================================
-               TOTAL FAILED DAYS
-
-               Column index = 10
-
-               If > 5:
-               - RED FONT
-               - LIGHT RED BACKGROUND
-               - BOLD
-               - ALL BORDERS
-               ================================================= */
-
-            if (
-                col === 10
-            ) {
-
-                const rawValue =
-                    excelData[row][10];
+                const rawValue = excelData[row][10];
 
 
-                const failedDays =
-                    parseInt(
-                        String(
-                            rawValue
-                        )
+                const failedDays = parseInt(String(rawValue)
                             .replace(
                                 /[^0-9-]/g,
                                 ""
@@ -1625,15 +1104,9 @@ function exportTableToExcel() {
                         10
                     );
 
-
-                if (
-                    !isNaN(failedDays) &&
-                    failedDays > 5
-                ) {
-
-                    cell.s =
-                        failedDaysRedStyle;
-
+                if (!isNaN(failedDays) && failedDays > 5)
+                {
+                    cell.s =  failedDaysRedStyle;
                 }
 
             }
@@ -1642,85 +1115,44 @@ function exportTableToExcel() {
 
     }
 
-
-    /* =========================================================
-       ROW HEIGHT
-       ========================================================= */
-
     worksheet["!rows"] = [];
 
-
-    worksheet["!rows"][0] = {
+    worksheet["!rows"][0] =
+    {
         hpt: 25
     };
 
 
-    for (
-        let row = 1;
-        row < excelData.length;
-        row++
-    ) {
+    for (let row = 1; row < excelData.length; row++)
+    {
 
-        worksheet["!rows"][row] = {
-            hpt: 22
-        };
+        worksheet["!rows"][row] =  { hpt: 22 };
 
     }
 
 
-    /* =========================================================
-       AUTOFILTER
-       ========================================================= */
-
-    worksheet["!autofilter"] = {
-        ref:
-            `A1:N${excelData.length}`
+    worksheet["!autofilter"] =
+    {
+        ref:  `A1:N${excelData.length}`
     };
 
-
-    /* =========================================================
-       FREEZE HEADER ROW
-       ========================================================= */
-
-    worksheet["!freeze"] = {
+    worksheet["!freeze"] =
+    {
         xSplit: 0,
         ySplit: 1
     };
 
+    const workbook =  XLSX.utils.book_new();
 
-    /* =========================================================
-       CREATE WORKBOOK
-       ========================================================= */
+    XLSX.utils.book_append_sheet( workbook, worksheet, "Failed Summary");
 
-    const workbook =
-        XLSX.utils.book_new();
-
-
-    XLSX.utils.book_append_sheet(
-        workbook,
-        worksheet,
-        "Failed Summary"
-    );
-
-
-    /* =========================================================
-       FILE NAME
-       ========================================================= */
-
-    const now =
-        new Date();
-
+    const now =  new Date();
 
     const timestamp =
 
         now.getFullYear() +
 
-        String(
-            now.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        ) +
+        String(  now.getMonth() + 1 ).padStart( 2,  "0" ) +
 
         String(
             now.getDate()
@@ -1753,18 +1185,10 @@ function exportTableToExcel() {
         );
 
 
-    const fileName =
-        `Download_Failed_Summary_${timestamp}.xlsx`;
+    const fileName =  `Download_Failed_Summary_${timestamp}.xlsx`;
 
 
-    /* =========================================================
-       WRITE FILE
-       ========================================================= */
-
-    XLSX.writeFile(
-        workbook,
-        fileName
-    );
+    XLSX.writeFile(  workbook,  fileName);
 }
 
 

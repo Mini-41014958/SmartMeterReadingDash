@@ -52,7 +52,6 @@ namespace SmartMeterReadingDash.Controllers.API
                 });
             }
 
-            // IMPORTANT:
             if (request.Password != user.Password)
             {
                 return Unauthorized(new
