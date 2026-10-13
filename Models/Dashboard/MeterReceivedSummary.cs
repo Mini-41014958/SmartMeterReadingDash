@@ -9,5 +9,8 @@
         public int mismatchCount { get; set; }
         public decimal hesDownloadPercentage { get; set; }
         public decimal hesFailedPercentage { get; set; }
+        public int cmriDownloadCount { get; set; }
+        public decimal cmriDownloadPercentage { get; set; }
+        public decimal totalDownloadPercentage { get; set; }
     }
 }

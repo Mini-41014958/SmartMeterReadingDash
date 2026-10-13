@@ -1850,3 +1850,226 @@ canvas {
         height: 280px;
     }
 }
+.brpl-only-mro {
+    display: grid;
+    grid-template-columns: 70px repeat(5, minmax(0, 1fr));
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 24px;
+    width: 100%;
+    min-height: 175px;
+    padding: 22px 8px !important;
+    border-bottom: none;
+}
+
+/* BRPL badge stays on the left across both rows */
+.brpl-only-mro .mro-company {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    align-items: center;
+}
+
+/* Keep every metric centered in its grid cell */
+.brpl-only-mro .mro-metric {
+    width: 100%;
+    min-width: 0;
+    padding: 0 3px;
+    text-align: center;
+    overflow: visible;
+}
+
+    /* First five metric blocks occupy the top row.
+   Billed and Billed Failed flow into the second row. */
+    .brpl-only-mro .mro-metric:nth-of-type(2) {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .brpl-only-mro .mro-metric:nth-of-type(3) {
+        grid-column: 3;
+        grid-row: 1;
+    }
+
+    .brpl-only-mro .mro-metric:nth-of-type(4) {
+        grid-column: 4;
+        grid-row: 1;
+    }
+
+    .brpl-only-mro .mro-metric:nth-of-type(5) {
+        grid-column: 5;
+        grid-row: 1;
+    }
+
+    .brpl-only-mro .mro-metric:nth-of-type(6) {
+        grid-column: 6;
+        grid-row: 1;
+    }
+
+    /* Second row: Billed and Billed Failed */
+    .brpl-only-mro .mro-metric:nth-of-type(7) {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    .brpl-only-mro .mro-metric:nth-of-type(8) {
+        grid-column: 3;
+        grid-row: 2;
+    }
+
+.brpl-only-mro .mro-label {
+    margin-bottom: 6px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.25;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.brpl-only-mro .mro-value {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 3px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+    .brpl-only-mro .mro-value small {
+        margin-left: 0;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+/* Responsive adjustment */
+@media (max-width: 1199.98px) {
+    .brpl-only-mro {
+        grid-template-columns: 60px repeat(5, minmax(0, 1fr));
+        column-gap: 5px;
+        row-gap: 20px;
+    }
+
+        .brpl-only-mro .mro-label {
+            font-size: 9px;
+        }
+
+        .brpl-only-mro .mro-value {
+            font-size: 13px;
+        }
+
+            .brpl-only-mro .mro-value small {
+                font-size: 10px;
+            }
+}
+
+@media (max-width: 767.98px) {
+    .brpl-only-mro {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-rows: auto;
+        gap: 16px 8px;
+        padding: 14px 8px !important;
+    }
+
+        .brpl-only-mro .mro-company {
+            grid-column: 1 / -1;
+            grid-row: auto;
+            justify-content: flex-start;
+        }
+
+        .brpl-only-mro .mro-metric:nth-of-type(n) {
+            grid-column: auto;
+            grid-row: auto;
+        }
+
+        .brpl-only-mro .mro-label {
+            white-space: normal;
+            font-size: 10px;
+        }
+
+        .brpl-only-mro .mro-value {
+            flex-wrap: wrap;
+            font-size: 15px;
+        }
+}
+#cmriDownloadSummaryModal .modal-content {
+    border: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#cmriDownloadSummaryModal .modal-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+#cmriDownloadSummaryModal .filter-section {
+    padding: 14px;
+    background: #f8f9fa;
+    border: 1px solid #e2e6ea;
+    border-radius: 8px;
+}
+
+#cmriDownloadSummaryModal .cmri-table-container {
+    width: 100%;
+    max-height: 58vh;
+    overflow: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+}
+
+#cmriDownloadSummaryTable {
+    width: 100%;
+    min-width: 900px;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+    #cmriDownloadSummaryTable thead th {
+        position: sticky;
+        font-size: 13px;
+        top: 0;
+        z-index: 2;
+        background: #0d6efd;
+        color: #fff;
+        white-space: nowrap;
+        vertical-align: middle;
+        padding: 10px 8px;
+    }
+
+    #cmriDownloadSummaryTable tbody td {
+        padding: 9px 8px;
+        vertical-align: middle;
+        font-size: 13px;
+    }
+
+    #cmriDownloadSummaryTable tbody tr:nth-child(even) {
+        background: #f8f9fa;
+    }
+
+    #cmriDownloadSummaryTable tbody tr:hover {
+        background: #eaf2ff;
+    }
+
+    #cmriDownloadSummaryTable .cmri-address {
+        min-width: 280px;
+        max-width: 420px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+#cmriDownloadSummaryModal .modal-footer {
+    border-top: 1px solid #dee2e6;
+}
+.mro-link-cmri
+{
+    color: #0dcaf0;
+    text-decoration:none;
+}

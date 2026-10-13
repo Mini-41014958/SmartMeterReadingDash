@@ -9,5 +9,6 @@
         public int Failed {  get; set; }
         public int Mismatch { get; set; }
         public int NonCom {  get; set; }
+        public int CmriDownload { get; set; }
     }
 }

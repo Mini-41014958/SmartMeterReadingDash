@@ -76,6 +76,22 @@ async function loadMeterDownloadSummary() {
                 data.hesDownloadPercentage
             );
 
+            setMroValue(
+                "cmriDownload",
+                data.cmriDownloadCount
+            );
+
+            setMroPercentage(
+                "cmriDownloadPercentage",
+                data.cmriDownloadPercentage
+            );
+
+            // Combined HES + CMRI download percentage
+            setMroPercentage(
+                "totalDownloadPercentage",
+                data.totalDownloadPercentage
+            );
+
 
             setMroValue(
                 "downloadFailed",

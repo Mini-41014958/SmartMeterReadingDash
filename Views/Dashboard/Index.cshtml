@@ -181,7 +181,7 @@
                             <div class="mro-metric">
 
                                 <div class="mro-label">
-                                    Download
+                                   HES Download
                                 </div>
 
                                 <div class="mro-value text-success">
@@ -203,12 +203,25 @@
 
                             </div>
 
+                            <!-- CMRI DOWNLOAD -->
+                            <div class="mro-metric">
+                                <div class="mro-label">CMRI Download</div>
+
+                                <div class="mro-value text-info">
+                                    <a href="javascript:void(0)"
+                                       class="mro-link-cmri"
+                                       id="cmriDownload">0
+                                    </a>
+
+                                    <small id="cmriDownloadPercentage">(0.00%)</small>
+                                </div>
+                            </div>
 
                             <!-- FAILED -->
                             <div class="mro-metric">
 
                                 <div class="mro-label">
-                                    Failed
+                                    HES Failed
                                 </div>
 
                                 <div class="mro-value">
@@ -246,6 +259,14 @@
 
                             </div>
 
+                            <!-- TOTAL DOWNLOAD PERCENTAGE -->
+                            <div class="mro-metric">
+                                <div class="mro-label">Total Download %</div>
+
+                                <div class="mro-value text-success">
+                                    <span id="totalDownloadPercentage">(0.00%)</span>
+                                </div>
+                            </div>
 
                             <!-- BILLED -->
                             <div class="mro-metric">
@@ -1375,6 +1396,193 @@
     </div>
 
 </div>
+
+
+<div class="modal fade" id="downloadCmriSummaryModal" tabindex="-1" role="dialog" aria-labelledby="downloadCmriSummaryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title"
+                    id="downloadCmriSummaryModalLabel">
+                   CMRI DOWNLOAD METER SUMMARY
+
+                </h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+
+                    <div class="row align-items-end g-2">
+
+                        @if (User.IsInRole("SUPERADMIN"))
+                        {
+                            <!-- Department -->
+                            <div class="col-lg-2 col-md-4">
+
+                                <label class="form-label fw-bold">
+                                    Department
+                                </label>
+
+                                <select id="cmriDepartmentFilter"
+                                        class="form-select">
+
+                                    <option value="">
+                                        All Departments
+                                    </option>
+
+                                </select>
+
+                            </div>
+                        }
+
+               
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Division
+                            </label>
+                            <select id="cmriDivisionFilter" class="form-select">
+                                <option value="">All Divisions</option>
+                            </select>
+
+                        </div>
+
+                   
+
+                        <!-- Cycle -->
+                        <div class="col-lg-2 col-md-4">
+
+                            <label class="form-label fw-bold">
+                                Cycle
+                            </label>
+
+                            <select id="cmriCycleFilter"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Cycle
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                  
+
+                        <!-- Buttons -->
+                        <div class="col-12 d-flex justify-content-between align-items-center mt-2">
+
+                            <button type="button"
+                                    id="btnClearCmriDownloadFilters"
+                                    class="btn btn-outline-secondary">
+
+                                <i class="bi bi-x-circle"></i>
+                                Clear Filters
+
+                            </button>
+
+
+                            <div class="export-buttons">
+
+                                <button type="button"
+                                        class="btn btn-success"
+                                        onclick="exportCmriTableToExcel()">
+
+                                    <i class="bi bi-file-earmark-excel"></i>
+                                    Excel
+
+                                </button>
+
+
+                                <button type="button"
+                                        class="btn btn-primary"
+                                        onclick="exportCmriTableToCSV()">
+
+                                    <i class="bi bi-file-earmark-csv"></i>
+                                    CSV
+
+                                </button>
+
+
+                                <button type="button"
+                                        class="btn btn-secondary"
+                                        onclick="window.print()">
+
+                                    <i class="bi bi-printer"></i>
+                                    Print
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Table -->
+                <div class="table-responsive">
+
+                    <table id="cmriDownloadSummaryTable" class="table table-bordered custom-table">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th>S.No.</th>
+                                <th>Cons Ref</th>
+                                <th>Meter Number</th>
+                                <th>Department</th>
+                                <th>Cycle</th>
+                                <th>Division</th>
+                                <th>Seq No</th>
+                                <th>Address</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="cmriDownloadSummaryBody"> </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                    Close
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
 <!-- 1. jQuery FIRST -->
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -1385,3 +1593,4 @@
 <script src="~/js/Dashboard/byplHesDownload.js" asp-append-version="true"></script>
 <script src="~/js/dashboard/brplDownloadFailed.js" asp-append-version="true"></script>
 <script src="~/js/dashboard/byplDownloadFailed.js" asp-append-version="true"></script>
+<script src="~/js/dashboard/cmriDownload.js" asp-append-version="true"></script>

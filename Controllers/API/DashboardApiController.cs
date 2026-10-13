@@ -446,8 +446,7 @@ namespace SmartMeterReadingDash.Controllers.API
         // BYPL HES DOWNLOAD DETAILS
 
         [HttpGet("hes-download-meters-details-bypl")]
-        public IActionResult GetHESDownloadMetersDetailsBypl(
-            string ReadingMonth)
+        public IActionResult GetHESDownloadMetersDetailsBypl( string ReadingMonth)
         {
             try
             {
@@ -458,6 +457,31 @@ namespace SmartMeterReadingDash.Controllers.API
                 if (access != null) return access;
 
                 var result =_dashboard.GetHesDownloadBypl( ReadingMonth, scope);
+
+                return Ok(result);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Internal Server Error"
+                });
+            }
+        }
+
+        [HttpGet("cmri-downloads")]
+        public IActionResult GetCmriDownload(string ReadingMonth)
+        {
+            try
+            {
+                var scope = GetCurrentScope();
+                var access = CheckCompanyAccess(scope, "BRPL");
+                var result = _dashboard.GetCMRIDownload(ReadingMonth, scope);
 
                 return Ok(result);
             }
