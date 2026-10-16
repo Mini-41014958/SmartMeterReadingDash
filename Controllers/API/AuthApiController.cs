@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartMeterReadingDash.Models.Dashboard;
+using SmartMeterReadingDash.Models;
 using SmartMeterReadingDash.Services;
 using System.Security.Claims;
 
@@ -319,5 +320,70 @@ namespace SmartMeterReadingDash.Controllers.API
             });
         }
 
+        // ---------------------------------------------------------
+        // SSO ADDITIONS FOR WEB FORMS INTEGRATION
+        // ---------------------------------------------------------
+
+        [AllowAnonymous]
+        [HttpPost("sso-generate")]
+        public async Task<IActionResult> GenerateSsoToken([FromBody] SsoRequest request, [FromHeader(Name = "X-API-KEY")] string apiKey)
+        {
+            // 1. Validate the API Key (This ensures ONLY your Web Forms app can call this without a password)
+            // Note: Move this secret to appsettings.json in production!
+            var expectedApiKey = "kfdjakhakjdhajkhjkfhdsajkda";
+            if (apiKey != expectedApiKey)
+            {
+                return Unauthorized(new { success = false, message = "Invalid API Key." });
+            }
+
+            if (request == null || string.IsNullOrWhiteSpace(request.Username))
+            {
+                return BadRequest(new { success = false, message = "Username is required." });
+            }
+
+            // 2. Fetch the user WITHOUT checking the password
+            var user = await _authRepository.GetUserByUsernameAsync(request.Username);
+
+            if (user == null || user.IsActive != 1)
+            {
+                return Unauthorized(new { success = false, message = "User not found or inactive." });
+            }
+
+            // 3. Update login time and generate token
+            await _authRepository.UpdateLastLoginAsync(user.UserId);
+            var token = _jwtService.GenerateToken(user);
+
+            return Ok(new
+            {
+                success = true,
+                token = token
+            });
+        }
+
+        [AllowAnonymous]
+        [HttpGet("sso-consume")]
+        public IActionResult ConsumeSsoToken([FromQuery] string token, [FromQuery] string returnUrl = "/Dashboard/Index")
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return BadRequest("Token is required.");
+            }
+
+            // IMPORTANT: Because this will run inside an iframe from a different domain,
+            // SameSite MUST be SameSiteMode.None and Secure MUST be true.
+            Response.Cookies.Append("SmartMeterAuth", token,
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true, // Must be true for SameSite=None
+                    SameSite = SameSiteMode.None, // Crucial for cross-domain iframes
+                    Expires = DateTimeOffset.UtcNow.AddMinutes(60),
+                    Path = "/"
+                }
+            );
+
+            // Redirect the iframe to the actual dashboard page
+            return Redirect(returnUrl);
+        }
     }
 }

@@ -7,6 +7,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddAntiforgery(options => options.SuppressXFrameOptionsHeader = true);
 
 // Application Services
 builder.Services.AddScoped<OracleCon>();
@@ -122,6 +123,17 @@ app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    // Remove the old X-Frame-Options header
+    context.Response.Headers.Remove("X-Frame-Options");
+
+    // Correctly allow the exact origin (Scheme + Host + Port ONLY)
+    context.Response.Headers.Append("Content-Security-Policy", "frame-ancestors 'self' http://10.213.225.35:81");
+
+    await next();
+});
 
 app.MapControllers();
 
