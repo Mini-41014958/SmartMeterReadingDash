@@ -345,6 +345,12 @@ namespace SmartMeterReadingDash.Services
                             Summary.total_1PhCount = dr["PHASE_1PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["PHASE_1PH"]);
 
                             Summary.total_3PhCount = dr["PHASE_3PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["PHASE_3PH"]);
+
+                            Summary.SecureCount = dr["SECURECOUNT"] == DBNull.Value ? 0 : Convert.ToInt32(dr["SECURECOUNT"]);
+
+                            Summary.Secure_3PhCount = dr["SECURE_3PH"] == DBNull.Value ? 0 : Convert.ToInt32(dr["SECURE_3PH"]);
+
+                            Summary.Secure_1PhCount = 0; // Assuming Secure_1PhCount is not available in the query result, set it to 0 or handle accordingly
                         }
                     }
                 }
@@ -558,6 +564,7 @@ namespace SmartMeterReadingDash.Services
                         OR SM.METERNO LIKE '90______'
                         OR SM.METERNO LIKE 'AL________'
                         OR SM.METERNO LIKE 'KI________'
+                        OR SM.METERNO LIKE 'RSE%'
                     )
                 ),
                 DOWNLOAD_FILTERED AS
@@ -876,6 +883,7 @@ namespace SmartMeterReadingDash.Services
                         OR L.METERNO LIKE '90______'
                         OR L.METERNO LIKE 'AL________'
                         OR L.METERNO LIKE 'KI________'
+                        OR L.METERNO LIKE 'RSE%'        
                     )
                     AND L.MESSAGE NOT LIKE 'Data%'
                 ),
@@ -995,11 +1003,14 @@ namespace SmartMeterReadingDash.Services
                         THEN 'ALLIED'
                         WHEN SUBSTR(F.METERNO, 1, 2) IN ('91', 'KI')
                         THEN 'KIMBAL'
+                        WHEN F.METERNO LIKE 'RSE%'
+                        THEN 'SECURE'
+                        ELSE 'UNKNOWN'
                     END AS METER_TYPE,
                     CASE
                         WHEN SUBSTR(F.METERNO, 1, 4) IN ('AL91', 'KI91', '9150', '9008', '9027')
                         THEN '1PH'
-                        WHEN SUBSTR(F.METERNO, 1, 4) IN ('AL90', 'KI90', '9026')
+                        WHEN SUBSTR(F.METERNO, 1, 4) IN ('AL90', 'KI90', '9026','RSE7')
                         THEN '3PH'
                         ELSE 'UNKNOWN'
                     END AS PHASE_TYPE,
@@ -1437,6 +1448,7 @@ namespace SmartMeterReadingDash.Services
                         OR B.METERNO LIKE '90______'
                         OR B.METERNO LIKE 'AL________'
                         OR B.METERNO LIKE 'KI________'
+                        OR B.METERNO LIKE 'RSE%'
                     )
                     UNION ALL
                     SELECT TRIM(B.METERNO) AS METERNO, B.READING_MONTH, B.BILLMONTH,
