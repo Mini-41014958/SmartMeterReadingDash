@@ -157,8 +157,7 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BYPL");
+                var access = CheckCompanyAccess(scope, "BYPL");
 
                 if (access != null) return access;
 
@@ -191,8 +190,7 @@ namespace SmartMeterReadingDash.Controllers.API
             {
                 var scope = GetCurrentScope();
 
-                var access =
-                    CheckCompanyAccess(scope, "BRPL");
+                var access = CheckCompanyAccess(scope, "BRPL");
 
                 if (access != null) return access;
 
