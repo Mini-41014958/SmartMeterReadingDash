@@ -11,5 +11,8 @@
         public string SapDivision { get; set; }
         public string Address { get; set; }
         public string SapSeqNo { get; set; }
+        public string Kwh { get; set; }
+        public string Kvah { get; set; }
+        public DateTime? ReadingDate { get; set; }
     }
 }

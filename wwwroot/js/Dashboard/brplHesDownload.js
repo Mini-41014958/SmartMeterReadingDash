@@ -1,19 +1,119 @@
-﻿let allHesDownloadData = [];
+﻿
+/* ============================================================
+   HES DOWNLOAD SUMMARY - BRPL
+   Complete 13-column implementation
+   ============================================================ */
+
+let allHesDownloadData = [];
 let filteredHesDownloadData = [];
-
 let hesCurrentUserAccess = null;
+let hesDepartmentRestricted = false;
 
 
-// ============================================================
-// GET CURRENT USER ACCESS
-// ============================================================
+/* ============================================================
+   COMMON HELPERS
+   ============================================================ */
+
+function getHesValue(item, camelName, pascalName) {
+    return item?.[camelName] ??
+        item?.[pascalName] ??
+        null;
+}
+
+function getHesText(value, fallback = "--") {
+    if (value === null || value === undefined ||
+        String(value).trim() === "") {
+        return fallback;
+    }
+
+    return String(value).trim();
+}
+
+function normalizeHesValue(value) {
+    return String(value ?? "").trim().toUpperCase();
+}
+
+function escapeHesHtml(value, fallback = "--") {
+
+    if (value === null || value === undefined ||
+        String(value) === "") {
+        return fallback;
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+function getHesDate(value) {
+
+    if (!value) {
+        return "--";
+    }
+
+    const date = new Date(value);
+
+    if (isNaN(date.getTime())) {
+        return escapeHesHtml(value);
+    }
+
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    return `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+}
+
+
+/* ============================================================
+   API MODEL PROPERTY MAPPING
+   Supports camelCase and PascalCase JSON responses.
+   ============================================================ */
+
+function getHesRow(item) {
+
+    return {
+        consRef: getHesValue(item, "consRef", "ConsRef"),
+
+        meterNumber: getHesValue(item, "meterNumber", "MeterNumber"),
+
+        kwh: getHesValue(item, "kwh", "Kwh"),
+
+        kvah: getHesValue(item, "kvah", "Kvah"),
+
+        readingDate: getHesValue(item, "readingDate", "ReadingDate"),
+
+        phase: getHesValue(item, "phase", "Phase"),
+
+        sapDepartment: getHesValue(item, "sapDepartment", "SapDepartment"),
+
+        cycle: getHesValue(item, "cycle", "Cycle"),
+
+        sapDivision: getHesValue(item, "sapDivision", "SapDivision"),
+
+        sapSeqNo: getHesValue(item, "sapSeqNo", "SapSeqNo"),
+
+        address: getHesValue(item, "address", "Address"),
+
+        meterType: getHesValue(item, "meterType", "MeterType")
+    };
+}
+
+
+/* ============================================================
+   CURRENT USER ACCESS
+   ============================================================ */
 
 async function getHesUserAccess() {
 
-    if (
-        hesCurrentUserAccess &&
-        hesCurrentUserAccess.authenticated
-    ) {
+    if (hesCurrentUserAccess?.authenticated) {
         return hesCurrentUserAccess;
     }
 
@@ -24,7 +124,7 @@ async function getHesUserAccess() {
             credentials: "same-origin",
             cache: "no-store",
             headers: {
-                "Accept": "application/json"
+                Accept: "application/json"
             }
         }
     );
@@ -41,9 +141,17 @@ async function getHesUserAccess() {
 }
 
 
-// ============================================================
-// CHECK BRPL ACCESS
-// ============================================================
+/* ============================================================
+   ACCESS VALIDATION
+   ============================================================ */
+
+function isHesSuperAdmin(access) {
+
+    const role = normalizeHesValue(access?.role);
+
+    return role === "SUPERADMIN" ||
+        access?.isSuperAdmin === true;
+}
 
 function hasHesBrplAccess(access) {
 
@@ -51,159 +159,89 @@ function hasHesBrplAccess(access) {
         return false;
     }
 
-    const role =
-        String(access.role || "")
-            .trim()
-            .toUpperCase();
-
-    const company =
-        String(access.company || "")
-            .trim()
-            .toUpperCase();
-
-    // SUPERADMIN
-    if (
-        role === "SUPERADMIN" ||
-        access.isSuperAdmin === true
-    ) {
+    if (isHesSuperAdmin(access)) {
         return true;
     }
 
-    // BRPL ADMIN / USER
-    return company === "BRPL";
+    return normalizeHesValue(access.company) === "BRPL";
 }
-
-
-// ============================================================
-// DEPARTMENT RESTRICTION
-// ============================================================
 
 function hasHesDepartmentRestriction(access) {
 
-    if (!access) {
-        return false;
-    }
-
-    // SUPERADMIN can access all departments
-    if (access.isSuperAdmin === true) {
-        return false;
-    }
-
-    return String(access.department || "")
-        .trim()
-        .length > 0;
+    return !isHesSuperAdmin(access) &&
+        normalizeHesValue(access?.department) !== "";
 }
-
-
-// ============================================================
-// GET USER DEPARTMENT
-// ============================================================
 
 function getHesUserDepartment(access) {
 
-    return String(access?.department || "")
-        .trim()
-        .toUpperCase();
+    return normalizeHesValue(access?.department);
 }
 
 
-// ============================================================
-// SHOW HES ACCESS ERROR
-// ============================================================
+/* ============================================================
+   ACCESS ERROR
+   ============================================================ */
 
 function showHesAccessError(message) {
 
     $("#hesDownloadSummaryBody").html(`
         <tr>
-            <td colspan="10"
-                class="text-center text-danger py-4">
-
-                <div class="fw-semibold mb-1">
-                    Access Denied
-                </div>
-
-                <div>
-                    ${escapeHesHtml(message)}
-                </div>
-
+            <td colspan="13" class="text-center text-danger py-4">
+                <div class="fw-bold mb-1">Access Denied</div>
+                <div>${escapeHesHtml(message)}</div>
             </td>
         </tr>
     `);
 }
 
 
-// ============================================================
-// OPEN HES DOWNLOAD MODAL
-// ============================================================
+/* ============================================================
+   OPEN HES MODAL
+   ============================================================ */
 
 $("#hesDownload")
     .off("click.hesDownload")
-    .on(
-        "click.hesDownload",
-        async function (e) {
+    .on("click.hesDownload", async function (e) {
 
-            e.preventDefault();
+        e.preventDefault();
 
-            const modalElement =
-                document.getElementById(
-                    "HesDownloadSummaryModal"
-                );
+        const modalElement = document.getElementById(
+            "HesDownloadSummaryModal"
+        );
 
-            if (!modalElement) {
-
-                console.error(
-                    "HES Download modal not found."
-                );
-
-                return;
-            }
-
-            const modal =
-                bootstrap.Modal.getOrCreateInstance(
-                    modalElement
-                );
-
-            modal.show();
-
-            await loadHesDownloadSummary();
+        if (!modalElement) {
+            console.error("HES Download modal not found.");
+            return;
         }
-    );
+
+        bootstrap.Modal.getOrCreateInstance(
+            modalElement
+        ).show();
+
+        await loadHesDownloadSummary();
+    });
 
 
-// ============================================================
-// LOAD HES DOWNLOAD SUMMARY
-// ============================================================
+/* ============================================================
+   LOAD HES DOWNLOAD DATA
+   ============================================================ */
 
 async function loadHesDownloadSummary() {
 
+    const tbody = $("#hesDownloadSummaryBody");
+
     try {
 
-        // Loading state
-
-        $("#hesDownloadSummaryBody").html(`
+        tbody.html(`
             <tr>
-                <td colspan="10"
-                    class="text-center py-4">
-
-                    <div class="spinner-border spinner-border-sm text-primary">
-                    </div>
-
-                    <span class="ms-2">
-                        Loading...
-                    </span>
-
+                <td colspan="13" class="text-center py-4">
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                    <span class="ms-2">Loading HES Download Data...</span>
                 </td>
             </tr>
         `);
 
-
-        // Get user access
-
-        const access =
-            await getHesUserAccess();
-
-
-        // Verify BRPL access BEFORE API CALL
+        const access = await getHesUserAccess();
 
         if (!hasHesBrplAccess(access)) {
 
@@ -214,12 +252,7 @@ async function loadHesDownloadSummary() {
             return;
         }
 
-
-        // Reading month
-
-        const readingMonth =
-            getReadingMonth();
-
+        const readingMonth = getReadingMonth();
 
         if (!readingMonth) {
 
@@ -230,169 +263,99 @@ async function loadHesDownloadSummary() {
             return;
         }
 
-
-        // API URL
-
         const apiUrl =
-            `${getApiUrl(
-                "DashboardApi/hes-download-meters-details"
-            )}?ReadingMonth=${encodeURIComponent(
-                readingMonth
-            )}`;
+            `${getApiUrl("DashboardApi/hes-download-meters-details")}` +
+            `?ReadingMonth=${encodeURIComponent(readingMonth)}`;
 
-
-        // API CALL
-
-        const response =
-            await fetch(
-                apiUrl,
-                {
-                    method: "GET",
-
-                    credentials: "same-origin",
-
-                    cache: "no-store",
-
-                    headers: {
-                        "Accept": "application/json"
-                    }
+        const response = await fetch(
+            apiUrl,
+            {
+                method: "GET",
+                credentials: "same-origin",
+                cache: "no-store",
+                headers: {
+                    Accept: "application/json"
                 }
-            );
-
-
-        // Unauthorized
+            }
+        );
 
         if (response.status === 401) {
-
             throw new Error(
                 "Your session has expired. Please login again."
             );
         }
 
-
-        // Forbidden
-
         if (response.status === 403) {
-
             throw new Error(
                 "You are not authorized to access BRPL HES download data."
             );
         }
 
-
-        // Other HTTP errors
-
         if (!response.ok) {
-
             throw new Error(
-                `Unable to load HES download data (${response.status})`
+                `Unable to load HES data. HTTP Status: ${response.status}`
             );
         }
 
+        const result = await response.json();
 
-        // Parse response
+        // Supports both array and common API wrapper responses.
+        const records = Array.isArray(result)
+            ? result
+            : Array.isArray(result?.data)
+                ? result.data
+                : Array.isArray(result?.items)
+                    ? result.items
+                    : Array.isArray(result?.result)
+                        ? result.result
+                        : [];
 
-        const result =
-            await response.json();
+        allHesDownloadData = records;
 
-
-        allHesDownloadData =
-            Array.isArray(result)
-                ? result
-                : [];
-
+        hesDepartmentRestricted =
+            hasHesDepartmentRestriction(access);
 
         const userDepartment =
             getHesUserDepartment(access);
 
-
-        const departmentRestricted =
-            (
-                access?.isSuperAdmin !== true &&
-                userDepartment !== ""
-            );
-
-
-        // Apply department restriction
-
-        if (departmentRestricted) {
+        // Hard department restriction.
+        if (hesDepartmentRestricted) {
 
             allHesDownloadData =
-                allHesDownloadData.filter(
-                    item => {
+                allHesDownloadData.filter(item => {
 
-                        const itemDepartment =
-                            String(
-                                item.sapDepartment ||
-                                ""
-                            )
-                                .trim()
-                                .toUpperCase();
+                    const row = getHesRow(item);
 
-
-                        return (
-                            itemDepartment ===
-                            userDepartment
-                        );
-                    }
-                );
+                    return normalizeHesValue(row.sapDepartment) ===
+                        userDepartment;
+                });
         }
 
+        // Initialize filtered data.
+        filteredHesDownloadData = [
+            ...allHesDownloadData
+        ];
 
-        filteredHesDownloadData =
-            [
-                ...allHesDownloadData
-            ];
-
-
-        // Load filters
-
+        // Populate dropdowns.
         loadHesDepartmentFilter(access);
-
         loadHesDivisionFilter();
-
         loadHesPhaseFilter();
-
         loadHesMeterMakeFilter();
-
-        // Cycle filter
         loadHesCycleFilter();
 
+        // Reset filters.
+        clearHesFilters(hesDepartmentRestricted);
 
-        // Apply default department restriction
-
-        if (departmentRestricted) {
-
-            $("#hesDepartmentFilter")
-                .val(userDepartment)
-                .prop(
-                    "disabled",
-                    true
-                );
-
-        }
-        else {
-
-            $("#hesDepartmentFilter")
-                .prop(
-                    "disabled",
-                    false
-                );
-        }
-
-
-        // Clear all other filters
-
-        clearHesFilters(
-            departmentRestricted
-        );
-
-
-        // Render
-
+        // Render complete data.
         renderHesDownloadTable(
             filteredHesDownloadData
         );
+
+        console.log(
+            "HES Download Records:",
+            allHesDownloadData.length
+        );
+
     }
     catch (err) {
 
@@ -401,21 +364,11 @@ async function loadHesDownloadSummary() {
             err
         );
 
-        $("#hesDownloadSummaryBody").html(`
+        tbody.html(`
             <tr>
-                <td colspan="10"
-                    class="text-center text-danger py-4">
-
-                    <div class="fw-semibold mb-1">
-                        Failed to load data
-                    </div>
-
-                    <div>
-                        ${escapeHesHtml(
-            err.message
-        )}
-                    </div>
-
+                <td colspan="13" class="text-center text-danger py-4">
+                    <div class="fw-bold mb-1">Failed to load data</div>
+                    <div>${escapeHesHtml(err.message)}</div>
                 </td>
             </tr>
         `);
@@ -423,40 +376,68 @@ async function loadHesDownloadSummary() {
 }
 
 
-// ============================================================
-// DEPARTMENT FILTER
-// ============================================================
+/* ============================================================
+   COMMON DROPDOWN POPULATION
+   ============================================================ */
 
-function loadHesDepartmentFilter(
-    access = hesCurrentUserAccess
-) {
+function populateHesDropdown(selector, values, defaultText) {
 
-    const ddl =
-        $("#hesDepartmentFilter");
+    const ddl = $(selector);
+
+    if (!ddl.length) {
+        return;
+    }
+
+    const uniqueValues = [
+        ...new Set(
+            values
+                .map(value => getHesText(value, ""))
+                .filter(Boolean)
+        )
+    ];
+
+    uniqueValues.sort((a, b) =>
+        a.localeCompare(b, undefined, { numeric: true })
+    );
 
     ddl.empty();
 
-    const role =
-        String(access?.role || "")
-            .trim()
-            .toUpperCase();
+    ddl.append(
+        $("<option>", {
+            value: "",
+            text: defaultText
+        })
+    );
 
-    const department =
-        String(access?.department || "")
-            .trim()
-            .toUpperCase();
+    uniqueValues.forEach(value => {
 
-    const isSuperAdmin =
-        role === "SUPERADMIN" ||
-        access?.isSuperAdmin === true;
+        ddl.append(
+            $("<option>", {
+                value: value,
+                text: value
+            })
+        );
+    });
+}
 
 
-    // Department restricted user
+/* ============================================================
+   DEPARTMENT FILTER
+   ============================================================ */
 
-    if (
-        !isSuperAdmin &&
-        department !== ""
-    ) {
+function loadHesDepartmentFilter(access = hesCurrentUserAccess) {
+
+    const ddl = $("#hesDepartmentFilter");
+
+    if (!ddl.length) {
+        return;
+    }
+
+    if (hasHesDepartmentRestriction(access)) {
+
+        const department = getHesUserDepartment(access);
+
+        ddl.empty();
 
         ddl.append(
             $("<option>", {
@@ -465,745 +446,239 @@ function loadHesDepartmentFilter(
             })
         );
 
-        ddl.val(department);
-
-        ddl.prop(
-            "disabled",
-            true
-        );
+        ddl.val(department).prop("disabled", true);
 
         return;
     }
 
+    ddl.prop("disabled", false);
 
-    // SUPERADMIN / unrestricted BRPL admin
-
-    ddl.prop(
-        "disabled",
-        false
-    );
-
-    ddl.append(`
-        <option value="">
-            All Departments
-        </option>
-    `);
-
-
-    const departments =
-        [
-            ...new Set(
-                allHesDownloadData
-                    .map(
-                        x =>
-                            String(
-                                x.sapDepartment ||
-                                ""
-                            ).trim()
-                    )
-                    .filter(Boolean)
-            )
-        ];
-
-
-    departments.sort(
-        (a, b) =>
-            a.localeCompare(b)
-    );
-
-
-    departments.forEach(
-        departmentName => {
-
-            ddl.append(
-                $("<option>", {
-                    value: departmentName,
-                    text: departmentName
-                })
-            );
-        }
+    populateHesDropdown(
+        "#hesDepartmentFilter",
+        allHesDownloadData.map(
+            item => getHesRow(item).sapDepartment
+        ),
+        "All Departments"
     );
 }
 
 
-// ============================================================
-// DIVISION FILTER
-// ============================================================
+/* ============================================================
+   DIVISION FILTER
+   ============================================================ */
 
 function loadHesDivisionFilter() {
 
-    const ddl =
-        $("#hesDivisionFilter");
-
-    ddl.empty();
-
-    ddl.append(`
-        <option value="">
-            All Divisions
-        </option>
-    `);
-
-
-    const divisions =
-        [
-            ...new Set(
-                allHesDownloadData
-                    .map(
-                        x =>
-                            String(
-                                x.sapDivision ||
-                                ""
-                            ).trim()
-                    )
-                    .filter(Boolean)
-            )
-        ];
-
-
-    divisions.sort(
-        (a, b) =>
-            a.localeCompare(b)
-    );
-
-
-    divisions.forEach(
-        division => {
-
-            ddl.append(
-                $("<option>", {
-
-                    value: division,
-
-                    text: division
-
-                })
-            );
-        }
+    populateHesDropdown(
+        "#hesDivisionFilter",
+        allHesDownloadData.map(
+            item => getHesRow(item).sapDivision
+        ),
+        "All Divisions"
     );
 }
 
 
-// ============================================================
-// PHASE FILTER
-// ============================================================
+/* ============================================================
+   PHASE FILTER
+   ============================================================ */
 
 function loadHesPhaseFilter() {
 
-    const ddl =
-        $("#hesPhaseFilter");
-
-    ddl.empty();
-
-    ddl.append(`
-        <option value="">
-            All Phases
-        </option>
-    `);
-
-
-    const phases =
-        [
-            ...new Set(
-                allHesDownloadData
-                    .map(
-                        x =>
-                            String(
-                                x.phase ||
-                                ""
-                            ).trim()
-                    )
-                    .filter(Boolean)
-            )
-        ];
-
-
-    phases.sort(
-        (a, b) =>
-            a.localeCompare(
-                b,
-                undefined,
-                {
-                    numeric: true
-                }
-            )
-    );
-
-
-    phases.forEach(
-        phase => {
-
-            ddl.append(
-                $("<option>", {
-
-                    value: phase,
-
-                    text: phase
-
-                })
-            );
-        }
+    populateHesDropdown(
+        "#hesPhaseFilter",
+        allHesDownloadData.map(
+            item => getHesRow(item).phase
+        ),
+        "All Phases"
     );
 }
 
 
-// ============================================================
-// METER MAKE FILTER
-// ============================================================
+/* ============================================================
+   METER MAKE FILTER
+   ============================================================ */
 
 function loadHesMeterMakeFilter() {
 
-    const ddl =
-        $("#hesMeterMakeFilter");
-
-    ddl.empty();
-
-    ddl.append(`
-        <option value="">
-            All Meter Makes
-        </option>
-    `);
-
-
-    const meterMakes =
-        [
-            ...new Set(
-                allHesDownloadData
-                    .map(
-                        x =>
-                            String(
-                                x.meterType ||
-                                ""
-                            ).trim()
-                    )
-                    .filter(Boolean)
-            )
-        ];
-
-
-    meterMakes.sort(
-        (a, b) =>
-            a.localeCompare(b)
-    );
-
-
-    meterMakes.forEach(
-        make => {
-
-            ddl.append(
-                $("<option>", {
-
-                    value: make,
-
-                    text: make
-
-                })
-            );
-        }
+    populateHesDropdown(
+        "#hesMeterMakeFilter",
+        allHesDownloadData.map(
+            item => getHesRow(item).meterType
+        ),
+        "All Meter Makes"
     );
 }
 
 
-// ============================================================
-// CYCLE FILTER
-// ============================================================
+/* ============================================================
+   CYCLE FILTER
+   ============================================================ */
 
 function loadHesCycleFilter() {
 
-    const ddl = $("#hesCycleFilter");
-
-    if (!ddl.length) {
-        return;
-    }
-
-
-    /*
-     * Save currently selected cycle
-     * BEFORE clearing dropdown.
-     */
-    const currentCycle =
-        String(
-            ddl.val() || ""
-        )
-            .trim()
-            .toUpperCase();
-
-
-    /*
-     * Get selected department
-     */
-    const selectedDepartment =
-        String(
-            $("#hesDepartmentFilter").val() || ""
-        )
-            .trim()
-            .toUpperCase();
-
-
-    /*
-     * Clear cycle dropdown
-     */
-    ddl.empty();
-
-
-    /*
-     * DEFAULT OPTION
-     */
-    ddl.append(`
-        <option value="">
-            All Cycles
-        </option>
-    `);
-
-
-    /*
-     * Start with all HES data
-     */
-    let sourceData =
-        allHesDownloadData;
-
-
-    /*
-     * If department is selected,
-     * only show cycles belonging
-     * to that department.
-     */
-    if (selectedDepartment !== "") {
-
-        sourceData =
-            allHesDownloadData.filter(
-                item => {
-
-                    const itemDepartment =
-                        String(
-                            item.sapDepartment || ""
-                        )
-                            .trim()
-                            .toUpperCase();
-
-                    return (
-                        itemDepartment ===
-                        selectedDepartment
-                    );
-                }
-            );
-    }
-
-
-    /*
-     * Get unique cycles
-     */
-    const cycles = [
-        ...new Set(
-            sourceData
-                .map(
-                    item =>
-                        String(
-                            item.cycle || ""
-                        ).trim()
-                )
-                .filter(Boolean)
-        )
-    ];
-
-
-    /*
-     * Sort cycles numerically
-     */
-    cycles.sort(
-        (a, b) =>
-            a.localeCompare(
-                b,
-                undefined,
-                {
-                    numeric: true
-                }
-            )
+    const currentCycle = String(
+        $("#hesCycleFilter").val() || ""
     );
 
+    const selectedDepartment = normalizeHesValue(
+        $("#hesDepartmentFilter").val()
+    );
 
-    /*
-     * Add cycles to dropdown
-     */
-    cycles.forEach(cycle => {
+    let sourceData = allHesDownloadData;
 
-        ddl.append(
-            $("<option>", {
-                value: cycle,
-                text: cycle
-            })
-        );
+    if (selectedDepartment) {
 
-    });
+        sourceData = allHesDownloadData.filter(item => {
 
-
-    /*
-     * Restore previous cycle only if
-     * it still belongs to selected department.
-     */
-    if (
-        currentCycle !== "" &&
-        cycles.some(
-            cycle =>
-                String(cycle)
-                    .trim()
-                    .toUpperCase() ===
-                currentCycle
-        )
-    ) {
-
-        ddl.val(currentCycle);
-
+            return normalizeHesValue(
+                getHesRow(item).sapDepartment
+            ) === selectedDepartment;
+        });
     }
-    else {
 
-        /*
-         * Default to All Cycles
-         */
-        ddl.val("");
-    }
+    const cycles = sourceData.map(
+        item => getHesRow(item).cycle
+    );
+
+    populateHesDropdown(
+        "#hesCycleFilter",
+        cycles,
+        "All Cycles"
+    );
+
+    const exists = [...$("#hesCycleFilter option")].some(
+        option => normalizeHesValue(option.value) ===
+            normalizeHesValue(currentCycle)
+    );
+
+    $("#hesCycleFilter").val(exists ? currentCycle : "");
 }
 
 
-// ============================================================
-// FILTER EVENTS
-// ============================================================
+/* ============================================================
+   FILTER EVENTS
+   ============================================================ */
 
-$("#hesDepartmentFilter") .off("change.hesDepartment").on( "change.hesDepartment",
-    function ()
-    {
-            loadHesCycleFilter();
-            applyHesFilters();
+$("#hesDepartmentFilter")
+    .off("change.hesDepartment")
+    .on("change.hesDepartment", function () {
+
+        loadHesCycleFilter();
+        applyHesFilters();
     });
 
 
 $("#hesDivisionFilter")
     .off("change.hesDivision")
-    .on(
-        "change.hesDivision",
-        applyHesFilters
-    );
+    .on("change.hesDivision", applyHesFilters);
 
 
 $("#hesPhaseFilter")
     .off("change.hesPhase")
-    .on(
-        "change.hesPhase",
-        applyHesFilters
-    );
+    .on("change.hesPhase", applyHesFilters);
 
 
 $("#hesMeterMakeFilter")
     .off("change.hesMeterMake")
-    .on(
-        "change.hesMeterMake",
-        applyHesFilters
-    );
+    .on("change.hesMeterMake", applyHesFilters);
 
-
-// CYCLE FILTER EVENT
 
 $("#hesCycleFilter")
     .off("change.hesCycle")
-    .on(
-        "change.hesCycle",
-        applyHesFilters
-    );
+    .on("change.hesCycle", applyHesFilters);
 
 
-// ============================================================
-// CLEAR FILTER BUTTON
-// ============================================================
+/* ============================================================
+   CLEAR FILTERS BUTTON
+   ============================================================ */
 
 $("#btnClearHesDownloadFilters")
     .off("click.hesClear")
-    .on(
-        "click.hesClear",
-        function () {
+    .on("click.hesClear", function () {
 
-            const access =
-                hesCurrentUserAccess;
+        clearHesFilters(hesDepartmentRestricted);
 
-
-            const department =
-                getHesUserDepartment(
-                    access
-                );
+        applyHesFilters();
+    });
 
 
-            const departmentRestricted =
-                (
-                    access?.isSuperAdmin !== true &&
-                    department !== ""
-                );
+function clearHesFilters(departmentRestricted = false) {
 
+    if (departmentRestricted) {
 
-            clearHesFilters(
-                departmentRestricted
-            );
+        $("#hesDepartmentFilter").val(
+            getHesUserDepartment(hesCurrentUserAccess)
+        );
 
+    } else {
 
-            if (
-                departmentRestricted
-            ) {
-
-                filteredHesDownloadData =
-                    allHesDownloadData.filter(
-                        item => {
-
-                            const itemDepartment =
-                                String(
-                                    item.sapDepartment ||
-                                    ""
-                                )
-                                    .trim()
-                                    .toUpperCase();
-
-
-                            return (
-                                itemDepartment ===
-                                department
-                            );
-                        }
-                    );
-
-            }
-            else {
-
-                filteredHesDownloadData =
-                    [
-                        ...allHesDownloadData
-                    ];
-            }
-
-
-            renderHesDownloadTable(
-                filteredHesDownloadData
-            );
-        }
-    );
-
-
-// ============================================================
-// CLEAR FILTERS
-// ============================================================
-
-function clearHesFilters(
-    departmentRestricted = false
-) {
-
-    if (
-        departmentRestricted
-    ) {
-
-        const department =
-            getHesUserDepartment(
-                hesCurrentUserAccess
-            );
-
-
-        $("#hesDepartmentFilter")
-            .val(
-                department
-            );
-
-    }
-    else {
-
-        $("#hesDepartmentFilter")
-            .val("");
+        $("#hesDepartmentFilter").val("");
     }
 
-
-    $("#hesDivisionFilter")
-        .val("");
-
-
-    $("#hesPhaseFilter")
-        .val("");
-
-
-    $("#hesMeterMakeFilter")
-        .val("");
-
-
-    // CYCLE
-
-    $("#hesCycleFilter")
-        .val("");
+    $("#hesDivisionFilter").val("");
+    $("#hesPhaseFilter").val("");
+    $("#hesMeterMakeFilter").val("");
+    $("#hesCycleFilter").val("");
 }
 
 
-// ============================================================
-// APPLY FILTERS
-// ============================================================
+/* ============================================================
+   APPLY FILTERS
+   ============================================================ */
 
 function applyHesFilters() {
 
-    const department =
-        String(
-            $("#hesDepartmentFilter")
-                .val() || ""
-        )
-            .trim()
-            .toUpperCase();
+    const department = normalizeHesValue(
+        $("#hesDepartmentFilter").val()
+    );
 
+    const division = normalizeHesValue(
+        $("#hesDivisionFilter").val()
+    );
 
-    const division =
-        String(
-            $("#hesDivisionFilter")
-                .val() || ""
-        )
-            .trim()
-            .toUpperCase();
+    const phase = normalizeHesValue(
+        $("#hesPhaseFilter").val()
+    );
 
+    const meterMake = normalizeHesValue(
+        $("#hesMeterMakeFilter").val()
+    );
 
-    const phase =
-        String(
-            $("#hesPhaseFilter")
-                .val() || ""
-        )
-            .trim()
-            .toUpperCase();
-
-
-    const meterMake =
-        String(
-            $("#hesMeterMakeFilter")
-                .val() || ""
-        )
-            .trim()
-            .toUpperCase();
-
-
-    // CYCLE
-
-    const cycle =
-        String(
-            $("#hesCycleFilter")
-                .val() || ""
-        )
-            .trim()
-            .toUpperCase();
-
-
-    // ---------------------------------------------------------
-    // HARD DEPARTMENT RESTRICTION
-    // ---------------------------------------------------------
+    const cycle = normalizeHesValue(
+        $("#hesCycleFilter").val()
+    );
 
     const userDepartment =
-        getHesUserDepartment(
-            hesCurrentUserAccess
-        );
-
-
-    const departmentRestricted =
-        (
-            hesCurrentUserAccess?.isSuperAdmin !== true &&
-            userDepartment !== ""
-        );
-
+        getHesUserDepartment(hesCurrentUserAccess);
 
     const effectiveDepartment =
-        departmentRestricted
+        hesDepartmentRestricted
             ? userDepartment
             : department;
 
-
-    // ---------------------------------------------------------
-    // FILTER
-    // ---------------------------------------------------------
-
     filteredHesDownloadData =
-        allHesDownloadData.filter(
-            item => {
+        allHesDownloadData.filter(item => {
 
-                const itemDepartment =
-                    String(
-                        item.sapDepartment ||
-                        ""
-                    )
-                        .trim()
-                        .toUpperCase();
+            const row = getHesRow(item);
 
+            return (
+                (!effectiveDepartment ||
+                    normalizeHesValue(row.sapDepartment) === effectiveDepartment) &&
 
-                const departmentMatch =
-                    effectiveDepartment === "" ||
-                    itemDepartment ===
-                    effectiveDepartment;
+                (!division ||
+                    normalizeHesValue(row.sapDivision) === division) &&
 
+                (!phase ||
+                    normalizeHesValue(row.phase) === phase) &&
 
-                const itemDivision =
-                    String(
-                        item.sapDivision ||
-                        ""
-                    )
-                        .trim()
-                        .toUpperCase();
+                (!meterMake ||
+                    normalizeHesValue(row.meterType) === meterMake) &&
 
-
-                const divisionMatch =
-                    division === "" ||
-                    itemDivision ===
-                    division;
-
-
-                const itemPhase =
-                    String(
-                        item.phase ||
-                        ""
-                    )
-                        .trim()
-                        .toUpperCase();
-
-
-                const phaseMatch =
-                    phase === "" ||
-                    itemPhase ===
-                    phase;
-
-
-                const itemMeterMake =
-                    String(
-                        item.meterType ||
-                        ""
-                    )
-                        .trim()
-                        .toUpperCase();
-
-
-                const meterMakeMatch =
-                    meterMake === "" ||
-                    itemMeterMake ===
-                    meterMake;
-
-
-                // CYCLE
-
-                const itemCycle =
-                    String(
-                        item.cycle ||
-                        ""
-                    )
-                        .trim()
-                        .toUpperCase();
-
-
-                const cycleMatch =
-                    cycle === "" ||
-                    itemCycle ===
-                    cycle;
-
-
-                return (
-                    departmentMatch &&
-                    divisionMatch &&
-                    phaseMatch &&
-                    meterMakeMatch &&
-                    cycleMatch
-                );
-            }
-        );
-
+                (!cycle ||
+                    normalizeHesValue(row.cycle) === cycle)
+            );
+        });
 
     renderHesDownloadTable(
         filteredHesDownloadData
@@ -1211,33 +686,22 @@ function applyHesFilters() {
 }
 
 
-// ============================================================
-// RENDER TABLE
-// ============================================================
+/* ============================================================
+   RENDER COMPLETE 13-COLUMN TABLE
+   ============================================================ */
 
-function renderHesDownloadTable(
-    data
-) {
+function renderHesDownloadTable(data) {
 
-    const tbody =
-        $("#hesDownloadSummaryBody");
-
+    const tbody = $("#hesDownloadSummaryBody");
 
     tbody.empty();
 
-
-    if (
-        !data ||
-        data.length === 0
-    ) {
+    if (!Array.isArray(data) || data.length === 0) {
 
         tbody.html(`
             <tr>
-                <td colspan="10"
-                    class="text-center py-4">
-
+                <td colspan="13" class="text-center py-4 text-muted">
                     No Records Found
-
                 </td>
             </tr>
         `);
@@ -1245,502 +709,274 @@ function renderHesDownloadTable(
         return;
     }
 
+    const fragment = document.createDocumentFragment();
 
-    data.forEach(
-        (x, index) => {
+    data.forEach((item, index) => {
 
-            tbody.append(`
-                <tr>
+        const row = getHesRow(item);
 
-                    <td class="text-center fw-semibold">
-                        ${index + 1}
-                    </td>
+        const tr = document.createElement("tr");
 
-                    <td>
-                        ${escapeHesHtml(
-                x.consRef
-            )}
-                    </td>
+        const columns = [
+            {
+                value: index + 1,
+                className: "text-center fw-semibold"
+            },
+            {
+                value: row.consRef
+            },
+            {
+                value: row.meterNumber,
+                className: "meter-number-cell"
+            },
+            {
+                value: row.kwh,
+                className: "text-end"
+            },
+            {
+                value: row.kvah,
+                className: "text-end"
+            },
+            {
+                value: getHesDate(row.readingDate),
+                className: "text-center reading-date-cell"
+            },
+            {
+                value: row.phase,
+                className: "text-center"
+            },
+            {
+                value: row.sapDepartment
+            },
+            {
+                value: row.cycle,
+                className: "text-center"
+            },
+            {
+                value: row.sapDivision
+            },
+            {
+                value: row.sapSeqNo,
+                className: "text-center"
+            },
+            {
+                value: row.address,
+                className: "address-cell"
+            },
+            {
+                value: row.meterType
+            }
+        ];
 
-                    <td>
-                        ${escapeHesHtml(
-                x.meterNumber
-            )}
-                    </td>
+        columns.forEach(column => {
 
-                    <td class="text-center">
-                        ${escapeHesHtml(
-                x.phase
-            )}
-                    </td>
+            const td = document.createElement("td");
 
-                    <td>
-                        ${escapeHesHtml(
-                x.sapDepartment
-            )}
-                    </td>
+            td.textContent = getHesText(column.value);
 
-                    <td class="text-center">
-                        ${escapeHesHtml(
-                x.cycle
-            )}
-                    </td>
+            if (column.className) {
+                td.className = column.className;
+            }
 
-                    <td>
-                        ${escapeHesHtml(
-                x.sapDivision
-            )}
-                    </td>
+            tr.appendChild(td);
+        });
 
-                    <td>
-                        ${escapeHesHtml(
-                x.sapSeqNo
-            )}
-                    </td>
+        fragment.appendChild(tr);
+    });
 
-                    <td class="address-cell">
-                        ${escapeHesHtml(
-                x.address,
-                "--"
-            )}
-                    </td>
+    tbody[0].appendChild(fragment);
 
-                    <td>
-                        ${escapeHesHtml(
-                x.meterType
-            )}
-                    </td>
-
-                </tr>
-            `);
-        }
+    console.log(
+        "HES table rendered:",
+        data.length,
+        "records"
     );
 }
 
 
-// ============================================================
-// EXCEL EXPORT - BRPL HES DOWNLOAD
-// ============================================================
+/* ============================================================
+   EXCEL EXPORT - COMPLETE 13 COLUMNS
+   Requires SheetJS XLSX.
+   ============================================================ */
 
 function exportHesDownloadBrplTableToExcel() {
 
-    const table =
-        document.getElementById(
-            "hesDownloadSummaryTable"
-        );
+    if (typeof XLSX === "undefined") {
 
-
-    if (!table) {
-
-        console.error(
-            "HES Download table not found."
-        );
+        alert("Excel library (SheetJS) is not loaded.");
 
         return;
     }
 
+    if (!filteredHesDownloadData.length) {
 
-    // ============================================================
-    // CHECK DATA
-    // ============================================================
-
-    const bodyRows =
-        table.querySelectorAll(
-            "tbody tr"
-        );
-
-
-    let hasData = false;
-
-
-    bodyRows.forEach(
-        row => {
-
-            const cells =
-                row.querySelectorAll(
-                    "td"
-                );
-
-
-            if (
-                cells.length === 10
-            ) {
-                hasData = true;
-            }
-        }
-    );
-
-
-    if (!hasData) {
-
-        alert(
-            "No HES Download data available to export."
-        );
+        alert("No HES Download data available to export.");
 
         return;
     }
 
+    const headers = [
+        "S.No.",
+        "Cons Ref",
+        "Meter Number",
+        "KWH",
+        "KVAH",
+        "Reading Date",
+        "Phase",
+        "Department",
+        "Cycle",
+        "Division",
+        "Seq No",
+        "Address",
+        "Meter Make"
+    ];
 
-    // ============================================================
-    // CREATE WORKBOOK
-    // ============================================================
+    const rows = filteredHesDownloadData.map((item, index) => {
 
-    const wb =
-        XLSX.utils.book_new();
+        const x = getHesRow(item);
 
+        return [
+            index + 1,
+            getHesText(x.consRef, ""),
+            getHesText(x.meterNumber, ""),
+            x.kwh ?? "",
+            x.kvah ?? "",
+            getHesDate(x.readingDate) === "--"
+                ? ""
+                : getHesDate(x.readingDate),
+            getHesText(x.phase, ""),
+            getHesText(x.sapDepartment, ""),
+            getHesText(x.cycle, ""),
+            getHesText(x.sapDivision, ""),
+            getHesText(x.sapSeqNo, ""),
+            getHesText(x.address, ""),
+            getHesText(x.meterType, "")
+        ];
+    });
 
-    // ============================================================
-    // CREATE WORKSHEET
-    // ============================================================
+    const wb = XLSX.utils.book_new();
 
-    const ws =
-        XLSX.utils.table_to_sheet(
-            table
-        );
+    const ws = XLSX.utils.aoa_to_sheet([
+        headers,
+        ...rows
+    ]);
 
-
-    // ============================================================
-    // REPORT COLORS
-    // ============================================================
-
-    const NAVY_BLUE =
-        "17365D";
-
-    const WHITE =
-        "FFFFFF";
-
-    const BLACK =
-        "000000";
-
-    const BORDER_COLOR =
-        "7F7F7F";
-
-
-    // ============================================================
-    // BORDER
-    // ============================================================
-
-    const allBorders = {
-
-        top: {
-            style: "thin",
-            color: {
-                rgb: BORDER_COLOR
-            }
-        },
-
-        bottom: {
-            style: "thin",
-            color: {
-                rgb: BORDER_COLOR
-            }
-        },
-
-        left: {
-            style: "thin",
-            color: {
-                rgb: BORDER_COLOR
-            }
-        },
-
-        right: {
-            style: "thin",
-            color: {
-                rgb: BORDER_COLOR
-            }
-        }
+    const border = {
+        top: { style: "thin", color: { rgb: "7F7F7F" } },
+        bottom: { style: "thin", color: { rgb: "7F7F7F" } },
+        left: { style: "thin", color: { rgb: "7F7F7F" } },
+        right: { style: "thin", color: { rgb: "7F7F7F" } }
     };
-
-
-    // ============================================================
-    // HEADER STYLE
-    // ============================================================
 
     const headerStyle = {
-
         fill: {
             patternType: "solid",
-
-            fgColor: {
-                rgb: NAVY_BLUE
-            }
+            fgColor: { rgb: "17365D" }
         },
-
         font: {
             name: "Calibri",
-
             sz: 11,
-
             bold: true,
-
-            color: {
-                rgb: WHITE
-            }
+            color: { rgb: "FFFFFF" }
         },
-
         alignment: {
             horizontal: "center",
-
             vertical: "center",
-
             wrapText: true
         },
-
-        border: allBorders
+        border
     };
-
-
-    // ============================================================
-    // NORMAL DATA STYLE
-    // ============================================================
 
     const normalStyle = {
-
         font: {
             name: "Calibri",
-
             sz: 10,
-
-            color: {
-                rgb: BLACK
-            }
+            color: { rgb: "000000" }
         },
-
         alignment: {
             vertical: "center",
-
             wrapText: true
         },
-
-        border: allBorders
+        border
     };
-
-
-    // ============================================================
-    // CENTER DATA STYLE
-    // ============================================================
 
     const centerStyle = {
-
-        font: {
-            name: "Calibri",
-
-            sz: 10,
-
-            color: {
-                rgb: BLACK
-            }
-        },
-
+        ...normalStyle,
         alignment: {
             horizontal: "center",
-
             vertical: "center",
-
             wrapText: true
-        },
-
-        border: allBorders
+        }
     };
 
+    // Header styling.
+    for (let col = 0; col < 13; col++) {
 
-    // ============================================================
-    // STYLE HEADER
-    // ============================================================
+        const address = XLSX.utils.encode_cell({
+            r: 0,
+            c: col
+        });
 
-    for (
-        let col = 0;
-        col < 10;
-        col++
-    ) {
-
-        const address =
-            XLSX.utils.encode_cell({
-                r: 0,
-                c: col
-            });
-
-
-        if (ws[address]) {
-
-            ws[address].s =
-                headerStyle;
-        }
+        ws[address].s = headerStyle;
     }
 
+    // Data styling.
+    for (let r = 1; r <= rows.length; r++) {
 
-    // ============================================================
-    // STYLE ALL DATA CELLS
-    // ============================================================
+        for (let c = 0; c < 13; c++) {
 
-    for (
-        let row = 1;
-        row < bodyRows.length + 1;
-        row++
-    ) {
-
-        for (
-            let col = 0;
-            col < 10;
-            col++
-        ) {
-
-            const address =
-                XLSX.utils.encode_cell({
-                    r: row,
-                    c: col
-                });
-
+            const address = XLSX.utils.encode_cell({
+                r,
+                c
+            });
 
             if (!ws[address]) {
                 continue;
             }
 
-
-            // ----------------------------------------------------
-            // CENTER:
-            // S.No.
-            // Phase
-            // Cycle
-            // Seq No
-            // ----------------------------------------------------
-
-            if (
-                col === 0 ||
-                col === 3 ||
-                col === 5 ||
-                col === 7
-            ) {
-
-                ws[address].s =
-                    centerStyle;
-
-            }
-            else {
-
-                ws[address].s =
-                    normalStyle;
-            }
+            ws[address].s =
+                [0, 3, 4, 5, 6, 8, 10].includes(c)
+                    ? centerStyle
+                    : normalStyle;
         }
     }
 
-
-    // ============================================================
-    // COLUMN WIDTHS
-    // ============================================================
-
     ws["!cols"] = [
-
-        {
-            wch: 8
-        },      // S.No.
-
-        {
-            wch: 17
-        },     // Cons Ref
-
-        {
-            wch: 20
-        },     // Meter Number
-
-        {
-            wch: 10
-        },     // Phase
-
-        {
-            wch: 17
-        },     // Department
-
-        {
-            wch: 10
-        },     // Cycle
-
-        {
-            wch: 18
-        },     // Division
-
-        {
-            wch: 12
-        },     // Seq No
-
-        {
-            wch: 55
-        },     // Address
-
-        {
-            wch: 18
-        }      // Meter Make
-
+        { wch: 8 },
+        { wch: 18 },
+        { wch: 20 },
+        { wch: 13 },
+        { wch: 13 },
+        { wch: 22 },
+        { wch: 12 },
+        { wch: 20 },
+        { wch: 12 },
+        { wch: 20 },
+        { wch: 14 },
+        { wch: 55 },
+        { wch: 20 }
     ];
 
-
-    // ============================================================
-    // ROW HEIGHTS
-    // ============================================================
-
-    ws["!rows"] = [];
-
-
-    // Header
-
-    ws["!rows"][0] = {
-        hpt: 32
-    };
-
-
-    // Data rows
-
-    for (
-        let i = 1;
-        i < bodyRows.length + 1;
-        i++
-    ) {
-
-        ws["!rows"][i] = {
-            hpt: 30
-        };
-    }
-
-
-    // ============================================================
-    // AUTOFILTER
-    // ============================================================
+    ws["!rows"] = [
+        { hpt: 32 },
+        ...rows.map(() => ({ hpt: 28 }))
+    ];
 
     ws["!autofilter"] = {
-
-        ref:
-            `A1:J${bodyRows.length + 1}`
+        ref: `A1:M${rows.length + 1}`
     };
 
-
-    // ============================================================
-    // FREEZE HEADER
-    // ============================================================
-
+    // Freeze first row.
     ws["!freeze"] = {
-
         xSplit: 0,
-
         ySplit: 1
     };
 
-
-    // ============================================================
-    // HIDE GRIDLINES
-    // ============================================================
-
     ws["!sheetViews"] = [
-
         {
             showGridLines: false
         }
-
     ];
-
-
-    // ============================================================
-    // ADD WORKSHEET
-    // ============================================================
 
     XLSX.utils.book_append_sheet(
         wb,
@@ -1748,16 +984,9 @@ function exportHesDownloadBrplTableToExcel() {
         "HES Download"
     );
 
-
-    // ============================================================
-    // FILE NAME
-    // ============================================================
-
-    const date =
-        new Date()
-            .toISOString()
-            .split("T")[0];
-
+    const date = new Date()
+        .toISOString()
+        .split("T")[0];
 
     XLSX.writeFile(
         wb,
@@ -1766,186 +995,239 @@ function exportHesDownloadBrplTableToExcel() {
 }
 
 
-// ============================================================
-// CSV EXPORT
-// ============================================================
+/* ============================================================
+   CSV EXPORT - COMPLETE 13 COLUMNS
+   ============================================================ */
 
 function exportHesDownloadBrplTableToCSV() {
 
-    const table =
-        document.getElementById(
-            "hesDownloadSummaryTable"
-        );
+    if (!filteredHesDownloadData.length) {
 
-
-    if (!table) {
-
-        console.error(
-            "HES table not found."
-        );
+        alert("No HES Download data available to export.");
 
         return;
     }
 
+    const headers = [
+        "S.No.",
+        "Cons Ref",
+        "Meter Number",
+        "KWH",
+        "KVAH",
+        "Reading Date",
+        "Phase",
+        "Department",
+        "Cycle",
+        "Division",
+        "Seq No",
+        "Address",
+        "Meter Make"
+    ];
 
-    const csv = [];
+    function csvEscape(value) {
 
+        let text = String(value ?? "");
 
-    table.querySelectorAll(
-        "tr"
-    ).forEach(
-        row => {
+        // Prevent spreadsheet formula injection.
+        if (/^[=+\-@\t\r]/.test(text)) {
+            text = "'" + text;
+        }
 
-            if (
-                row.style.display ===
-                "none"
-            ) {
-                return;
-            }
+        return `"${text.replace(/"/g, '""')}"`;
+    }
 
+    const csvRows = [headers.map(csvEscape).join(",")];
 
-            const cols =
-                row.querySelectorAll(
-                    "th, td"
-                );
+    filteredHesDownloadData.forEach((item, index) => {
 
+        const x = getHesRow(item);
 
-            const data = [];
+        const row = [
+            index + 1,
+            x.consRef,
+            x.meterNumber,
+            x.kwh,
+            x.kvah,
+            getHesDate(x.readingDate) === "--"
+                ? ""
+                : getHesDate(x.readingDate),
+            x.phase,
+            x.sapDepartment,
+            x.cycle,
+            x.sapDivision,
+            x.sapSeqNo,
+            x.address,
+            x.meterType
+        ];
 
+        csvRows.push(
+            row.map(csvEscape).join(",")
+        );
+    });
 
-            cols.forEach(
-                col => {
-
-                    const value =
-                        (
-                            col.innerText ||
-                            ""
-                        )
-                            .replace(
-                                /\r?\n|\r/g,
-                                " "
-                            )
-                            .trim()
-                            .replace(
-                                /"/g,
-                                '""'
-                            );
-
-
-                    data.push(
-                        `"${value}"`
-                    );
-                }
-            );
-
-
-            csv.push(
-                data.join(",")
-            );
+    // UTF-8 BOM supports Excel Hindi/Unicode text.
+    const blob = new Blob(
+        ["\uFEFF" + csvRows.join("\r\n")],
+        {
+            type: "text/csv;charset=utf-8;"
         }
     );
 
+    const url = URL.createObjectURL(blob);
 
-    const blob =
-        new Blob(
-            [
-                csv.join("\n")
-            ],
-            {
-                type:
-                    "text/csv;charset=utf-8;"
-            }
-        );
+    const link = document.createElement("a");
 
+    link.href = url;
 
-    const url =
-        URL.createObjectURL(
-            blob
-        );
-
-
-    const link =
-        document.createElement(
-            "a"
-        );
-
-
-    link.href =
-        url;
-
-
-    const date =
-        new Date()
-            .toISOString()
-            .split("T")[0];
-
+    const date = new Date()
+        .toISOString()
+        .split("T")[0];
 
     link.download =
         `HES_Download_Summary_BRPL_${date}.csv`;
 
-
-    document.body.appendChild(
-        link
-    );
-
+    document.body.appendChild(link);
 
     link.click();
 
+    link.remove();
 
-    document.body.removeChild(
-        link
-    );
-
-
-    URL.revokeObjectURL(
-        url
-    );
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 
-// ============================================================
-// HTML ESCAPE
-// ============================================================
+/* ============================================================
+   PRINT - HES REPORT ONLY
+   ============================================================ */
 
-function escapeHesHtml(
-    value,
-    fallback = ""
-) {
+function printHesDownloadReport() {
 
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
+    if (!filteredHesDownloadData.length) {
 
-        return fallback;
+        alert("No HES Download data available to print.");
+
+        return;
     }
 
+    const headers = [
+        "S.No.",
+        "Cons Ref",
+        "Meter Number",
+        "KWH",
+        "KVAH",
+        "Reading Date",
+        "Phase",
+        "Department",
+        "Cycle",
+        "Division",
+        "Seq No",
+        "Address",
+        "Meter Make"
+    ];
 
-    return String(value)
+    const headerHtml = headers.map(
+        header => `<th>${escapeHesHtml(header)}</th>`
+    ).join("");
 
-        .replace(
-            /&/g,
-            "&amp;"
-        )
+    const bodyHtml = filteredHesDownloadData.map((item, index) => {
 
-        .replace(
-            /</g,
-            "&lt;"
-        )
+        const x = getHesRow(item);
 
-        .replace(
-            />/g,
-            "&gt;"
-        )
+        const values = [
+            index + 1,
+            x.consRef,
+            x.meterNumber,
+            x.kwh,
+            x.kvah,
+            getHesDate(x.readingDate),
+            x.phase,
+            x.sapDepartment,
+            x.cycle,
+            x.sapDivision,
+            x.sapSeqNo,
+            x.address,
+            x.meterType
+        ];
 
-        .replace(
-            /"/g,
-            "&quot;"
-        )
+        return `<tr>${values.map(value =>
+            `<td>${escapeHesHtml(value)}</td>`
+        ).join("")}</tr>`;
 
-        .replace(
-            /'/g,
-            "&#039;"
-        );
+    }).join("");
+
+    const printWindow = window.open("", "_blank");
+
+    if (!printWindow) {
+
+        alert("Please allow pop-ups to print the HES report.");
+
+        return;
+    }
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>HES Download Summary</title>
+            <style>
+                @page {
+                    size: landscape;
+                    margin: 8mm;
+                }
+
+                body {
+                    font-family: Arial, sans-serif;
+                    font-size: 9px;
+                }
+
+                h3 {
+                    text-align: center;
+                    margin-bottom: 12px;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                th, td {
+                    border: 1px solid #777;
+                    padding: 5px;
+                    text-align: left;
+                    overflow-wrap: anywhere;
+                }
+
+                th {
+                    background: #17365D;
+                    color: white;
+                }
+
+                tr:nth-child(even) {
+                    background: #f2f2f2;
+                }
+            </style>
+        </head>
+        <body>
+            <h3>Meter Download Summary - BRPL</h3>
+
+            <table>
+                <thead>
+                    <tr>${headerHtml}</tr>
+                </thead>
+
+                <tbody>
+                    ${bodyHtml}
+                </tbody>
+            </table>
+
+            <script>
+                window.onload = function() {
+                    window.print();
+                };
+            <\/script>
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
 }

@@ -2185,174 +2185,171 @@ FROM FINAL_DATA";
 
                 string query = @"WITH MONTHS AS
                 (
-                    SELECT /*+ MATERIALIZE */ TRIM( REGEXP_SUBSTR( :READING_MONTH, '[^,]+', 1, LEVEL )) AS READING_MONTH
+                    SELECT DISTINCT TRIM(REGEXP_SUBSTR(:READING_MONTH, '[^,]+', 1, LEVEL)) AS READING_MONTH
                     FROM DUAL
-                    CONNECT BY REGEXP_SUBSTR(:READING_MONTH,'[^,]+',1, LEVEL ) IS NOT NULL
+                    CONNECT BY REGEXP_SUBSTR(:READING_MONTH, '[^,]+', 1, LEVEL) IS NOT NULL
                 ),
-                BILLING_DATA AS
+                BILL_RAW AS
                 (
-                    SELECT METERNO, CONS_REF, READING_MONTH, BILLMONTH, SAP_DEPARTMENT, CYCLE, ENTRY_DATE
-                    FROM RCMPA.SMART_METER_BILLING_DATA_SEP
+                    SELECT METERNO,  CONS_REF, READING_MONTH, BILLMONTH, ENTRY_DATE, READING_DATE, 
+                    KWH, KVAH, CYCLE, MACHINE_ID, SAP_DEPARTMENT  FROM RCMPA.SMART_METER_BILLING_DATA_SEP
+                    WHERE
+                           METERNO LIKE '91______'
+                        OR METERNO LIKE '90______'
+                        OR METERNO LIKE 'AL________'
+                        OR METERNO LIKE 'KI________'
+                        OR METERNO LIKE 'RSE%'
                     UNION ALL
-                    SELECT METERNO, CONS_REF, READING_MONTH, BILLMONTH, SAP_DEPARTMENT, CYCLE, ENTRY_DATE
-                    FROM RCMPA.SMART_METER_BILLING_DATA
+                    SELECT
+                        METERNO,CONS_REF, READING_MONTH,BILLMONTH, ENTRY_DATE,READING_DATE,
+                        KWH,KVAH,CYCLE,  MACHINE_ID, SAP_DEPARTMENT FROM RCMPA.SMART_METER_BILLING_DATA
+                    WHERE
+                           METERNO LIKE '91______'
+                        OR METERNO LIKE '90______'
+                        OR METERNO LIKE 'AL________'
+                        OR METERNO LIKE 'KI________'
+                        OR METERNO LIKE 'RSE%'
                 ),
-                LATEST_DOWNLOAD AS
+                BILL_NORMALIZED AS
                 (
-                    SELECT TRIM(B.METERNO) AS METERNO, B.CONS_REF, B.READING_MONTH, B.BILLMONTH,
+                    SELECT  B.*, TRIM(B.METERNO) AS NORMALIZED_METERNO,
                         CASE
                             WHEN B.SAP_DEPARTMENT = 'MLCC'  AND B.CYCLE = '0N'
-                            THEN 'KCC'
-                            WHEN B.CYCLE IN ('KA','KC','KG')
-                            THEN 'KCC'
+                                THEN 'KCC'
+                            WHEN B.CYCLE IN ('KA', 'KC', 'KG')
+                                THEN 'KCC'
                             WHEN B.SAP_DEPARTMENT IS NULL
-                            THEN 'SLCC'
+                                THEN 'SLCC'
                             ELSE UPPER(TRIM(B.SAP_DEPARTMENT))
-                        END AS SAP_DEPARTMENT,
-                        B.CYCLE,
+                        END AS DEPARTMENT
+                    FROM BILL_RAW B
+                ),
+                BILL AS
+                (
+                 SELECT B.* FROM BILL_NORMALIZED B WHERE
+                 (
+                  :IS_SUPERADMIN = 1 OR B.DEPARTMENT = UPPER(:DEPARTMENT)
+                 )
+                 AND
+                (
+                    (
+                        B.DEPARTMENT IN ('GCC', 'MLCC', 'KCC') AND EXISTS
+                        (
+                            SELECT 1 FROM MONTHS M WHERE M.READING_MONTH = B.BILLMONTH
+                        )
+                    )
+                    OR
+                    (
+                        B.DEPARTMENT = 'SLCC' AND EXISTS
+                        (
+                            SELECT 1 FROM MONTHS M WHERE M.READING_MONTH = B.READING_MONTH
+                        )
+                    )
+                  )
+                ),
+                DL_METERS AS
+                (
+                    SELECT TRIM(METERNO) AS METERNO,
+                        MAX(
+                            CASE
+                                WHEN MACHINE_ID IS NOT NULL THEN 1
+                                ELSE 0
+                            END
+                        ) AS IS_CMRI FROM BILL GROUP BY TRIM(METERNO)
+                ),
+                HES_METERS AS
+                (
+                    SELECT  METERNO FROM DL_METERS WHERE IS_CMRI = 0
+                ),
+                LATEST_HES_DOWNLOAD AS
+                (
+                    SELECT B.*,
                         ROW_NUMBER() OVER
                         (
-                            PARTITION BY  TRIM(B.METERNO), B.READING_MONTH ORDER BY B.ENTRY_DATE DESC
+                            PARTITION BY B.NORMALIZED_METERNO ORDER BY B.ENTRY_DATE DESC NULLS LAST,B.READING_MONTH DESC NULLS LAST,
+                            B.BILLMONTH DESC NULLS LAST, B.READING_DATE DESC NULLS LAST, B.CONS_REF DESC NULLS LAST
+
                         ) AS RN
-                    FROM BILLING_DATA B
-                    WHERE
-                    (
-                           B.METERNO LIKE '91______'
-                        OR B.METERNO LIKE '90______'
-                        OR B.METERNO LIKE 'AL________'
-                        OR B.METERNO LIKE 'KI________'
-                        OR B.METERNO LIKE 'RSE%'
-                    )
-                    AND
-                    (
-                        (
-                            CASE
-                                WHEN B.SAP_DEPARTMENT = 'MLCC'  AND B.CYCLE = '0N'
-                                THEN 'KCC'
-                                WHEN B.CYCLE IN ('KA','KC','KG')
-                                THEN 'KCC'
-                                WHEN B.SAP_DEPARTMENT IS NULL
-                                THEN 'SLCC'
-                                ELSE UPPER(TRIM(B.SAP_DEPARTMENT))
-                            END IN ('GCC','MLCC','KCC')
-                            AND EXISTS
-                            (
-                                SELECT 1 FROM MONTHS M  WHERE M.READING_MONTH = B.BILLMONTH
-                            )
-                        )
-                        OR
-                        (
-                            CASE
-                                WHEN B.SAP_DEPARTMENT = 'MLCC' AND B.CYCLE = '0N'
-                                THEN 'KCC'
-                                WHEN B.CYCLE IN ('KA','KC','KG')
-                                THEN 'KCC'
-                                WHEN B.SAP_DEPARTMENT IS NULL
-                                THEN 'SLCC'
-                                ELSE UPPER(TRIM(B.SAP_DEPARTMENT))
-                            END IN ('SLCC')
-                            AND EXISTS
-                            (
-                                SELECT 1 FROM MONTHS M WHERE M.READING_MONTH = B.READING_MONTH
-                            )
-                        )
-                    )
-                    AND
-                    (
-                        :IS_SUPERADMIN = 1
-                        OR
-                        CASE
-                            WHEN B.SAP_DEPARTMENT = 'MLCC' AND B.CYCLE = '0N'
-                            THEN 'KCC'
-                            WHEN B.CYCLE IN ('KA','KC','KG')
-                            THEN 'KCC'
-                            WHEN B.SAP_DEPARTMENT IS NULL
-                            THEN 'SLCC'
-                            ELSE UPPER(TRIM(B.SAP_DEPARTMENT)) END = UPPER(TRIM(:DEPARTMENT))
-                    )
+                    FROM BILL B INNER JOIN HES_METERS H ON H.METERNO = B.NORMALIZED_METERNO
                 ),
                 DOWNLOAD_DATA AS
                 (
-                    SELECT METERNO, CONS_REF, READING_MONTH, BILLMONTH, SAP_DEPARTMENT, CYCLE FROM LATEST_DOWNLOAD  WHERE RN = 1
+                    SELECT NORMALIZED_METERNO AS METERNO, CONS_REF, SAP_DEPARTMENT, DEPARTMENT, CYCLE, READING_MONTH, 
+                    BILLMONTH, ENTRY_DATE, READING_DATE, KWH, KVAH FROM LATEST_HES_DOWNLOAD WHERE RN = 1
+                ),
+                DOWNLOAD_KEYS AS
+                (
+                    SELECT DISTINCT CONS_REF, READING_MONTH FROM DOWNLOAD_DATA WHERE CONS_REF IS NOT NULL
                 ),
                 SLCC_DATA AS
                 (
-                    SELECT  CONS_REF,  READING_MONTH, SAP_DIVISION, SAP_SEQ_NO, ADD1, ADD2, ADD3, LAND_MARK,  FATHER_NAME
-                    FROM
+                    SELECT CONS_REF, READING_MONTH,  SAP_DIVISION, SAP_SEQ_NO,ADD1, ADD2,  ADD3, LAND_MARK, FATHER_NAME FROM
                     (
-                        SELECT S.CONS_REF, S.READING_MONTH, S.SAP_DIVISION, S.SAP_SEQ_NO, S.ADD1, S.ADD2, S.ADD3, S.LAND_MARK, S.FATHER_NAME,
+                        SELECT S.CONS_REF,  S.READING_MONTH, S.SAP_DIVISION, S.SAP_SEQ_NO, S.ADD1, S.ADD2, S.ADD3, S.LAND_MARK, S.FATHER_NAME,
                             ROW_NUMBER() OVER
                             (
-                                PARTITION BY  S.CONS_REF, S.READING_MONTH ORDER BY S.ROWID
+                                PARTITION BY S.CONS_REF,  S.READING_MONTH
+                                ORDER BY S.SAP_SEQ_NO NULLS LAST, S.SAP_DIVISION NULLS LAST,S.ADD1 NULLS LAST,
+                                S.ADD2 NULLS LAST, S.ADD3 NULLS LAST,  S.LAND_MARK NULLS LAST,  S.FATHER_NAME NULLS LAST
                             ) AS RN
-                        FROM RCMPA.SAP_SLCC_FORMY S INNER JOIN DOWNLOAD_DATA D ON D.CONS_REF = S.CONS_REF AND D.READING_MONTH = S.READING_MONTH
-                    ) WHERE RN = 1
+                        FROM RCMPA.SAP_SLCC_FORMY S INNER JOIN DOWNLOAD_KEYS D ON D.CONS_REF = S.CONS_REF AND D.READING_MONTH = S.READING_MONTH
+                    )
+                    WHERE RN = 1
+                ),
+                FORMY_ALL AS
+                (
+                    SELECT FM.CONS_REF, FM.READING_MONTH, FM.SAP_DIVISION, FM.SAP_SEQ_NO, FM.ADD1, FM.ADD2,
+                           FM.ADD3, FM.LAND_MARK, FM.FATHER_NAME,1 AS SOURCE_PRIORITY  FROM RCMPA.SAP_FORMY FM
+                    INNER JOIN DOWNLOAD_KEYS D ON D.CONS_REF = FM.CONS_REF AND D.READING_MONTH = FM.READING_MONTH
+                    UNION ALL
+                    SELECT FM.CONS_REF,FM.READING_MONTH,  FM.SAP_DIVISION, FM.SAP_SEQ_NO, FM.ADD1, FM.ADD2,
+                           FM.ADD3, FM.LAND_MARK,  FM.FATHER_NAME,2 AS SOURCE_PRIORITY FROM RCMPA.SAP_FORMY_PREV FM
+                    INNER JOIN DOWNLOAD_KEYS D ON D.CONS_REF = FM.CONS_REF AND D.READING_MONTH = FM.READING_MONTH
                 ),
                 FORMY_DATA AS
                 (
-                    SELECT  CONS_REF, READING_MONTH, SAP_DIVISION, SAP_SEQ_NO, ADD1,  ADD2, ADD3, LAND_MARK, FATHER_NAME
-                    FROM
+                    SELECT CONS_REF, READING_MONTH, SAP_DIVISION, SAP_SEQ_NO, ADD1, ADD2, ADD3,  LAND_MARK, FATHER_NAME FROM
                     (
-                        SELECT FM.CONS_REF, FM.READING_MONTH,  FM.SAP_DIVISION,  FM.SAP_SEQ_NO, FM.ADD1, FM.ADD2,  FM.ADD3, FM.LAND_MARK, FM.FATHER_NAME,
-                            ROW_NUMBER() OVER
+                        SELECT F.*, ROW_NUMBER() OVER
                             (
-                                PARTITION BY FM.CONS_REF, FM.READING_MONTH ORDER BY FM.ROWID
-                            ) AS RN FROM RCMPA.SAP_FORMY_PREV FM
-                        INNER JOIN DOWNLOAD_DATA D ON D.CONS_REF = FM.CONS_REF AND D.READING_MONTH = FM.READING_MONTH
-                        WHERE TO_DATE( D.READING_MONTH, 'YYYYMM' ) = ADD_MONTHS(  TRUNC(SYSDATE,'MM'),-1 )
-                    ) WHERE RN = 1
-                    UNION ALL
-                    SELECT CONS_REF, READING_MONTH, SAP_DIVISION, SAP_SEQ_NO, ADD1,ADD2, ADD3, LAND_MARK, FATHER_NAME
-                    FROM
-                    (
-                        SELECT FM.CONS_REF, FM.READING_MONTH, FM.SAP_DIVISION, FM.SAP_SEQ_NO, FM.ADD1, FM.ADD2, FM.ADD3, FM.LAND_MARK, FM.FATHER_NAME,
-                            ROW_NUMBER() OVER
-                            (
-                                PARTITION BY FM.CONS_REF,  FM.READING_MONTH  ORDER BY FM.ROWID
+                                PARTITION BY F.CONS_REF, F.READING_MONTH  ORDER BY F.SOURCE_PRIORITY, F.SAP_SEQ_NO NULLS LAST, F.SAP_DIVISION NULLS LAST, 
+                                F.ADD1 NULLS LAST, F.ADD2 NULLS LAST, F.ADD3 NULLS LAST,  F.LAND_MARK NULLS LAST, F.FATHER_NAME NULLS LAST
                             ) AS RN
-                        FROM RCMPA.SAP_FORMY FM
-                        INNER JOIN DOWNLOAD_DATA D ON D.CONS_REF = FM.CONS_REF AND D.READING_MONTH = FM.READING_MONTH
-                        WHERE TO_DATE(  D.READING_MONTH, 'YYYYMM' ) <> ADD_MONTHS(TRUNC(SYSDATE,'MM'),  -1 )
+
+                        FROM FORMY_ALL F
                     ) WHERE RN = 1
                 )
-                SELECT D.METERNO, D.CONS_REF, D.SAP_DEPARTMENT, D.CYCLE,
-                    NVL( S.SAP_DIVISION, FM.SAP_DIVISION ) AS SAP_DIVISION,
-                    NVL( S.SAP_SEQ_NO, FM.SAP_SEQ_NO ) AS SAP_SEQ_NO,
+                SELECT D.METERNO, D.CONS_REF, D.SAP_DEPARTMENT, D.CYCLE, D.READING_DATE, D.KWH, D.KVAH,
+                    NVL(S.SAP_DIVISION, FM.SAP_DIVISION) AS SAP_DIVISION,  NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO) AS SAP_SEQ_NO,
                     RTRIM
                     (
-                        NVL(S.ADD1, FM.ADD1) || ', ' ||  NVL(S.ADD2, FM.ADD2) || ', ' ||  NVL(S.ADD3, FM.ADD3) || ', ' ||
-                        NVL(S.LAND_MARK, FM.LAND_MARK) || ', ' ||  NVL(S.FATHER_NAME, FM.FATHER_NAME), ', '
+                        NVL(S.ADD1, FM.ADD1) || ', ' ||
+                        NVL(S.ADD2, FM.ADD2) || ', ' ||
+                        NVL(S.ADD3, FM.ADD3) || ', ' ||
+                        NVL(S.LAND_MARK, FM.LAND_MARK) || ', ' ||
+                        NVL(S.FATHER_NAME, FM.FATHER_NAME),
+                        ', '
                     ) AS ADDRESS,
                     CASE
-                        WHEN SUBSTR(D.METERNO,1,2) IN ('90','AL')
-                        THEN 'ALLIED'
-                        WHEN SUBSTR(D.METERNO,1,2) IN ('91','KI')
-                        THEN 'KIMBAL'
+                        WHEN SUBSTR(D.METERNO, 1, 2) IN ('90', 'AL')
+                            THEN 'ALLIED'
+                        WHEN SUBSTR(D.METERNO, 1, 2) IN ('91', 'KI')
+                            THEN 'KIMBAL'
                         WHEN D.METERNO LIKE 'RSE%'
-                        THEN 'RSE'
+                            THEN 'RSE'
                         ELSE 'UNKNOWN'
                     END AS METER_TYPE,
                     CASE
-                        WHEN SUBSTR(D.METERNO,1,4) IN
-                        (
-                            'AL91',
-                            'KI91',
-                            '9150',
-                            '9008',
-                            '9027'
-                        )
-                        THEN '1PH'
-                        WHEN SUBSTR(D.METERNO,1,4) IN
-                        (
-                            'AL90',
-                            'KI90',
-                            '9026',
-                            'RSE7'    
-                        )
-                        THEN '3PH'
+                        WHEN SUBSTR(D.METERNO, 1, 4) IN
+                             ('AL91', 'KI91', '9150', '9008', '9027')
+                            THEN '1PH'
+
+                        WHEN SUBSTR(D.METERNO, 1, 4) IN
+                             ('AL90', 'KI90', '9026', 'RSE7')
+                            THEN '3PH'
+
                         ELSE 'UNKNOWN'
-                    END AS PHASE_TYPE
-                FROM DOWNLOAD_DATA D LEFT JOIN SLCC_DATA S ON S.CONS_REF = D.CONS_REF AND S.READING_MONTH = D.READING_MONTH
+                    END AS PHASE_TYPE FROM DOWNLOAD_DATA D LEFT JOIN SLCC_DATA S  ON S.CONS_REF = D.CONS_REF AND S.READING_MONTH = D.READING_MONTH
                 LEFT JOIN FORMY_DATA FM ON FM.CONS_REF = D.CONS_REF AND FM.READING_MONTH = D.READING_MONTH
                 ORDER BY D.SAP_DEPARTMENT, D.CYCLE, NVL(S.SAP_DIVISION, FM.SAP_DIVISION), NVL(S.SAP_SEQ_NO, FM.SAP_SEQ_NO), D.METERNO";
 
@@ -2390,7 +2387,14 @@ FROM FINAL_DATA";
 
                                     Address =  dr["ADDRESS"]?.ToString(),
 
-                                    SapSeqNo = dr["SAP_SEQ_NO"]?.ToString()
+                                    SapSeqNo = dr["SAP_SEQ_NO"]?.ToString(),
+
+                                    Kwh = dr["KWH"]?.ToString(),
+
+                                    Kvah = dr["KVAH"]?.ToString(),
+                                    
+                                    ReadingDate = dr["READING_DATE"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(dr["READING_DATE"]),
+
                                 }
                             );
                         }
@@ -2707,85 +2711,138 @@ FROM FINAL_DATA";
             {
                 con.Open();
                 string query = @"WITH BILLING_BASE AS
-            (
-                /*+ MATERIALIZE */ SELECT B.CONS_REF, TRIM(B.METERNO)  AS METERNO,  B.CYCLE, B.BILLMONTH, B.SAP_DEPARTMENT AS BILLING_DEPARTMENT,
+                (
+                    SELECT /*+ MATERIALIZE */ B.CONS_REF, TRIM(B.METERNO) AS METERNO, B.CYCLE, B.BILLMONTH,
+                    B.READING_MONTH, B.READING_DATE, B.KWH, B.KVAH,
+                        CASE
+                            WHEN B.SAP_DEPARTMENT = 'MLCC'AND B.CYCLE = '0N'
+                                THEN 'KCC'
+                            WHEN B.CYCLE IN ('KA', 'KC', 'KG')
+                                THEN 'KCC'
+                            WHEN B.SAP_DEPARTMENT IS NULL
+                                THEN 'SLCC'
+                            ELSE UPPER(TRIM(B.SAP_DEPARTMENT))
+                        END AS DISPLAY_DEPARTMENT
+                    FROM RCMPA.SMART_METER_BILLING_DATA B WHERE B.BILLMONTH = :BILLMONTH AND B.MACHINE_ID IS NOT NULL AND B.METERNO IS NOT NULL
+                ),
+                BILLING_FILTERED AS
+                (
+                    SELECT * FROM BILLING_BASE WHERE :IS_SUPERADMIN = 1 OR DISPLAY_DEPARTMENT = UPPER(TRIM(:DEPARTMENT))
+                ),
+                BILLING_METERS AS
+                (
+                    SELECT /*+ MATERIALIZE */ DISTINCT METERNO FROM BILLING_FILTERED
+                ),
+                FORMY_ALL AS
+                (
+                    SELECT /*+ NO_MERGE */  F.METERNO, F.CONS_REF, F.SAP_DIVISION, F.SAP_SEQ_NO, F.ADD1, F.ADD2, F.ADD3, F.LAND_MARK, F.FATHER_NAME,
+                    F.READING_MONTH, 1 AS SOURCE_PRIORITY FROM RCMPA.SAP_FORMY F
+                    WHERE EXISTS
+                    (
+                        SELECT 1 FROM BILLING_METERS B WHERE B.METERNO = F.METERNO
+                    )
+                    UNION ALL
+                    SELECT /*+ NO_MERGE */ F.METERNO, F.CONS_REF, F.SAP_DIVISION, F.SAP_SEQ_NO, F.ADD1, F.ADD2, F.ADD3, F.LAND_MARK,F.FATHER_NAME,
+                    F.READING_MONTH, 2 AS SOURCE_PRIORITY FROM RCMPA.SAP_SLCC_FORMY F
+                    WHERE EXISTS
+                    (
+                        SELECT 1 FROM BILLING_METERS B WHERE B.METERNO = F.METERNO
+                    )
+                ),
+                FORMY_DATA AS
+                (
+                    SELECT METERNO,
+                        MAX(CONS_REF) KEEP
+                        (
+                            DENSE_RANK FIRST ORDER BY CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END,SOURCE_PRIORITY, READING_MONTH DESC NULLS LAST
+                        ) AS CONS_REF,
+                        MAX(SAP_DIVISION) KEEP
+                        (
+                            DENSE_RANK FIRST ORDER BY CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END, SOURCE_PRIORITY, READING_MONTH DESC NULLS LAST
+                        ) AS SAP_DIVISION,
+                        MAX(SAP_SEQ_NO) KEEP
+                        (
+                            DENSE_RANK FIRST ORDER BY CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END,SOURCE_PRIORITY, READING_MONTH DESC NULLS LAST
+                        ) AS SAP_SEQ_NO,
+                        MAX(ADD1) KEEP
+                        (
+                            DENSE_RANK FIRST ORDER BY CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END, SOURCE_PRIORITY, READING_MONTH DESC NULLS LAST
+                        ) AS ADD1,
+                        MAX(ADD2) KEEP
+                        (
+                            DENSE_RANK FIRST ORDER BY  CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END, SOURCE_PRIORITY, READING_MONTH DESC NULLS LAST
+                        ) AS ADD2,
+                        MAX(ADD3) KEEP
+                        (
+                            DENSE_RANK FIRST ORDER BY CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END, SOURCE_PRIORITY, READING_MONTH DESC NULLS LAST
+                        ) AS ADD3,
+                        MAX(LAND_MARK) KEEP
+                        (
+                            DENSE_RANK FIRST ORDER BY CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END, SOURCE_PRIORITY, READING_MONTH DESC NULLS LAST
+                        ) AS LAND_MARK,
+                        MAX(FATHER_NAME) KEEP
+                        (
+                            DENSE_RANK FIRST ORDER BY CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END,SOURCE_PRIORITY,READING_MONTH DESC NULLS LAST
+                        ) AS FATHER_NAME FROM FORMY_ALL GROUP BY METERNO
+                )
+
+                SELECT /*+ PARALLEL(4) */ COALESCE( NULLIF(TRIM(F.CONS_REF), ''), NULLIF(TRIM(B.CONS_REF), '') ) AS CONS_REF,
+                    B.METERNO AS METERNO, B.DISPLAY_DEPARTMENT AS SAP_DEPARTMENT, B.CYCLE AS CYCLE, B.READING_DATE AS READING_DATE, B.KWH AS KWH,
+                    B.KVAH AS KVAH, F.SAP_DIVISION AS SAP_DIVISION, F.SAP_SEQ_NO AS SAP_SEQ_NO,
+                    RTRIM(
+                        NVL(TRIM(F.ADD1), '') ||
+                        CASE
+                            WHEN TRIM(F.ADD2) IS NOT NULL
+                            THEN ', ' || TRIM(F.ADD2)
+                            ELSE ''
+                        END ||
+                        CASE
+                            WHEN TRIM(F.ADD3) IS NOT NULL
+                            THEN ', ' || TRIM(F.ADD3)
+                            ELSE ''
+                        END ||
+                        CASE
+                            WHEN TRIM(F.LAND_MARK) IS NOT NULL
+                            THEN ', ' || TRIM(F.LAND_MARK)
+                            ELSE ''
+                        END ||
+                        CASE
+                            WHEN TRIM(F.FATHER_NAME) IS NOT NULL
+                            THEN ', ' || TRIM(F.FATHER_NAME)
+                            ELSE ''
+                        END,
+                        ', '
+                    ) AS ADDRESS,
                     CASE
-                        WHEN B.SAP_DEPARTMENT = 'MLCC' AND B.CYCLE = '0N' THEN 'KCC'
-                        WHEN B.CYCLE IN ('KA','KC','KG') THEN 'KCC'
-                        WHEN B.SAP_DEPARTMENT IS NULL THEN 'SLCC'
-                        ELSE TRIM(B.SAP_DEPARTMENT)
-                    END AS DISPLAY_DEPARTMENT
-                FROM RCMPA.SMART_METER_BILLING_DATA B WHERE B.BILLMONTH  = :BILLMONTH AND B.MACHINE_ID IS NOT NULL
-                 AND B.METERNO    IS NOT NULL
-            ),
-            BILLING_FILTERED AS
-            (
-                SELECT * FROM BILLING_BASE  WHERE :IS_SUPERADMIN = 1 OR UPPER(DISPLAY_DEPARTMENT) = UPPER(TRIM(:DEPARTMENT))
-            ),
-            BILLING_METERS AS
-            (
-                SELECT /*+ MATERIALIZE */ DISTINCT METERNO FROM BILLING_FILTERED
-            ),
-            FORMY_ALL AS
-            (
-                SELECT /*+ PARALLEL(F,8) NO_MERGE */ F.METERNO, F.CONS_REF, F.SAP_DIVISION, F.SAP_SEQ_NO, F.ADD1, F.ADD2, F.ADD3, F.LAND_MARK,
-                    F.READING_MONTH,  1 AS SOURCE_PRIORITY FROM RCMPA.SAP_FORMY F
-                WHERE EXISTS
-                (
-                    SELECT 1 FROM BILLING_METERS B WHERE B.METERNO = F.METERNO
-                )
-                UNION ALL
-                SELECT /*+ PARALLEL(F,8) NO_MERGE */ F.METERNO, F.CONS_REF, F.SAP_DIVISION, F.SAP_SEQ_NO, F.ADD1, F.ADD2, F.ADD3, F.LAND_MARK, F.READING_MONTH,
-                 2 AS SOURCE_PRIORITY FROM RCMPA.SAP_SLCC_FORMY F
-                WHERE EXISTS
-                (
-                    SELECT 1 FROM BILLING_METERS B WHERE B.METERNO = F.METERNO
-                )
-            ),
-            FORMY_DATA AS
-            (
-                SELECT METERNO,
-                    MAX(CONS_REF) KEEP (DENSE_RANK FIRST ORDER BY
-                    CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END,
-                    SOURCE_PRIORITY,
-                    READING_MONTH DESC NULLS LAST) AS CONS_REF,
-                    MAX(SAP_DIVISION) KEEP (DENSE_RANK FIRST ORDER BY
-                    CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END,
-                    SOURCE_PRIORITY,
-                    READING_MONTH DESC NULLS LAST) AS SAP_DIVISION,
-                    MAX(SAP_SEQ_NO)  KEEP (DENSE_RANK FIRST ORDER BY
-                    CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END,
-                    SOURCE_PRIORITY,
-                    READING_MONTH DESC NULLS LAST) AS SAP_SEQ_NO,
-                    MAX(ADD1)KEEP (DENSE_RANK FIRST ORDER BY
-                    CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END,
-                    SOURCE_PRIORITY,
-                    READING_MONTH DESC NULLS LAST) AS ADD1,
-                    MAX(ADD2)KEEP (DENSE_RANK FIRST ORDER BY
-                    CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END,
-                    SOURCE_PRIORITY,
-                    READING_MONTH DESC NULLS LAST) AS ADD2,
-                    MAX(ADD3) KEEP (DENSE_RANK FIRST ORDER BY
-                    CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END,
-                    SOURCE_PRIORITY,
-                    READING_MONTH DESC NULLS LAST) AS ADD3,
-                    MAX(LAND_MARK) KEEP (DENSE_RANK FIRST ORDER BY
-                    CASE WHEN READING_MONTH = :BILLMONTH THEN 0 ELSE 1 END,
-                    SOURCE_PRIORITY,
-                    READING_MONTH DESC NULLS LAST) AS LAND_MARK
-                FROM FORMY_ALL
-                GROUP BY METERNO
-            )
-            SELECT /*+ PARALLEL(4) */
-                COALESCE( NULLIF(TRIM(F.CONS_REF), ''), NULLIF(TRIM(B.CONS_REF), '')) AS CONS_REF,
-                B.METERNO, B.CYCLE, F.SAP_DIVISION AS DIVISION, B.DISPLAY_DEPARTMENT AS DEPARTMENT,
-                RTRIM(
-                    NVL(TRIM(F.ADD1), '') ||
-                    CASE WHEN TRIM(F.ADD2) IS NOT NULL THEN ', ' || TRIM(F.ADD2) ELSE '' END ||
-                    CASE WHEN TRIM(F.ADD3) IS NOT NULL THEN ', ' || TRIM(F.ADD3) ELSE '' END ||
-                    CASE WHEN TRIM(F.LAND_MARK) IS NOT NULL THEN ', ' || TRIM(F.LAND_MARK) ELSE '' END,
-                    ', '
-                ) AS ADDRESS, F.SAP_SEQ_NO FROM BILLING_FILTERED B LEFT JOIN FORMY_DATA F ON F.METERNO = B.METERNO ORDER BY B.METERNO";
+                        WHEN SUBSTR(B.METERNO, 1, 2) IN ('90', 'AL')
+                            THEN 'ALLIED'
+                        WHEN SUBSTR(B.METERNO, 1, 2) IN ('91', 'KI')
+                            THEN 'KIMBAL'
+                        WHEN B.METERNO LIKE 'RSE%'
+                            THEN 'RSE'
+                        ELSE 'UNKNOWN'
+                    END AS METER_TYPE,
+                    CASE
+                        WHEN SUBSTR(B.METERNO, 1, 4) IN
+                        (
+                            'AL91',
+                            'KI91',
+                            '9150',
+                            '9008',
+                            '9027'
+                        )
+                        THEN '1PH'
+                        WHEN SUBSTR(B.METERNO, 1, 4) IN
+                        (
+                            'AL90',
+                            'KI90',
+                            '9026',
+                            'RSE7'
+                        )
+                        THEN '3PH'
+                        ELSE 'UNKNOWN'
+                    END AS PHASE_TYPE FROM BILLING_FILTERED B LEFT JOIN FORMY_DATA F ON F.METERNO = B.METERNO
+                ORDER BY B.DISPLAY_DEPARTMENT, B.CYCLE, F.SAP_DIVISION, F.SAP_SEQ_NO, B.METERNO";
 
                 using(OracleCommand cmd = new OracleCommand(query,con))
                 {
@@ -2804,10 +2861,17 @@ FROM FINAL_DATA";
                                 cons_ref = dr["CONS_REF"]?.ToString(),
                                 meterno = dr["METERNO"]?.ToString(),
                                 Cycle = dr["CYCLE"]?.ToString(),
-                                Division = dr["DIVISION"]?.ToString(),
-                                Department = dr["DEPARTMENT"]?.ToString(),
+                                Division = dr["SAP_DIVISION"]?.ToString(),
+                                Department = dr["SAP_DEPARTMENT"]?.ToString(),
                                 Address = dr["ADDRESS"]?.ToString(),
-                                SapSeqNo = dr["SAP_SEQ_NO"]?.ToString()
+                                SapSeqNo = dr["SAP_SEQ_NO"]?.ToString(),
+                                KWH = dr["KWH"]?.ToString(),
+                                KVAH = dr["KVAH"]?.ToString(),
+                                MeterType = dr["METER_TYPE"]?.ToString(),
+                                Phase = dr["PHASE_TYPE"]?.ToString(),
+                                ReadingDate = dr["READING_DATE"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(dr["READING_DATE"])
+
+
                             });
                         }
                     }

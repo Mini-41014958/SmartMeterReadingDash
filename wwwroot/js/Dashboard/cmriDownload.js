@@ -1,7 +1,10 @@
 ﻿
-
 let allCmriDownloadData = [];
 let filteredCmriDownloadData = [];
+
+/* ============================================================
+   NORMALIZE CMRI RECORD
+   ============================================================ */
 
 function normalizeCmriRecord(item) {
 
@@ -39,8 +42,10 @@ function normalizeCmriRecord(item) {
 
         department: value(
             "department",
+            "Department",
             "sapDepartment",
-            "sap_department"
+            "sap_department",
+            "SAP_DEPARTMENT"
         ),
 
         cycle: value(
@@ -50,20 +55,56 @@ function normalizeCmriRecord(item) {
 
         division: value(
             "division",
+            "Division",
             "sapDivision",
-            "sap_division"
+            "sap_division",
+            "SAP_DIVISION"
         ),
 
         sap_seq_no: value(
             "sap_seq_no",
             "sapSeqNo",
             "seq_no",
-            "seqNo"
+            "seqNo",
+            "SapSeqNo"
         ),
 
         address: value(
             "address",
             "Address"
+        ),
+
+        kwh: value(
+            "KWH",
+            "Kwh",
+            "kwh"
+        ),
+
+        kvah: value(
+            "KVAH",
+            "Kvah",
+            "kvah"
+        ),
+
+        MeterType: value(
+            "METER_TYPE",
+            "MeterType",
+            "meterType",
+            "Meter_Make"
+        ),
+
+        Phase: value(
+            "PHASE_TYPE",
+            "Phase",
+            "phase",
+            "PhaseType"
+        ),
+
+        ReadingDate: value(
+            "READING_DATE",
+            "ReadingDate",
+            "readingDate",
+            "reading_date"
         )
     };
 }
@@ -99,8 +140,12 @@ $("#cmriDownload").on("click", function (e) {
     loadCmriDownloadSummary();
 });
 
-async function loadCmriDownloadSummary()
-{
+
+/* ============================================================
+   LOAD CMRI DOWNLOAD SUMMARY
+   ============================================================ */
+
+async function loadCmriDownloadSummary() {
 
     const tbody = $("#cmriDownloadSummaryBody");
 
@@ -108,7 +153,7 @@ async function loadCmriDownloadSummary()
 
         tbody.html(`
             <tr>
-                <td colspan="8" class="text-center py-4">
+                <td colspan="13" class="text-center py-4">
                     <div class="spinner-border spinner-border-sm text-primary"></div>
                     <span class="ms-2">Loading CMRI data...</span>
                 </td>
@@ -140,7 +185,8 @@ async function loadCmriDownloadSummary()
             method: "GET",
             headers: {
                 "Accept": "application/json"
-            }
+            },
+            credentials: "same-origin"
         });
 
         if (!response.ok) {
@@ -165,15 +211,6 @@ async function loadCmriDownloadSummary()
             result
         );
 
-        console.log(
-            "First CMRI record:",
-            Array.isArray(result) ? result[0] : result
-        );
-
-        /*
-         * Support either a direct array or common
-         * wrapped API response formats.
-         */
         let records = [];
 
         if (Array.isArray(result)) {
@@ -191,6 +228,14 @@ async function loadCmriDownloadSummary()
         } else if (Array.isArray(result?.items)) {
 
             records = result.items;
+
+        } else if (Array.isArray(result?.Data)) {
+
+            records = result.Data;
+
+        } else if (Array.isArray(result?.Result)) {
+
+            records = result.Result;
         }
 
         allCmriDownloadData = records.map(
@@ -202,12 +247,12 @@ async function loadCmriDownloadSummary()
         ];
 
         console.log(
-            "Normalized CMRI record count:",
+            "Total CMRI records:",
             allCmriDownloadData.length
         );
 
         console.log(
-            "Normalized first record:",
+            "First normalized record:",
             allCmriDownloadData[0]
         );
 
@@ -227,6 +272,10 @@ async function loadCmriDownloadSummary()
             filteredCmriDownloadData
         );
 
+        updateCmriRecordCount(
+            filteredCmriDownloadData.length
+        );
+
     }
     catch (err) {
 
@@ -241,7 +290,7 @@ async function loadCmriDownloadSummary()
 
         tbody.html(`
             <tr>
-                <td colspan="8"
+                <td colspan="13"
                     class="text-center text-danger py-4">
                     <i class="bi bi-exclamation-triangle me-1"></i>
                     Failed to load CMRI data.
@@ -250,7 +299,32 @@ async function loadCmriDownloadSummary()
                 </td>
             </tr>
         `);
+
+        updateCmriRecordCount(0);
     }
+}
+
+
+/* ============================================================
+   RECORD COUNT
+   ============================================================ */
+
+function updateCmriRecordCount(count) {
+
+    const elements = [
+        "cmriDownloadRecordCount",
+        "cmriTotalRecords"
+    ];
+
+    elements.forEach(id => {
+
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.textContent =
+                Number(count).toLocaleString("en-IN");
+        }
+    });
 }
 
 
@@ -354,7 +428,7 @@ function loadCmriDivisionFilter() {
 
 /* ============================================================
    CYCLE FILTER
-   Depends on selected department and division.
+   DEPENDS ON DEPARTMENT AND DIVISION
    ============================================================ */
 
 function loadCmriCycleFilter() {
@@ -392,11 +466,10 @@ function loadCmriCycleFilter() {
 
         sourceData = sourceData.filter(item => {
 
-            const itemDepartment = String(
+            return String(
                 item.department ?? ""
-            ).trim().toUpperCase();
+            ).trim().toUpperCase() === selectedDepartment;
 
-            return itemDepartment === selectedDepartment;
         });
     }
 
@@ -404,11 +477,10 @@ function loadCmriCycleFilter() {
 
         sourceData = sourceData.filter(item => {
 
-            const itemDivision = String(
+            return String(
                 item.division ?? ""
-            ).trim().toUpperCase();
+            ).trim().toUpperCase() === selectedDivision;
 
-            return itemDivision === selectedDivision;
         });
     }
 
@@ -550,34 +622,52 @@ function applyCmriDownloadFilters() {
                 item.cycle ?? ""
             ).trim().toUpperCase();
 
-            const departmentMatch =
-                department === "" ||
-                itemDepartment === department;
-
-            const divisionMatch =
-                division === "" ||
-                itemDivision === division;
-
-            const cycleMatch =
-                cycle === "" ||
-                itemCycle === cycle;
-
             return (
-                departmentMatch &&
-                divisionMatch &&
-                cycleMatch
+                (!department || itemDepartment === department) &&
+                (!division || itemDivision === division) &&
+                (!cycle || itemCycle === cycle)
             );
         });
 
     renderCmriDownloadTable(
         filteredCmriDownloadData
     );
+
+    updateCmriRecordCount(
+        filteredCmriDownloadData.length
+    );
+}
+
+
+/* ============================================================
+   FORMAT READING DATE
+   ============================================================ */
+
+function formatCmriReadingDate(value) {
+
+    if (!value) {
+        return "--";
+    }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return String(value);
+    }
+
+    const day = String(date.getDate()).padStart(2, "0");
+
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+
+    const year = date.getFullYear();
+
+    return `${day}-${month}-${year}`;
 }
 
 
 /* ============================================================
    RENDER CMRI DOWNLOAD TABLE
-   Exactly 8 columns.
+   EXACTLY 13 COLUMNS
    ============================================================ */
 
 function renderCmriDownloadTable(data) {
@@ -599,7 +689,7 @@ function renderCmriDownloadTable(data) {
 
         tbody.html(`
             <tr>
-                <td colspan="8"
+                <td colspan="13"
                     class="text-center text-muted py-4">
                     <i class="bi bi-inbox me-1"></i>
                     No Records Found
@@ -626,8 +716,28 @@ function renderCmriDownloadTable(data) {
                     ${escapeHtml(x.meterno || "--")}
                 </td>
 
+                <td class="text-end">
+                    ${escapeHtml(x.kwh || "--")}
+                </td>
+
+                <td class="text-end">
+                    ${escapeHtml(x.kvah || "--")}
+                </td>
+
+                <td class="text-center">
+                    ${escapeHtml(formatCmriReadingDate(x.ReadingDate))}
+                </td>
+
                 <td>
                     ${escapeHtml(x.department || "--")}
+                </td>
+
+                <td class="text-center">
+                    ${escapeHtml(x.Phase || "--")}
+                </td>
+
+                <td>
+                    ${escapeHtml(x.MeterType || "--")}
                 </td>
 
                 <td class="text-center">
@@ -655,8 +765,61 @@ function renderCmriDownloadTable(data) {
 
 
 /* ============================================================
+   COMMON EXPORT HEADERS
+   ============================================================ */
+
+function getCmriExportHeaders() {
+
+    return [
+        "S.No.",
+        "Cons Ref",
+        "Meter Number",
+        "KWH",
+        "KVAH",
+        "Reading Date",
+        "Department",
+        "Phase",
+        "Meter Make",
+        "Cycle",
+        "Division",
+        "Seq No",
+        "Address"
+    ];
+}
+
+
+/* ============================================================
+   COMMON EXPORT ROWS
+   ALL 13 COLUMNS
+   ============================================================ */
+
+function getCmriExportRows() {
+
+    return filteredCmriDownloadData.map((x, index) => {
+
+        return [
+            index + 1,
+            x.cons_ref || "--",
+            x.meterno || "--",
+            x.kwh || "--",
+            x.kvah || "--",
+            formatCmriReadingDate(x.ReadingDate),
+            x.department || "--",
+            x.Phase || "--",
+            x.MeterType || "--",
+            x.cycle || "--",
+            x.division || "--",
+            x.sap_seq_no || "--",
+            x.address || "--"
+        ];
+
+    });
+}
+
+
+/* ============================================================
    EXPORT TO EXCEL
-   Requires SheetJS (XLSX).
+   13 COLUMNS
    ============================================================ */
 
 function exportCmriTableToExcel() {
@@ -678,33 +841,10 @@ function exportCmriTableToExcel() {
         return;
     }
 
-    const excelData = [];
-
-    excelData.push([
-        "S.No.",
-        "Cons Ref",
-        "Meter Number",
-        "Department",
-        "Cycle",
-        "Division",
-        "Seq No",
-        "Address"
-    ]);
-
-    filteredCmriDownloadData.forEach((x, index) => {
-
-        excelData.push([
-            index + 1,
-            x.cons_ref || "--",
-            x.meterno || "--",
-            x.department || "--",
-            x.cycle || "--",
-            x.division || "--",
-            x.sap_seq_no || "--",
-            x.address || "--"
-        ]);
-
-    });
+    const excelData = [
+        getCmriExportHeaders(),
+        ...getCmriExportRows()
+    ];
 
     const worksheet = XLSX.utils.aoa_to_sheet(
         excelData
@@ -714,12 +854,21 @@ function exportCmriTableToExcel() {
         { wch: 8 },
         { wch: 18 },
         { wch: 20 },
+        { wch: 14 },
+        { wch: 14 },
+        { wch: 16 },
         { wch: 18 },
         { wch: 12 },
-        { wch: 20 },
+        { wch: 16 },
         { wch: 12 },
+        { wch: 20 },
+        { wch: 16 },
         { wch: 50 }
     ];
+
+    worksheet["!autofilter"] = {
+        ref: `A1:M${excelData.length}`
+    };
 
     const workbook = XLSX.utils.book_new();
 
@@ -740,7 +889,7 @@ function exportCmriTableToExcel() {
 
 /* ============================================================
    CSV ESCAPE
-   Prevents spreadsheet formula injection.
+   PREVENT FORMULA INJECTION
    ============================================================ */
 
 function csvEscape(value) {
@@ -758,7 +907,7 @@ function csvEscape(value) {
 
 /* ============================================================
    EXPORT TO CSV
-   Exports filtered records only.
+   13 COLUMNS
    ============================================================ */
 
 function exportCmriTableToCSV() {
@@ -770,38 +919,20 @@ function exportCmriTableToCSV() {
         return;
     }
 
-    const headers = [
-        "S.No.",
-        "Cons Ref",
-        "Meter Number",
-        "Department",
-        "Cycle",
-        "Division",
-        "Seq No",
-        "Address"
+    const csvRows = [
+        getCmriExportHeaders().map(csvEscape).join(",")
     ];
 
-    const csv = [
-        headers.map(csvEscape).join(",")
-    ];
+    getCmriExportRows().forEach(row => {
 
-    filteredCmriDownloadData.forEach((x, index) => {
-
-        csv.push([
-            index + 1,
-            x.cons_ref || "--",
-            x.meterno || "--",
-            x.department || "--",
-            x.cycle || "--",
-            x.division || "--",
-            x.sap_seq_no || "--",
-            x.address || "--"
-        ].map(csvEscape).join(","));
+        csvRows.push(
+            row.map(csvEscape).join(",")
+        );
 
     });
 
     const blob = new Blob(
-        ["\uFEFF" + csv.join("\r\n")],
+        ["\uFEFF" + csvRows.join("\r\n")],
         {
             type: "text/csv;charset=utf-8;"
         }
@@ -856,6 +987,13 @@ function getCmriTimestamp() {
 
 function printCmriDownloadSummary() {
 
+    if (filteredCmriDownloadData.length === 0) {
+
+        alert("No CMRI records available to print.");
+
+        return;
+    }
+
     const table = document.getElementById(
         "cmriDownloadSummaryTable"
     );
@@ -867,14 +1005,96 @@ function printCmriDownloadSummary() {
         return;
     }
 
-    if (filteredCmriDownloadData.length === 0) {
+    const printWindow = window.open(
+        "",
+        "_blank",
+        "width=1200,height=800"
+    );
 
-        alert("No CMRI records available to print.");
+    if (!printWindow) {
+
+        alert("Please allow pop-ups to print the CMRI report.");
 
         return;
     }
 
-    window.print();
+    const month = escapeHtml(
+        String(getReadingMonth() || "")
+    );
+
+    printWindow.document.open();
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>CMRI Download Summary</title>
+
+            <meta charset="UTF-8">
+
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    padding: 15px;
+                }
+
+                h3 {
+                    text-align: center;
+                }
+
+                .month {
+                    text-align: center;
+                    margin-bottom: 15px;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 9px;
+                }
+
+                th, td {
+                    border: 1px solid #777;
+                    padding: 5px;
+                    text-align: left;
+                    vertical-align: top;
+                }
+
+                th {
+                    background: #e9ecef;
+                }
+
+                @page {
+                    size: landscape;
+                    margin: 8mm;
+                }
+            </style>
+        </head>
+
+        <body>
+
+            <h3>CMRI Download Summary</h3>
+
+            <div class="month">
+                Reading Month: ${month}
+            </div>
+
+            ${table.outerHTML}
+
+            <script>
+                window.onload = function () {
+                    window.print();
+                    window.onafterprint = function () {
+                        window.close();
+                    };
+                };
+            <\/script>
+
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
 }
 
 

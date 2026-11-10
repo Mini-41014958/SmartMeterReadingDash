@@ -102,13 +102,7 @@ namespace SmartMeterReadingDash.Services
 
                 using var workbook = new XLWorkbook();
 
-                CreateDashboardSheet(
-                    workbook,
-                    readingMonth,
-                    meterSummary,
-                    brplReceived,
-                    cmriDownloads ?? new List<CMRIDownload>(),
-                    userScope);
+                CreateDashboardSheet( workbook, readingMonth, meterSummary, brplReceived, cmriDownloads ?? new List<CMRIDownload>(), userScope);
 
                 // BRPL
 
@@ -161,13 +155,7 @@ namespace SmartMeterReadingDash.Services
             }
         }
 
-        private void CreateDashboardSheet(
-            XLWorkbook workbook,
-            string readingMonth,
-            TotalMeterSummary? brplMeter,
-            MeterReceivedSummary? brplReceived,
-            List<CMRIDownload> cmriDownloads,
-            UserAccessScope scope)
+        private void CreateDashboardSheet(XLWorkbook workbook, string readingMonth, TotalMeterSummary? brplMeter, MeterReceivedSummary? brplReceived,  List<CMRIDownload> cmriDownloads, UserAccessScope scope)
         {
             var ws = workbook.Worksheets.Add("Dashboard");
 
@@ -302,29 +290,33 @@ namespace SmartMeterReadingDash.Services
             int totalDownloaded = brplDownloaded;
             int totalFailed = brplFailed;
 
+            // HES download percentage
             double downloadRate = totalMeters > 0
-                    ? (double)totalDownloaded / totalMeters
-                    : 0;
+                ? (double)totalDownloaded / totalMeters
+                : 0;
 
+            // Failure percentage
             double failureRate = totalMeters > 0
-                    ? (double)totalFailed / totalMeters
-                    : 0;
+                ? (double)totalFailed / totalMeters
+                : 0;
 
-            // CMRI query returns billing-meter records, not a confirmed
-            // CMRI success status. This percentage is record coverage against
-            // the same total-meter denominator, not a success-status rate.
+            // CMRI record count
             double cmriDownloadRate = totalMeters > 0
-                    ? (double)totalCmriRecords / totalMeters
-                    : 0;
+                ? (double)totalCmriRecords / totalMeters
+                : 0;
 
-            // Keep total download percentage as the existing HES download rate.
-            double totalDownloadRate = downloadRate;
+            // Combined CMRI + HES download percentage
+            int totalCombinedDownloaded = totalCmriRecords + totalDownloaded;
+
+            double totalDownloadRate = totalMeters > 0
+                ? (double)totalCombinedDownloaded / totalMeters
+                : 0;
 
             WriteDashboardBanner(ws, 7, "READING OVERVIEW – BRPL", Palette.Navy, Palette.White);
 
             CreateModernKpiCard(ws, 8, 2, 3, "TOTAL METERS", totalMeters.ToString("#,##0"), Palette.Blue);
             CreateModernKpiCard(ws, 8, 4, 5, "HES DOWNLOADED", totalDownloaded.ToString("#,##0"), Palette.Green);
-            CreateModernKpiCard(ws, 8, 6, 7, "FAILED %", failureRate.ToString("0.0%"), Palette.Red);
+            CreateModernKpiCard(ws, 8, 6, 7, "HES FAILED %", failureRate.ToString("0.0%"), Palette.Red);
             CreateModernKpiCard(ws, 8, 8, 9, "CMRI RECORDS", totalCmriRecords.ToString("#,##0"), Palette.Orange);
             CreateModernKpiCard(ws, 8, 10, 11, "CMRI DOWNLOAD %", cmriDownloadRate.ToString("0.0%"), Palette.Orange);
             CreateModernKpiCard(ws, 8, 12, 13, "TOTAL DOWNLOAD %", totalDownloadRate.ToString("0.0%"), Palette.Blue);
@@ -333,46 +325,15 @@ namespace SmartMeterReadingDash.Services
             const int analysisSubHeaderRow = 13;
             const int tableHeaderRow = 14;
 
-            WriteDashboardPanelHeader(
-                ws,
-                analysisHeaderRow,
-                2,
-                7,
-                "DEPARTMENT PERFORMANCE",
-                Palette.Navy,
-                Palette.White);
+            WriteDashboardPanelHeader( ws, analysisHeaderRow, 2, 7, "DEPARTMENT PERFORMANCE", Palette.Navy, Palette.White);
 
-            WriteDashboardPanelHeader(
-                ws,
-                analysisHeaderRow,
-                8,
-                12,
-                "FAILURE ANALYSIS",
-                Palette.Red,
-                Palette.White);
+            WriteDashboardPanelHeader( ws, analysisHeaderRow, 8, 12, "FAILURE ANALYSIS", Palette.Red, Palette.White);
 
-            WriteDashboardPanelHeader(
-                ws,
-                analysisSubHeaderRow,
-                2,
-                7,
-                "BRPL",
-                Palette.Blue,
-                Palette.White);
+            WriteDashboardPanelHeader( ws, analysisSubHeaderRow, 2, 7, "BRPL", Palette.Blue,  Palette.White);
 
-            WriteDashboardPanelHeader(
-                ws,
-                analysisSubHeaderRow,
-                8,
-                12,
-                "FAILURE REASON BREAKDOWN",
-                Palette.Red,
-                Palette.White);
+            WriteDashboardPanelHeader( ws, analysisSubHeaderRow, 8, 12, "FAILURE REASON BREAKDOWN", Palette.Red,  Palette.White);
 
-            SetCompactHeader(
-                ws,
-                tableHeaderRow,
-                2,
+            SetCompactHeader( ws, tableHeaderRow, 2,
                 new[]
                 {
                     "DEPARTMENT",
@@ -384,10 +345,7 @@ namespace SmartMeterReadingDash.Services
                 });
 
             // Failure table: G:K
-            SetCompactHeader(
-                ws,
-                tableHeaderRow,
-                8,
+            SetCompactHeader( ws,tableHeaderRow, 8,
                 new[]
                 {
                     "FAILURE REASON",
@@ -398,15 +356,9 @@ namespace SmartMeterReadingDash.Services
                 });
 
             // Merge the 3-column failure-reason header.
-            ws.Range(
-                tableHeaderRow,
-                8,
-                tableHeaderRow,
-                10).Merge();
+            ws.Range( tableHeaderRow, 8, tableHeaderRow,10).Merge();
 
-            ws.Cell(
-                tableHeaderRow,
-                8).Value = "FAILURE REASON";
+            ws.Cell( tableHeaderRow, 8).Value = "FAILURE REASON";
 
             // ============================================================
             // DEPARTMENT DATA
@@ -451,8 +403,7 @@ namespace SmartMeterReadingDash.Services
             }
 
             // Include CMRI-only departments too, even when they have no HES summary row.
-            var existingDepartmentNames = new HashSet<string>(
-                brplDepartment.Select(x => string.IsNullOrWhiteSpace(x.Department)
+            var existingDepartmentNames = new HashSet<string>(brplDepartment.Select(x => string.IsNullOrWhiteSpace(x.Department)
                     ? "Unassigned"
                     : x.Department.Trim()),
                 StringComparer.OrdinalIgnoreCase);
@@ -482,11 +433,9 @@ namespace SmartMeterReadingDash.Services
             // ============================================================
             int brplFailureRow = tableHeaderRow + 1;
 
-            int brplFailureTotal =
-                brplFailureReasons.Sum(x => x.count ?? 0);
+            int brplFailureTotal = brplFailureReasons.Sum(x => x.count ?? 0);
 
-            foreach (var item in
-                brplFailureReasons.OrderByDescending(x => x.count ?? 0))
+            foreach (var item in brplFailureReasons.OrderByDescending(x => x.count ?? 0))
             {
                 int count = item.count ?? 0;
 
@@ -494,8 +443,7 @@ namespace SmartMeterReadingDash.Services
                 // wide enough for real-world reason text.
                 ws.Range(brplFailureRow, 8, brplFailureRow, 10).Merge();
 
-                ws.Cell(brplFailureRow, 8).Value =
-                    string.IsNullOrWhiteSpace(item.FeilureReason)
+                ws.Cell(brplFailureRow, 8).Value =  string.IsNullOrWhiteSpace(item.FeilureReason)
                         ? "Unknown"
                         : item.FeilureReason;
 
@@ -510,35 +458,18 @@ namespace SmartMeterReadingDash.Services
 
             int failureEndRow = brplFailureRow - 1;
 
-            int analysisEndRow =
-                Math.Max(departmentEndRow, failureEndRow);
+            int analysisEndRow = Math.Max(departmentEndRow, failureEndRow);
 
-            // ============================================================
-            // TABLE STYLING
-            // ============================================================
             if (departmentEndRow >= tableHeaderRow + 1)
             {
-                StyleModernTable(
-                    ws,
-                    tableHeaderRow,
-                    departmentEndRow,
-                    2,
-                    7);
+                StyleModernTable( ws, tableHeaderRow, departmentEndRow, 2, 7);
 
-                ws.Range(
-                    tableHeaderRow + 1,
-                    6,
-                    departmentEndRow,
-                    7)
+                ws.Range(tableHeaderRow + 1, 6, departmentEndRow, 7)
                     .Style
                     .NumberFormat
                     .Format = "0.0%";
 
-                ws.Range(
-                    tableHeaderRow + 1,
-                    3,
-                    departmentEndRow,
-                    5)
+                ws.Range(tableHeaderRow + 1, 3, departmentEndRow, 5)
                     .Style
                     .NumberFormat
                     .Format = "#,##0";
@@ -546,25 +477,17 @@ namespace SmartMeterReadingDash.Services
 
             if (failureEndRow >= tableHeaderRow + 1)
             {
-                StyleModernTable(
-                    ws,
-                    tableHeaderRow,
-                    failureEndRow,
-                    8,
-                    12);
+                StyleModernTable( ws, tableHeaderRow, failureEndRow, 8, 12);
 
                 // Restore the merged reason cells after table styling.
-                for (int row = tableHeaderRow + 1;
-                     row <= failureEndRow;
-                     row++)
+                for (int row = tableHeaderRow + 1;  row <= failureEndRow; row++)
                 {
                     ws.Range(row, 8, row, 10).Merge();
 
                     ws.Cell(row, 8)
                         .Style
                         .Alignment
-                        .Horizontal =
-                        XLAlignmentHorizontalValues.Left;
+                        .Horizontal = XLAlignmentHorizontalValues.Left;
 
                     ws.Cell(row, 8)
                         .Style
@@ -572,57 +495,38 @@ namespace SmartMeterReadingDash.Services
                         .Indent = 1;
                 }
 
-                ws.Range(
-                    tableHeaderRow + 1,
-                    11,
-                    failureEndRow,
-                    11)
+                ws.Range(tableHeaderRow + 1, 11, failureEndRow,  11)
                     .Style
                     .NumberFormat
                     .Format = "#,##0";
 
-                ws.Range(
-                    tableHeaderRow + 1,
-                    12,
-                    failureEndRow,
-                    12)
+                ws.Range(tableHeaderRow + 1, 12, failureEndRow, 12)
                     .Style
                     .NumberFormat
                     .Format = "0.0%";
             }
 
-            // ============================================================
-            // VISUAL BALANCING
-            // ============================================================
-            // Give both panels the same visual bottom edge even when one
-            // has fewer rows than the other.
             if (analysisEndRow >= tableHeaderRow + 1)
             {
-                for (int row = tableHeaderRow + 1;
-                     row <= analysisEndRow;
-                     row++)
+                for (int row = tableHeaderRow + 1; row <= analysisEndRow; row++)
                 {
                     if (row % 2 == 0)
                     {
                         ws.Range(row, 2, row, 7)
                             .Style
                             .Fill
-                            .BackgroundColor =
-                            XLColor.FromHtml("#F8FAFC");
+                            .BackgroundColor = XLColor.FromHtml("#F8FAFC");
 
                         ws.Range(row, 8, row, 12)
                             .Style
                             .Fill
-                            .BackgroundColor =
-                            XLColor.FromHtml("#F8FAFC");
+                            .BackgroundColor = XLColor.FromHtml("#F8FAFC");
                     }
                 }
             }
 
             // Keep a compact but readable dashboard.
-            for (int row = analysisHeaderRow;
-                 row <= analysisEndRow;
-                 row++)
+            for (int row = analysisHeaderRow; row <= analysisEndRow; row++)
             {
                 if (ws.Row(row).Height < 20)
                 {
@@ -630,33 +534,14 @@ namespace SmartMeterReadingDash.Services
                 }
             }
 
-            // ============================================================
-            // MANAGEMENT SUMMARY
-            // ============================================================
             int footerRow = analysisEndRow + 2;
 
-            ws.Range(
-                footerRow,
-                2,
-                footerRow,
-                13).Merge();
+            ws.Range( footerRow, 2, footerRow, 13).Merge();
 
-            ws.Cell(
-                footerRow,
-                2).Value =
-                "MANAGEMENT SUMMARY – BRPL  |  " +
-                $"{totalDownloaded:#,##0} of " +
-                $"{totalMeters:#,##0} meters successfully downloaded " +
-                $"({downloadRate:0.0%})  |  " +
-                $"{totalFailed:#,##0} failed " +
-                $"({failureRate:0.0%}).";
+            ws.Cell( footerRow, 2).Value = "MANAGEMENT SUMMARY – BRPL  |  " +  $"{totalDownloaded:#,##0} of " + $"{totalMeters:#,##0} meters successfully downloaded " +
+                $"({downloadRate:0.0%})  |  " +  $"{totalFailed:#,##0} failed " +  $"({failureRate:0.0%}).";
 
-            var footer =
-                ws.Range(
-                    footerRow,
-                    2,
-                    footerRow,
-                    13);
+            var footer =  ws.Range( footerRow, 2, footerRow, 13);
 
             footer.Style
                 .Fill
@@ -676,29 +561,22 @@ namespace SmartMeterReadingDash.Services
 
             footer.Style
                 .Alignment
-                .Horizontal =
-                XLAlignmentHorizontalValues.Center;
+                .Horizontal =  XLAlignmentHorizontalValues.Center;
 
             footer.Style
                 .Alignment
-                .Vertical =
-                XLAlignmentVerticalValues.Center;
+                .Vertical = XLAlignmentVerticalValues.Center;
 
             footer.Style
                 .Border
-                .OutsideBorder =
-                XLBorderStyleValues.Thin;
+                .OutsideBorder = XLBorderStyleValues.Thin;
 
             footer.Style
                 .Border
-                .OutsideBorderColor =
-                Palette.Border;
+                .OutsideBorderColor =  Palette.Border;
 
             ws.Row(footerRow).Height = 28;
 
-            // ============================================================
-            // FINAL FORMATTING
-            // ============================================================
             var usedRange = ws.RangeUsed();
 
             if (usedRange != null)
@@ -709,8 +587,7 @@ namespace SmartMeterReadingDash.Services
 
                 usedRange.Style
                     .Alignment
-                    .Vertical =
-                    XLAlignmentVerticalValues.Center;
+                    .Vertical =  XLAlignmentVerticalValues.Center;
             }
 
             ws.SheetView.FreezeRows(5);
@@ -719,21 +596,9 @@ namespace SmartMeterReadingDash.Services
         // ============================================================
         // PANEL HEADER
         // ============================================================
-        private static void WriteDashboardPanelHeader(
-            IXLWorksheet ws,
-            int row,
-            int firstColumn,
-            int lastColumn,
-            string title,
-            XLColor background,
-            XLColor fontColor)
+        private static void WriteDashboardPanelHeader( IXLWorksheet ws, int row, int firstColumn, int lastColumn, string title, XLColor background, XLColor fontColor)
         {
-            var range =
-                ws.Range(
-                    row,
-                    firstColumn,
-                    row,
-                    lastColumn);
+            var range = ws.Range( row, firstColumn,  row, lastColumn);
 
             range.Merge();
 
@@ -757,13 +622,11 @@ namespace SmartMeterReadingDash.Services
 
             range.Style
                 .Alignment
-                .Horizontal =
-                XLAlignmentHorizontalValues.Left;
+                .Horizontal = XLAlignmentHorizontalValues.Left;
 
             range.Style
                 .Alignment
-                .Vertical =
-                XLAlignmentVerticalValues.Center;
+                .Vertical = XLAlignmentVerticalValues.Center;
 
             range.Style
                 .Alignment
@@ -771,13 +634,11 @@ namespace SmartMeterReadingDash.Services
 
             range.Style
                 .Border
-                .OutsideBorder =
-                XLBorderStyleValues.Thin;
+                .OutsideBorder = XLBorderStyleValues.Thin;
 
             range.Style
                 .Border
-                .OutsideBorderColor =
-                background;
+                .OutsideBorderColor = background;
 
             ws.Row(row).Height = 20;
         }
@@ -786,46 +647,30 @@ namespace SmartMeterReadingDash.Services
         // COMPANY SUMMARY LABEL
         // ============================================================
 
-        private static string CompanySummaryLabel(
-            bool isSuperAdmin,
-            string company)
+        private static string CompanySummaryLabel( bool isSuperAdmin,  string company)
         {
             return "MANAGEMENT SUMMARY – BRPL";
         }
-
 
         // ============================================================
         // DASHBOARD BANNER
         // ============================================================
 
-        private static void WriteDashboardBanner(
-            IXLWorksheet ws,
-            int row,
-            string title,
-            XLColor background,
-            XLColor fontColor)
+        private static void WriteDashboardBanner( IXLWorksheet ws, int row, string title, XLColor background, XLColor fontColor)
         {
-            var range =
-                ws.Range(
-                    row,
-                    2,
-                    row,
-                    13);
+            var range = ws.Range( row, 2, row, 13);
 
             range.Merge();
 
-            range.FirstCell().Value =
-                title;
+            range.FirstCell().Value = title;
 
             range.Style
                 .Fill
-                .BackgroundColor =
-                background;
+                .BackgroundColor = background;
 
             range.Style
                 .Font
-                .FontColor =
-                fontColor;
+                .FontColor = fontColor;
 
             range.Style
                 .Font
@@ -837,20 +682,17 @@ namespace SmartMeterReadingDash.Services
 
             range.Style
                 .Alignment
-                .Horizontal =
-                XLAlignmentHorizontalValues.Left;
+                .Horizontal = XLAlignmentHorizontalValues.Left;
 
             range.Style
                 .Alignment
-                .Vertical =
-                XLAlignmentVerticalValues.Center;
+                .Vertical = XLAlignmentVerticalValues.Center;
 
             range.Style
                 .Alignment
                 .Indent = 1;
 
-            ws.Row(row).Height =
-                20;
+            ws.Row(row).Height = 20;
         }
 
 
@@ -858,67 +700,39 @@ namespace SmartMeterReadingDash.Services
         // KPI CARD
         // ============================================================
 
-        private static void CreateModernKpiCard(
-            IXLWorksheet ws,
-            int row,
-            int firstColumn,
-            int lastColumn,
-            string label,
-            string value,
-            XLColor accent)
+        private static void CreateModernKpiCard( IXLWorksheet ws, int row, int firstColumn, int lastColumn, string label, string value, XLColor accent)
         {
-            var card =
-                ws.Range(
-                    row,
-                    firstColumn,
-                    row + 2,
-                    lastColumn);
+            var card = ws.Range( row, firstColumn, row + 2, lastColumn);
 
             card.Style
                 .Fill
-                .BackgroundColor =
-                Palette.White;
+                .BackgroundColor = Palette.White;
 
             card.Style
                 .Border
-                .OutsideBorder =
-                XLBorderStyleValues.Thin;
+                .OutsideBorder = XLBorderStyleValues.Thin;
 
             card.Style
                 .Border
-                .OutsideBorderColor =
-                Palette.Border;
+                .OutsideBorderColor = Palette.Border;
 
 
-            var accentRange =
-                ws.Range(
-                    row,
-                    firstColumn,
-                    row,
-                    lastColumn);
+            var accentRange = ws.Range( row, firstColumn, row, lastColumn);
 
             accentRange.Style
                 .Fill
-                .BackgroundColor =
-                accent;
+                .BackgroundColor =  accent;
 
 
-            var labelRange =
-                ws.Range(
-                    row + 1,
-                    firstColumn,
-                    row + 1,
-                    lastColumn);
+            var labelRange = ws.Range( row + 1, firstColumn, row + 1, lastColumn);
 
             labelRange.Merge();
 
-            labelRange.FirstCell().Value =
-                label;
+            labelRange.FirstCell().Value = label;
 
             labelRange.Style
                 .Font
-                .FontColor =
-                Palette.Grey;
+                .FontColor = Palette.Grey;
 
             labelRange.Style
                 .Font
@@ -930,31 +744,22 @@ namespace SmartMeterReadingDash.Services
 
             labelRange.Style
                 .Alignment
-                .Horizontal =
-                XLAlignmentHorizontalValues.Center;
+                .Horizontal = XLAlignmentHorizontalValues.Center;
 
             labelRange.Style
                 .Alignment
-                .Vertical =
-                XLAlignmentVerticalValues.Center;
+                .Vertical = XLAlignmentVerticalValues.Center;
 
 
-            var valueRange =
-                ws.Range(
-                    row + 2,
-                    firstColumn,
-                    row + 2,
-                    lastColumn);
+            var valueRange = ws.Range(  row + 2, firstColumn, row + 2, lastColumn);
 
             valueRange.Merge();
 
-            valueRange.FirstCell().Value =
-                value;
+            valueRange.FirstCell().Value = value;
 
             valueRange.Style
                 .Font
-                .FontColor =
-                accent;
+                .FontColor = accent;
 
             valueRange.Style
                 .Font
@@ -966,13 +771,11 @@ namespace SmartMeterReadingDash.Services
 
             valueRange.Style
                 .Alignment
-                .Horizontal =
-                XLAlignmentHorizontalValues.Center;
+                .Horizontal = XLAlignmentHorizontalValues.Center;
 
             valueRange.Style
                 .Alignment
-                .Vertical =
-                XLAlignmentVerticalValues.Center;
+                .Vertical = XLAlignmentVerticalValues.Center;
 
 
             ws.Row(row).Height = 5;
@@ -985,39 +788,21 @@ namespace SmartMeterReadingDash.Services
         // COMPANY PANEL
         // ============================================================
 
-        private static void WriteCompanyPanel(
-            IXLWorksheet ws,
-            int row,
-            int firstColumn,
-            int lastColumn,
-            string company,
-            int total,
-            int downloaded,
-            int failed,
-            XLColor accent,
-            XLColor background)
+        private static void WriteCompanyPanel( IXLWorksheet ws, int row, int firstColumn,int lastColumn, string company, int total, int downloaded, int failed, XLColor accent, XLColor background)
         {
-            var title =
-                ws.Range(
-                    row,
-                    firstColumn,
-                    row,
-                    lastColumn);
+            var title =  ws.Range( row, firstColumn, row, lastColumn);
 
             title.Merge();
 
-            title.FirstCell().Value =
-                company;
+            title.FirstCell().Value = company;
 
             title.Style
                 .Fill
-                .BackgroundColor =
-                accent;
+                .BackgroundColor = accent;
 
             title.Style
                 .Font
-                .FontColor =
-                Palette.White;
+                .FontColor = Palette.White;
 
             title.Style
                 .Font
@@ -1029,8 +814,7 @@ namespace SmartMeterReadingDash.Services
 
             title.Style
                 .Alignment
-                .Horizontal =
-                XLAlignmentHorizontalValues.Left;
+                .Horizontal = XLAlignmentHorizontalValues.Left;
 
             title.Style
                 .Alignment
@@ -1457,91 +1241,71 @@ namespace SmartMeterReadingDash.Services
         // BRPL DOWNLOADED
         // ============================================================
 
-        // ============================================================
-        // BRPL DOWNLOADED
-        // ============================================================
-
-        private static void CreateBrplDownloadedSheet(
-            XLWorkbook workbook,
-            List<HesDownloadMeter> data)
+        private static void CreateBrplDownloadedSheet( XLWorkbook workbook,List<HesDownloadMeter> data)
         {
-            var ws =
-                workbook.Worksheets.Add(
-                    "BRPL Downloaded");
-
-            ws.TabColor =
-                Palette.Green;
-
-
+            var ws = workbook.Worksheets.Add( "BRPL Downloaded");
+            ws.TabColor = Palette.Green;
             string[] headers =
             {
-        "S.No.",
-        "Meter Number",
-        "Cons Ref",
-        "Phase",
-        "Department",
-        "Division",
-        "Seq No",
-        "Address",
-        "Meter Type"
-    };
-
-
-            SetHeaderRow(
-                ws,
-                1,
-                headers);
-
+                "S.No.",
+                "Cons Ref",
+                "Meter Number",
+                "KWH",
+                "KVAH",
+                "Reading Date",
+                "Phase",
+                "Department",
+                "Cycle",
+                "Division",
+                "Seq No",
+                "Meter Type",
+                "Address"
+            };
+            SetHeaderRow(  ws,  1,  headers);
 
             int row = 2;
             int serial = 1;
 
-
             foreach (var item in data)
             {
-                ws.Cell(row, 1).Value =
-                    serial++;
+                ws.Cell(row, 1).Value = serial++;
 
-                ws.Cell(row, 2).Value =
-                    item.MeterNumber;
+                ws.Cell(row, 3).Value = item.ConsRef;
 
-                ws.Cell(row, 3).Value =
-                    item.ConsRef;
+                ws.Cell(row, 2).Value =  item.MeterNumber;
 
-                ws.Cell(row, 4).Value =
-                    item.Phase;
+                ws.Cell(row, 4).Value = item.Kwh;
 
-                ws.Cell(row, 5).Value =
-                    item.SapDepartment;
+                ws.Cell(row, 5).Value = item.Kvah;
 
-                ws.Cell(row, 6).Value =
-                    item.SapDivision;
+                ws.Cell(row, 6).Value = item.ReadingDate.HasValue
+                    ? item.ReadingDate.Value.ToString("dd-MM-yyyy")
+                    : string.Empty;
 
-                ws.Cell(row, 7).Value =
-                    item.SapSeqNo;
+                ws.Cell(row, 7).Value =  item.Phase;
 
-                ws.Cell(row, 8).Value =
-                    item.Address;
+                ws.Cell(row, 8).Value = item.SapDepartment;
 
-                ws.Cell(row, 9).Value =
-                    item.MeterType;
+                ws.Cell(row, 9).Value = item.Cycle;
+
+                ws.Cell(row, 10).Value = item.SapDivision;
+
+                ws.Cell(row, 11).Value = item.SapSeqNo;
+
+                ws.Cell(row, 12).Value =item.MeterType;
+
+                ws.Cell(row, 13).Value = item.Address;
 
                 row++;
             }
 
-
-            FormatDataSheet(
-                ws,
-                headers.Length,
-                "BRPL_Downloaded");
+            FormatDataSheet(  ws, headers.Length, "BRPL_Downloaded");
         }
 
         // ============================================================
         // CMRI DOWNLOAD DETAILS
         // ============================================================
-        private static void CreateCmriDownloadSheet(
-            XLWorkbook workbook,
-            List<CMRIDownload> data)
+        private static void CreateCmriDownloadSheet( XLWorkbook workbook, List<CMRIDownload> data)
         {
             var ws = workbook.Worksheets.Add("CMRI Download");
             ws.TabColor = Palette.Orange;
@@ -1551,10 +1315,15 @@ namespace SmartMeterReadingDash.Services
                 "S.No.",
                 "Cons Ref",
                 "Meter Number",
-                "Cycle",
+                "KWH",
+                "KVAH",
+                "Reading Date",
+                "Phase",
                 "Department",
+                "Cycle",
                 "Division",
-                "SAP Sequence No",
+                "Seq No",
+                "Meter Type",
                 "Address"
             };
 
@@ -1566,13 +1335,32 @@ namespace SmartMeterReadingDash.Services
             foreach (var item in data ?? new List<CMRIDownload>())
             {
                 ws.Cell(row, 1).Value = serial++;
+
                 ws.Cell(row, 2).Value = item.cons_ref;
+
                 ws.Cell(row, 3).Value = item.meterno;
-                ws.Cell(row, 4).Value = item.Cycle;
-                ws.Cell(row, 5).Value = item.Department;
-                ws.Cell(row, 6).Value = item.Division;
-                ws.Cell(row, 7).Value = item.SapSeqNo;
-                ws.Cell(row, 8).Value = item.Address;
+
+                ws.Cell(row, 4).Value = item.KWH;
+
+                ws.Cell(row, 5).Value = item.KVAH;
+
+                ws.Cell(row, 6).Value = item.ReadingDate.HasValue
+                    ? item.ReadingDate.Value.ToString("dd-MM-yyyy")
+                    : string.Empty;
+
+                ws.Cell(row, 7).Value = item.Phase;
+
+                ws.Cell(row, 8).Value = item.Department;
+
+                ws.Cell(row, 9).Value = item.Cycle;
+
+                ws.Cell(row, 10).Value = item.Division;
+
+                ws.Cell(row, 11).Value = item.SapSeqNo;
+
+                ws.Cell(row, 12).Value = item.MeterType;
+
+                ws.Cell(row, 13).Value = item.Address;
                 row++;
             }
 

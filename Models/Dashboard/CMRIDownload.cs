@@ -1,4 +1,6 @@
-﻿namespace SmartMeterReadingDash.Models.Dashboard
+﻿using Microsoft.Extensions.Primitives;
+
+namespace SmartMeterReadingDash.Models.Dashboard
 {
     public class CMRIDownload
     {
@@ -9,6 +11,11 @@
         public string Department { get; set; }
         public string Address { get; set; }
         public string SapSeqNo { get; set; }
+        public string KWH { get; set; }
+        public string KVAH { get; set; }
+        public string MeterType { get; set; }
+        public string Phase { get; set; }
+        public DateTime? ReadingDate { get; set; }
 
     }
 }

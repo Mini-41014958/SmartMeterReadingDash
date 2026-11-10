@@ -325,65 +325,100 @@ namespace SmartMeterReadingDash.Controllers.API
 
         [AllowAnonymous]
         [HttpPost("sso-generate")]
-        public async Task<IActionResult> GenerateSsoToken([FromBody] SsoRequestModel request,[FromHeader(Name = "X-API-KEY")] string apiKey)
+        public async Task<IActionResult> GenerateSsoToken(
+         [FromBody] SsoRequestModel request,
+         [FromHeader(Name = "X-API-KEY")] string apiKey)
         {
-            // 1. Validate the API Key (This ensures ONLY your Web Forms app can call this without a password)
-            // Note: Move this secret to appsettings.json in production!
             var expectedApiKey = "kfdjakhakjdhajkhjkfhdsajkda";
+
             if (apiKey != expectedApiKey)
             {
-                return Unauthorized(new { success = false, message = "Invalid API Key." });
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = "Invalid API Key."
+                });
             }
 
-            if (request == null || string.IsNullOrWhiteSpace(request.Username))
+            if (request == null ||
+                string.IsNullOrWhiteSpace(request.Username))
             {
-                return BadRequest(new { success = false, message = "Username is required." });
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Username is required."
+                });
             }
 
-            // 2. Fetch the user WITHOUT checking the password
-            var user = await _authRepository.GetUserByUsernameAsync(request.Username);
+            var user = await _authRepository
+                .GetUserByUsernameAsync(request.Username);
 
             if (user == null || user.IsActive != 1)
             {
-                return Unauthorized(new { success = false, message = "User not found or inactive." });
+                return Unauthorized(new
+                {
+                    success = false,
+                    message = "User not found or inactive."
+                });
             }
 
-            // 3. Update login time and generate token
+            // Use the department stored in the trusted user record.
+            var department = user.Department?.Trim();
+
+            if (string.IsNullOrWhiteSpace(department))
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Department is not configured for this user."
+                });
+            }
+
             await _authRepository.UpdateLastLoginAsync(user.UserId);
+
+            // GenerateToken must include Department as a JWT claim.
             var token = _jwtService.GenerateToken(user);
 
             return Ok(new
             {
                 success = true,
-                token = token
+                token = token,
+                department = department
             });
         }
 
         [AllowAnonymous]
         [HttpGet("sso-consume")]
-        public IActionResult ConsumeSsoToken([FromQuery] string token, [FromQuery] string returnUrl = "/Dashboard/Index")
+        public IActionResult ConsumeSsoToken( [FromQuery] string token, [FromQuery] string returnUrl = "/Dashboard/Index")
         {
             if (string.IsNullOrWhiteSpace(token))
             {
                 return BadRequest("Token is required.");
             }
 
-            // IMPORTANT: Because this will run inside an iframe from a different domain,
-            // SameSite MUST be SameSiteMode.None and Secure MUST be true.
-            Response.Cookies.Append("SmartMeterAuth", token,
+            if (string.IsNullOrWhiteSpace(returnUrl) ||
+                !Url.IsLocalUrl(returnUrl))
+            {
+                return BadRequest("Invalid return URL.");
+            }
+
+            bool isHttps = Request.IsHttps;
+
+            Response.Cookies.Append(
+                "SmartMeterAuth",
+                token,
                 new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true, // Must be true for SameSite=None
-                    SameSite = SameSiteMode.None, // Crucial for cross-domain iframes
+                    Secure = isHttps,
+                    SameSite = isHttps
+                        ? SameSiteMode.None
+                        : SameSiteMode.Lax,
                     Expires = DateTimeOffset.UtcNow.AddMinutes(60),
                     Path = "/"
-                }
-            );
+                });
 
-            // Redirect the iframe to the actual dashboard page
             return Redirect(returnUrl);
         }
-
     }
 }

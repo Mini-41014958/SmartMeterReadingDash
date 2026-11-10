@@ -7,7 +7,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddAntiforgery(options => options.SuppressXFrameOptionsHeader = true);
 // Application Services
 builder.Services.AddScoped<OracleCon>();
 builder.Services.AddScoped<Dashboard>();
@@ -118,6 +118,19 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        context.Response.Headers.Remove("X-Frame-Options");
+        context.Response.Headers["Content-Security-Policy"] =
+            "frame-ancestors 'self' http://10.213.225.35:81";
+        return Task.CompletedTask;
+    });
+
+    await next();
+});
 
 app.UseAuthentication();
 
