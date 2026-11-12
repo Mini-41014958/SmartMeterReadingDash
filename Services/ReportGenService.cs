@@ -111,6 +111,7 @@ namespace SmartMeterReadingDash.Services
                     CreateBrplDownloadedSheet(workbook, brplDownloaded ?? new List<HesDownloadMeter>());
                     CreateBrplFailedSheet(workbook, brplFailed ?? new List<MeterDownloadDetailedSummary>());
                     CreateCmriDownloadSheet(workbook, cmriDownloads ?? new List<CMRIDownload>());
+                    CreateMeterMakeCycleSummarySheet( workbook, brplDownloaded ?? new List<HesDownloadMeter>(),  brplFailed ?? new List<MeterDownloadDetailedSummary>());
                 }
 
 
@@ -209,29 +210,29 @@ namespace SmartMeterReadingDash.Services
 
             // TITLE
 
-            ws.Range("B2:M4").Merge();
+            ws.Range("B2:O4").Merge();
 
             ws.Cell("B2").Value = "RCM - SMART METER READING DASHBOARD";
 
-            ws.Range("B2:M4").Style.Fill.BackgroundColor = Palette.Navy;
+            ws.Range("B2:O4").Style.Fill.BackgroundColor = Palette.Navy;
 
-            ws.Range("B2:M4").Style.Font.FontColor = Palette.White;
+            ws.Range("B2:O4").Style.Font.FontColor = Palette.White;
 
-            ws.Range("B2:M4").Style.Font.Bold = true;
+            ws.Range("B2:O4").Style.Font.Bold = true;
 
-            ws.Range("B2:M4").Style.Font.FontSize = 17;
+            ws.Range("B2:O4").Style.Font.FontSize = 17;
 
             // CENTER TITLE
-            ws.Range("B2:M4").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            ws.Range("B2:O4").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-            ws.Range("B2:M4").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+            ws.Range("B2:O4").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
             // IMPORTANT: remove indentation
-            ws.Range("B2:M4").Style.Alignment.Indent = 0;
+            ws.Range("B2:O4").Style.Alignment.Indent = 0;
 
-            ws.Range("B2:M4").Style.Border.BottomBorder = XLBorderStyleValues.Medium;
+            ws.Range("B2:O4").Style.Border.BottomBorder = XLBorderStyleValues.Medium;
 
-            ws.Range("B2:M4").Style.Border.BottomBorderColor = Palette.Blue;
+            ws.Range("B2:O4").Style.Border.BottomBorderColor = Palette.Blue;
 
             // Make the merged title area taller
             ws.Row(2).Height = 20;
@@ -250,7 +251,7 @@ namespace SmartMeterReadingDash.Services
                 picture.MoveTo(ws.Cell("B2"), 5, 4);
             }
 
-            ws.Range("B5:M5").Merge();
+            ws.Range("B5:O5").Merge();
             ws.Cell("B5").Value = $"READING MONTH: {readingMonth}  |  " + $"REPORT GENERATED: {DateTime.Now:dd MMM yyyy HH:mm}";
 
             ws.Range("B5:M5")
@@ -316,10 +317,11 @@ namespace SmartMeterReadingDash.Services
 
             CreateModernKpiCard(ws, 8, 2, 3, "TOTAL METERS", totalMeters.ToString("#,##0"), Palette.Blue);
             CreateModernKpiCard(ws, 8, 4, 5, "HES DOWNLOADED", totalDownloaded.ToString("#,##0"), Palette.Green);
-            CreateModernKpiCard(ws, 8, 6, 7, "HES FAILED %", failureRate.ToString("0.0%"), Palette.Red);
-            CreateModernKpiCard(ws, 8, 8, 9, "CMRI RECORDS", totalCmriRecords.ToString("#,##0"), Palette.Orange);
-            CreateModernKpiCard(ws, 8, 10, 11, "CMRI DOWNLOAD %", cmriDownloadRate.ToString("0.0%"), Palette.Orange);
-            CreateModernKpiCard(ws, 8, 12, 13, "TOTAL DOWNLOAD %", totalDownloadRate.ToString("0.0%"), Palette.Blue);
+            CreateModernKpiCard(ws, 8, 6, 7, "HES FAILED", totalFailed.ToString("#,##0"), Palette.Red);
+            CreateModernKpiCard(ws, 8, 8, 9, "HES FAILED %", failureRate.ToString("0.0%"), Palette.Red);
+            CreateModernKpiCard(ws, 8, 10, 11, "CMRI RECORDS", totalCmriRecords.ToString("#,##0"), Palette.Orange);
+            CreateModernKpiCard(ws, 8, 12, 13, "CMRI DOWNLOAD %", cmriDownloadRate.ToString("0.0%"), Palette.Orange);
+            CreateModernKpiCard(ws, 8, 14, 15, "TOTAL DOWNLOAD %", totalDownloadRate.ToString("0.0%"), Palette.Blue);
 
             const int analysisHeaderRow = 12;
             const int analysisSubHeaderRow = 13;
@@ -593,6 +595,902 @@ namespace SmartMeterReadingDash.Services
             ws.SheetView.FreezeRows(5);
         }
 
+
+        private void CreateMeterMakeCycleSummarySheet(
+            XLWorkbook workbook,
+            List<HesDownloadMeter> downloadedData,
+            List<MeterDownloadDetailedSummary> failedData)
+        {
+            var ws = workbook.Worksheets.Add("Summary");
+
+            ws.TabColor = Palette.Orange;
+            ws.ShowGridLines = false;
+
+            var downloadedRecords = downloadedData
+                .Select(x => (
+                    Department: x.SapDepartment,
+                    MeterMake: x.MeterType,
+                    Cycle: x.Cycle
+                ))
+                .ToList();
+
+            var failedRecords = failedData
+                .Select(x => (
+                    Department: x.SapDepartment,
+                    MeterMake: x.MeterType,
+                    Cycle: x.Cycle
+                ))
+                .ToList();
+
+            // =========================================================
+            // GET ALL DEPARTMENTS FROM BOTH DATASETS
+            // =========================================================
+
+            var departments = downloadedRecords
+                .Select(x => string.IsNullOrWhiteSpace(x.Department)
+                    ? "Unassigned" : x.Department.Trim())
+                .Concat(failedRecords.Select(x =>
+                    string.IsNullOrWhiteSpace(x.Department)
+                        ? "Unassigned" : x.Department.Trim()))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            // Calculate maximum width required by any department pair.
+            int maxLastColumn = 8;
+
+            foreach (var department in departments)
+            {
+                int downloadCycles = downloadedRecords
+                    .Where(x => string.Equals(
+                        string.IsNullOrWhiteSpace(x.Department)
+                            ? "Unassigned" : x.Department.Trim(),
+                        department,
+                        StringComparison.OrdinalIgnoreCase))
+                    .Select(x => string.IsNullOrWhiteSpace(x.Cycle)
+                        ? "Unassigned" : x.Cycle.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Count();
+
+                int failedCycles = failedRecords
+                    .Where(x => string.Equals(
+                        string.IsNullOrWhiteSpace(x.Department)
+                            ? "Unassigned" : x.Department.Trim(),
+                        department,
+                        StringComparison.OrdinalIgnoreCase))
+                    .Select(x => string.IsNullOrWhiteSpace(x.Cycle)
+                        ? "Unassigned" : x.Cycle.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Count();
+
+                downloadCycles = Math.Max(1, downloadCycles);
+                failedCycles = Math.Max(1, failedCycles);
+
+                // Download table starts at B.
+                int downloadLast = 2 + downloadCycles + 2;
+
+                // Failed table starts after one blank column.
+                int failedStart = downloadLast + 2;
+
+                int failedLast = failedStart + failedCycles + 2;
+
+                maxLastColumn = Math.Max(maxLastColumn, failedLast);
+            }
+
+            ws.Column(1).Width = 3;
+
+            // =========================================================
+            // MAIN TITLE
+            // =========================================================
+
+            ws.Range(2, 2, 3, maxLastColumn).Merge();
+
+            ws.Cell(2, 2).Value =
+                "SMART METER READING - COMPLETE SUMMARY";
+
+            var title = ws.Range(2, 2, 3, maxLastColumn);
+
+            title.Style.Fill.BackgroundColor = Palette.Navy;
+            title.Style.Font.FontColor = Palette.White;
+            title.Style.Font.Bold = true;
+            title.Style.Font.FontSize = 16;
+
+            title.Style.Alignment.Horizontal =
+                XLAlignmentHorizontalValues.Left;
+
+            title.Style.Alignment.Vertical =
+                XLAlignmentVerticalValues.Center;
+
+            title.Style.Alignment.Indent = 1;
+
+            ws.Row(2).Height = 25;
+            ws.Row(3).Height = 20;
+
+            ws.Range(4, 2, 4, maxLastColumn).Merge();
+
+            ws.Cell(4, 2).Value =
+                $"GENERATED: {DateTime.Now:dd MMM yyyy HH:mm}";
+
+            ws.Range(4, 2, 4, maxLastColumn).Style.Font.FontColor =
+                Palette.Grey;
+
+            ws.Range(4, 2, 4, maxLastColumn).Style.Font.Italic = true;
+            ws.Range(4, 2, 4, maxLastColumn).Style.Font.FontSize = 9;
+
+            // =========================================================
+            // DEPARTMENT-WISE SIDE-BY-SIDE SUMMARY
+            // =========================================================
+
+            int currentRow = 6;
+
+            foreach (var department in departments)
+            {
+                var departmentDownloaded = downloadedRecords
+                    .Where(x => string.Equals(
+                        string.IsNullOrWhiteSpace(x.Department)
+                            ? "Unassigned" : x.Department.Trim(),
+                        department,
+                        StringComparison.OrdinalIgnoreCase))
+                    .Select(x => (
+                        Department: x.Department,
+                        MeterMake: x.MeterMake,
+                        Cycle: x.Cycle
+                    ))
+                    .ToList();
+
+                var departmentFailed = failedRecords
+                    .Where(x => string.Equals(
+                        string.IsNullOrWhiteSpace(x.Department)
+                            ? "Unassigned" : x.Department.Trim(),
+                        department,
+                        StringComparison.OrdinalIgnoreCase))
+                    .Select(x => (
+                        Department: x.Department,
+                        MeterMake: x.MeterMake,
+                        Cycle: x.Cycle
+                    ))
+                    .ToList();
+
+                // Calculate downloaded table position.
+                int downloadCycles = Math.Max(
+                    1,
+                    departmentDownloaded
+                        .Select(x => string.IsNullOrWhiteSpace(x.Cycle)
+                            ? "Unassigned" : x.Cycle.Trim())
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .Count()
+                );
+
+                int downloadLastColumn = 2 + downloadCycles + 2;
+
+                // Exactly ONE blank column between both tables.
+                int failedStartColumn = downloadLastColumn + 2;
+
+                // LEFT: DOWNLOADED
+                int downloadedEndRow = WriteDepartmentWiseCycleTable(
+                    ws,
+                    currentRow,
+                    2,
+                    department,
+                    "HES DOWNLOADED",
+                    departmentDownloaded,
+                    Palette.Green,
+                    Palette.LightGreen
+                );
+
+                // RIGHT: FAILED
+                int failedEndRow = WriteDepartmentWiseCycleTable(
+                    ws,
+                    currentRow,
+                    failedStartColumn,
+                    department,
+                    "HES FAILED",
+                    departmentFailed,
+                    Palette.Red,
+                    Palette.LightRed
+                );
+
+                // Move to next department after the taller table.
+                currentRow = Math.Max(
+                    downloadedEndRow,
+                    failedEndRow
+                ) + 3;
+            }
+
+            // =========================================================
+            // FINAL FORMATTING
+            // =========================================================
+
+            var usedRange = ws.RangeUsed();
+
+            if (usedRange != null)
+            {
+                usedRange.Style.Font.FontName = BodyFont;
+
+                usedRange.Style.Alignment.Vertical =
+                    XLAlignmentVerticalValues.Center;
+            }
+
+            ws.SheetView.FreezeRows(4);
+        }
+
+
+        // =============================================================
+        // DEPARTMENT-WISE DOWNLOADED / FAILED TABLE
+        // =============================================================
+
+        private static int WriteDepartmentWiseCycleTable(
+            IXLWorksheet ws,
+            int startRow,
+            int firstColumn,
+            string department,
+            string sectionTitle,
+            IEnumerable<(string? Department, string? MeterMake, string? Cycle)> sourceData,
+            XLColor accentColor,
+            XLColor lightColor)
+        {
+            var records = sourceData
+                .Select(x => new
+                {
+                    Department = string.IsNullOrWhiteSpace(x.Department)
+                        ? "Unassigned" : x.Department.Trim(),
+
+                    MeterMake = string.IsNullOrWhiteSpace(x.MeterMake)
+                        ? "Unassigned" : x.MeterMake.Trim(),
+
+                    Cycle = string.IsNullOrWhiteSpace(x.Cycle)
+                        ? "Unassigned" : x.Cycle.Trim()
+                })
+                .ToList();
+
+            var cycles = records
+                .Select(x => x.Cycle)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var meterMakes = records
+                .Select(x => x.MeterMake)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            int cycleCount = Math.Max(1, cycles.Count);
+
+            int lastColumn = firstColumn + cycleCount + 2;
+
+            int currentRow = startRow;
+
+            // =========================================================
+            // PANEL HEADER
+            // =========================================================
+
+            var panelHeader = ws.Range(
+                currentRow,
+                firstColumn,
+                currentRow,
+                lastColumn
+            );
+
+            panelHeader.Merge();
+
+            panelHeader.FirstCell().Value =
+                $"{department.ToUpperInvariant()} - {sectionTitle}";
+
+            panelHeader.Style.Fill.BackgroundColor = accentColor;
+            panelHeader.Style.Font.FontColor = Palette.White;
+            panelHeader.Style.Font.Bold = true;
+            panelHeader.Style.Font.FontSize = 10;
+
+            panelHeader.Style.Alignment.Horizontal =
+                XLAlignmentHorizontalValues.Left;
+
+            panelHeader.Style.Alignment.Vertical =
+                XLAlignmentVerticalValues.Center;
+
+            panelHeader.Style.Alignment.Indent = 1;
+
+            panelHeader.Style.Border.OutsideBorder =
+                XLBorderStyleValues.Thin;
+
+            panelHeader.Style.Border.OutsideBorderColor =
+                accentColor;
+
+            ws.Row(currentRow).Height = 24;
+
+            currentRow++;
+
+            // =========================================================
+            // TABLE HEADER
+            // =========================================================
+
+            ws.Cell(currentRow, firstColumn).Value = "Department";
+
+            ws.Cell(currentRow, firstColumn + 1).Value = "Meter Make";
+
+            for (int i = 0; i < cycles.Count; i++)
+            {
+                ws.Cell(currentRow, firstColumn + 2 + i).Value =
+                    cycles[i];
+            }
+
+            ws.Cell(currentRow, lastColumn).Value = "Grand Total";
+
+            var header = ws.Range(
+                currentRow,
+                firstColumn,
+                currentRow,
+                lastColumn
+            );
+
+            header.Style.Fill.BackgroundColor = accentColor;
+            header.Style.Font.FontColor = Palette.White;
+            header.Style.Font.Bold = true;
+            header.Style.Font.FontSize = 9;
+
+            header.Style.Alignment.Horizontal =
+                XLAlignmentHorizontalValues.Center;
+
+            header.Style.Alignment.Vertical =
+                XLAlignmentVerticalValues.Center;
+
+            header.Style.Alignment.WrapText = true;
+
+            header.Style.Border.OutsideBorder =
+                XLBorderStyleValues.Thin;
+
+            header.Style.Border.InsideBorder =
+                XLBorderStyleValues.Hair;
+
+            ws.Row(currentRow).Height = 27;
+
+            currentRow++;
+
+            int dataStartRow = currentRow;
+
+            // =========================================================
+            // NO DATA
+            // =========================================================
+
+            if (meterMakes.Count == 0)
+            {
+                var noData = ws.Range(
+                    currentRow,
+                    firstColumn,
+                    currentRow,
+                    lastColumn
+                );
+
+                noData.Merge();
+
+                noData.FirstCell().Value = "No data available";
+
+                noData.Style.Font.FontColor = Palette.Grey;
+                noData.Style.Font.Italic = true;
+
+                noData.Style.Alignment.Horizontal =
+                    XLAlignmentHorizontalValues.Center;
+
+                noData.Style.Fill.BackgroundColor = Palette.LightGrey;
+
+                noData.Style.Border.OutsideBorder =
+                    XLBorderStyleValues.Thin;
+
+                ws.Row(currentRow).Height = 22;
+
+                return currentRow + 1;
+            }
+
+            // =========================================================
+            // METER MAKE ROWS
+            // =========================================================
+
+            foreach (var meterMake in meterMakes)
+            {
+                ws.Cell(currentRow, firstColumn).Value = department;
+
+                ws.Cell(currentRow, firstColumn + 1).Value =
+                    meterMake;
+
+                int meterMakeTotal = 0;
+
+                for (int i = 0; i < cycles.Count; i++)
+                {
+                    string cycle = cycles[i];
+
+                    int count = records.Count(x =>
+                        string.Equals(
+                            x.MeterMake,
+                            meterMake,
+                            StringComparison.OrdinalIgnoreCase)
+                        &&
+                        string.Equals(
+                            x.Cycle,
+                            cycle,
+                            StringComparison.OrdinalIgnoreCase));
+
+                    ws.Cell(currentRow, firstColumn + 2 + i).Value =
+                        count;
+
+                    meterMakeTotal += count;
+                }
+
+                ws.Cell(currentRow, lastColumn).Value =
+                    meterMakeTotal;
+
+                currentRow++;
+            }
+
+            // =========================================================
+            // DEPARTMENT TOTAL
+            // =========================================================
+
+            int totalRow = currentRow;
+
+            ws.Cell(totalRow, firstColumn).Value =
+                department.ToUpperInvariant() + " TOTAL";
+
+            int departmentGrandTotal = 0;
+
+            for (int i = 0; i < cycles.Count; i++)
+            {
+                string cycle = cycles[i];
+
+                int cycleTotal = records.Count(x =>
+                    string.Equals(
+                        x.Cycle,
+                        cycle,
+                        StringComparison.OrdinalIgnoreCase));
+
+                ws.Cell(totalRow, firstColumn + 2 + i).Value =
+                    cycleTotal;
+
+                departmentGrandTotal += cycleTotal;
+            }
+
+            ws.Cell(totalRow, lastColumn).Value =
+                departmentGrandTotal;
+
+            // =========================================================
+            // TOTAL ROW STYLE
+            // =========================================================
+
+            var totalRange = ws.Range(
+                totalRow,
+                firstColumn,
+                totalRow,
+                lastColumn
+            );
+
+            totalRange.Style.Fill.BackgroundColor = lightColor;
+            totalRange.Style.Font.FontColor = accentColor;
+            totalRange.Style.Font.Bold = true;
+
+            totalRange.Style.Border.TopBorder =
+                XLBorderStyleValues.Thin;
+
+            totalRange.Style.Border.TopBorderColor =
+                accentColor;
+
+            // =========================================================
+            // TABLE STYLE
+            // =========================================================
+
+            var dataRange = ws.Range(
+                dataStartRow,
+                firstColumn,
+                totalRow,
+                lastColumn
+            );
+
+            dataRange.Style.Border.InsideBorder =
+                XLBorderStyleValues.Hair;
+
+            dataRange.Style.Border.OutsideBorder =
+                XLBorderStyleValues.Thin;
+
+            dataRange.Style.Border.OutsideBorderColor =
+                Palette.Border;
+
+            dataRange.Style.Alignment.Vertical =
+                XLAlignmentVerticalValues.Center;
+
+            for (int row = dataStartRow; row < totalRow; row++)
+            {
+                if ((row - dataStartRow) % 2 == 1)
+                {
+                    ws.Range(
+                        row,
+                        firstColumn,
+                        row,
+                        lastColumn
+                    ).Style.Fill.BackgroundColor =
+                        XLColor.FromHtml("#F8FAFC");
+                }
+            }
+
+            // =========================================================
+            // NUMBER FORMATTING
+            // =========================================================
+
+            ws.Range(
+                dataStartRow,
+                firstColumn + 2,
+                totalRow,
+                lastColumn
+            ).Style.NumberFormat.Format = "#,##0";
+
+            ws.Range(
+                dataStartRow,
+                firstColumn + 2,
+                totalRow,
+                lastColumn
+            ).Style.Alignment.Horizontal =
+                XLAlignmentHorizontalValues.Center;
+
+            // =========================================================
+            // COLUMN WIDTHS
+            // =========================================================
+
+            ws.Column(firstColumn).Width = 19;
+            ws.Column(firstColumn + 1).Width = 17;
+
+            for (int i = 0; i < cycles.Count; i++)
+            {
+                ws.Column(firstColumn + 2 + i).Width = 11;
+            }
+
+            ws.Column(lastColumn).Width = 15;
+
+            return totalRow + 1;
+        }
+
+
+
+        // =============================================================
+        // DEPARTMENT-WISE CYCLE SUMMARY
+        // Creates a separate table for every department.
+        // =============================================================
+        private static int WriteDepartmentWiseCycleSummary(
+            IXLWorksheet ws,
+            int startRow,
+            string sectionTitle,
+            IEnumerable<(string? Department, string? MeterMake, string? Cycle)> sourceData,
+            int firstColumn,
+            XLColor accentColor,
+            XLColor lightColor)
+        {
+            // =========================================================
+            // NORMALIZE RECORDS
+            // =========================================================
+
+            var records = sourceData
+                .Select(x => new
+                {
+                    Department = string.IsNullOrWhiteSpace(x.Department)
+                        ? "Unassigned"
+                        : x.Department.Trim(),
+
+                    MeterMake = string.IsNullOrWhiteSpace(x.MeterMake)
+                        ? "Unassigned"
+                        : x.MeterMake.Trim(),
+
+                    Cycle = string.IsNullOrWhiteSpace(x.Cycle)
+                        ? "Unassigned"
+                        : x.Cycle.Trim()
+                })
+                .ToList();
+
+            // =========================================================
+            // CALCULATE PANEL WIDTH
+            // =========================================================
+
+            int maxCycles = records
+                .GroupBy(x => x.Department,
+                    StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.Select(x => x.Cycle)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Count())
+                .DefaultIfEmpty(1)
+                .Max();
+
+            maxCycles = Math.Max(1, maxCycles);
+
+            int panelLastColumn = firstColumn + maxCycles + 2;
+
+            int currentRow = startRow;
+
+            // =========================================================
+            // SECTION TITLE
+            // =========================================================
+
+            var sectionRange = ws.Range(
+                currentRow,
+                firstColumn,
+                currentRow,
+                panelLastColumn
+            );
+
+            sectionRange.Merge();
+
+            sectionRange.FirstCell().Value = sectionTitle;
+
+            sectionRange.Style.Fill.BackgroundColor = accentColor;
+            sectionRange.Style.Font.FontColor = Palette.White;
+            sectionRange.Style.Font.Bold = true;
+            sectionRange.Style.Font.FontSize = 11;
+
+            sectionRange.Style.Alignment.Horizontal =
+                XLAlignmentHorizontalValues.Left;
+
+            sectionRange.Style.Alignment.Vertical =
+                XLAlignmentVerticalValues.Center;
+
+            sectionRange.Style.Alignment.Indent = 1;
+
+            sectionRange.Style.Border.OutsideBorder =
+                XLBorderStyleValues.Thin;
+
+            ws.Row(currentRow).Height = 25;
+
+            currentRow += 2;
+
+            // =========================================================
+            // DEPARTMENTS
+            // =========================================================
+
+            var departments = records
+                .Select(x => x.Department)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (departments.Count == 0)
+            {
+                ws.Cell(currentRow, firstColumn).Value =
+                    "No data available";
+
+                ws.Cell(currentRow, firstColumn)
+                    .Style.Font.FontColor = Palette.Grey;
+
+                return currentRow + 2;
+            }
+
+            // =========================================================
+            // DEPARTMENT-WISE TABLES
+            // =========================================================
+
+            foreach (var department in departments)
+            {
+                var departmentRecords = records
+                    .Where(x => string.Equals(
+                        x.Department,
+                        department,
+                        StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                var cycles = departmentRecords
+                    .Select(x => x.Cycle)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                var meterMakes = departmentRecords
+                    .Select(x => x.MeterMake)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                int lastColumn = firstColumn + cycles.Count + 2;
+
+                int grandTotalColumn = lastColumn;
+
+                // =====================================================
+                // TABLE HEADER
+                // =====================================================
+
+                ws.Cell(currentRow, firstColumn).Value = "Department";
+
+                ws.Cell(currentRow, firstColumn + 1).Value = "Meter Make";
+
+                for (int i = 0; i < cycles.Count; i++)
+                {
+                    ws.Cell(currentRow, firstColumn + 2 + i).Value =
+                        cycles[i];
+                }
+
+                ws.Cell(currentRow, grandTotalColumn).Value = "Grand Total";
+
+                var header = ws.Range(
+                    currentRow,
+                    firstColumn,
+                    currentRow,
+                    lastColumn
+                );
+
+                header.Style.Fill.BackgroundColor = accentColor;
+                header.Style.Font.FontColor = Palette.White;
+                header.Style.Font.Bold = true;
+                header.Style.Font.FontSize = 9;
+
+                header.Style.Alignment.Horizontal =
+                    XLAlignmentHorizontalValues.Center;
+
+                header.Style.Alignment.Vertical =
+                    XLAlignmentVerticalValues.Center;
+
+                header.Style.Alignment.WrapText = true;
+
+                header.Style.Border.OutsideBorder =
+                    XLBorderStyleValues.Thin;
+
+                header.Style.Border.InsideBorder =
+                    XLBorderStyleValues.Hair;
+
+                ws.Row(currentRow).Height = 28;
+
+                currentRow++;
+
+                int departmentStartRow = currentRow;
+
+                // =====================================================
+                // METER MAKE ROWS
+                // =====================================================
+
+                foreach (var meterMake in meterMakes)
+                {
+                    ws.Cell(currentRow, firstColumn).Value = department;
+
+                    ws.Cell(currentRow, firstColumn + 1).Value = meterMake;
+
+                    int meterMakeTotal = 0;
+
+                    for (int i = 0; i < cycles.Count; i++)
+                    {
+                        string cycle = cycles[i];
+
+                        int count = departmentRecords.Count(x =>
+                            string.Equals(
+                                x.MeterMake,
+                                meterMake,
+                                StringComparison.OrdinalIgnoreCase)
+                            &&
+                            string.Equals(
+                                x.Cycle,
+                                cycle,
+                                StringComparison.OrdinalIgnoreCase));
+
+                        ws.Cell(currentRow, firstColumn + 2 + i).Value =
+                            count;
+
+                        meterMakeTotal += count;
+                    }
+
+                    ws.Cell(currentRow, grandTotalColumn).Value =
+                        meterMakeTotal;
+
+                    currentRow++;
+                }
+
+                // =====================================================
+                // DEPARTMENT TOTAL
+                // =====================================================
+
+                int totalRow = currentRow;
+
+                ws.Cell(totalRow, firstColumn).Value =
+                    department.ToUpperInvariant() + " TOTAL";
+
+                ws.Cell(totalRow, firstColumn + 1).Value = "";
+
+                int departmentGrandTotal = 0;
+
+                for (int i = 0; i < cycles.Count; i++)
+                {
+                    string cycle = cycles[i];
+
+                    int cycleTotal = departmentRecords.Count(x =>
+                        string.Equals(
+                            x.Cycle,
+                            cycle,
+                            StringComparison.OrdinalIgnoreCase));
+
+                    ws.Cell(totalRow, firstColumn + 2 + i).Value =
+                        cycleTotal;
+
+                    departmentGrandTotal += cycleTotal;
+                }
+
+                ws.Cell(totalRow, grandTotalColumn).Value =
+                    departmentGrandTotal;
+
+                var totalRange = ws.Range(
+                    totalRow,
+                    firstColumn,
+                    totalRow,
+                    lastColumn
+                );
+
+                totalRange.Style.Fill.BackgroundColor = lightColor;
+                totalRange.Style.Font.Bold = true;
+                totalRange.Style.Font.FontColor = accentColor;
+
+                totalRange.Style.Border.TopBorder =
+                    XLBorderStyleValues.Thin;
+
+                totalRange.Style.Border.TopBorderColor = accentColor;
+
+                // =====================================================
+                // TABLE FORMATTING
+                // =====================================================
+
+                var dataRange = ws.Range(
+                    departmentStartRow,
+                    firstColumn,
+                    totalRow,
+                    lastColumn
+                );
+
+                dataRange.Style.Border.InsideBorder =
+                    XLBorderStyleValues.Hair;
+
+                dataRange.Style.Border.OutsideBorder =
+                    XLBorderStyleValues.Thin;
+
+                dataRange.Style.Border.OutsideBorderColor =
+                    Palette.Border;
+
+                dataRange.Style.Alignment.Vertical =
+                    XLAlignmentVerticalValues.Center;
+
+                // Alternate row colors.
+                for (int row = departmentStartRow; row < totalRow; row++)
+                {
+                    if ((row - departmentStartRow) % 2 == 1)
+                    {
+                        ws.Range(
+                            row,
+                            firstColumn,
+                            row,
+                            lastColumn
+                        ).Style.Fill.BackgroundColor = XLColor.FromHtml("#F8FAFC");
+                    }
+                }
+
+                // Numeric columns.
+                ws.Range(
+                    departmentStartRow,
+                    firstColumn + 2,
+                    totalRow,
+                    lastColumn
+                ).Style.NumberFormat.Format = "#,##0";
+
+                ws.Range(
+                    departmentStartRow,
+                    firstColumn + 2,
+                    totalRow,
+                    lastColumn
+                ).Style.Alignment.Horizontal =
+                    XLAlignmentHorizontalValues.Center;
+
+                // Column widths.
+                ws.Column(firstColumn).Width = 20;
+
+                ws.Column(firstColumn + 1).Width = 20;
+
+                for (int i = 0; i < cycles.Count; i++)
+                {
+                    ws.Column(firstColumn + 2 + i).Width = 12;
+                }
+
+                ws.Column(grandTotalColumn).Width = 16;
+
+                currentRow += 3;
+            }
+
+            return currentRow;
+        }
+
         // ============================================================
         // PANEL HEADER
         // ============================================================
@@ -658,7 +1556,7 @@ namespace SmartMeterReadingDash.Services
 
         private static void WriteDashboardBanner( IXLWorksheet ws, int row, string title, XLColor background, XLColor fontColor)
         {
-            var range = ws.Range( row, 2, row, 13);
+            var range = ws.Range( row, 2, row, 15);
 
             range.Merge();
 
@@ -1243,7 +2141,7 @@ namespace SmartMeterReadingDash.Services
 
         private static void CreateBrplDownloadedSheet( XLWorkbook workbook,List<HesDownloadMeter> data)
         {
-            var ws = workbook.Worksheets.Add( "BRPL Downloaded");
+            var ws = workbook.Worksheets.Add( "HES Downloaded");
             ws.TabColor = Palette.Green;
             string[] headers =
             {
@@ -1379,7 +2277,7 @@ namespace SmartMeterReadingDash.Services
 
         private static void CreateBrplFailedSheet(XLWorkbook workbook, List<MeterDownloadDetailedSummary> data)
         {
-            var ws = workbook.Worksheets.Add("BRPL Failed");
+            var ws = workbook.Worksheets.Add("HES Failed");
 
             ws.TabColor = Palette.Red;
 
@@ -2141,11 +3039,6 @@ namespace SmartMeterReadingDash.Services
             ws.Row(1).Height =
                 22;
         }
-
-
-        // ============================================================
-        // SAFE TABLE NAME
-        // ============================================================
 
         private static string MakeSafeTableName(
             string value)

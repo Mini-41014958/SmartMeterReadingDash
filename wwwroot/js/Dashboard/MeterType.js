@@ -6,6 +6,7 @@
 // =============================================================
 
 function getApiUrl(endpoint) {
+
     const basePath = window.location.pathname
         .toLowerCase()
         .startsWith("/smartmeter/")
@@ -29,17 +30,20 @@ let byplMeterTypeChart = null;
 // =============================================================
 
 function getApiNumber(data, ...keys) {
+
     if (!data) {
         return 0;
     }
 
     for (const key of keys) {
+
         if (
             Object.prototype.hasOwnProperty.call(data, key) &&
             data[key] !== null &&
             data[key] !== undefined &&
             data[key] !== ""
         ) {
+
             const value = Number(data[key]);
 
             return Number.isFinite(value) ? value : 0;
@@ -55,6 +59,7 @@ function getApiNumber(data, ...keys) {
 // =============================================================
 
 function formatMeterNumber(value) {
+
     return Number(value || 0).toLocaleString("en-IN");
 }
 
@@ -64,19 +69,24 @@ function formatMeterNumber(value) {
 // =============================================================
 
 async function loadMeterSummary() {
+
     const month = getReadingMonth();
 
     if (!month) {
+
         console.warn("Reading month is not selected.");
+
         return;
     }
 
     try {
+
         // =====================================================
         // BRPL
         // =====================================================
 
         if (canAccessCompany("BRPL")) {
+
             const response = await fetch(
                 `${getApiUrl(
                     "DashboardApi/meter-type-wise-summary"
@@ -87,6 +97,7 @@ async function loadMeterSummary() {
             );
 
             if (!response.ok) {
+
                 throw new Error(
                     `Failed to load BRPL Meter Summary. Status: ${response.status}`
                 );
@@ -94,49 +105,69 @@ async function loadMeterSummary() {
 
             const brplData = await response.json();
 
-            // Allied
+            console.log("BRPL Meter Summary:", brplData);
+
+
+            // =================================================
+            // ALLIED
+            // =================================================
+
             $("#brplAllied1Ph").text(
                 formatMeterNumber(
                     getApiNumber(
                         brplData,
                         "allied_1PhCount",
-                        "Allied_1PhCount"
+                        "Allied_1PhCount",
+                        "ALLIED_1PH"
                     )
                 )
             );
+
 
             $("#brplAllied3Ph").text(
                 formatMeterNumber(
                     getApiNumber(
                         brplData,
                         "allied_3PhCount",
-                        "Allied_3PhCount"
+                        "Allied_3PhCount",
+                        "ALLIED_3PH"
                     )
                 )
             );
 
-            // Kimbal
+
+            // =================================================
+            // KIMBAL
+            // =================================================
+
             $("#brplKimbal1Ph").text(
                 formatMeterNumber(
                     getApiNumber(
                         brplData,
                         "kimbal_1PhCount",
-                        "Kimbal_1PhCount"
+                        "Kimbal_1PhCount",
+                        "KIMBAL_1PH"
                     )
                 )
             );
+
 
             $("#brplKimbal3Ph").text(
                 formatMeterNumber(
                     getApiNumber(
                         brplData,
                         "kimbal_3PhCount",
-                        "Kimbal_3PhCount"
+                        "Kimbal_3PhCount",
+                        "KIMBAL_3PH"
                     )
                 )
             );
 
-            // Secure: separate 3-phase count
+
+            // =================================================
+            // SECURE: 3-PHASE
+            // =================================================
+
             $("#brplSecure3Ph").text(
                 formatMeterNumber(
                     getApiNumber(
@@ -144,23 +175,53 @@ async function loadMeterSummary() {
                         "secure_3PhCount",
                         "Secure_3PhCount",
                         "secure3PhCount",
-                        "Secure3PhCount"
+                        "Secure3PhCount",
+                        "SECURE_3PH"
                     )
                 )
             );
 
-            // Total meters
+
+            // =================================================
+            // GENUS: 3-PHASE
+            // =================================================
+
+            $("#brplGenus3Ph").text(
+                formatMeterNumber(
+                    getApiNumber(
+                        brplData,
+                        "genus_3PhCount",
+                        "Genus_3PhCount",
+                        "genus_3PHCount",
+                        "Genus_3PHCount",
+                        "genus3PhCount",
+                        "Genus3PhCount",
+                        "GENUS_3PH"
+                    )
+                )
+            );
+
+
+            // =================================================
+            // TOTAL METERS
+            // =================================================
+
             $("#brplTotalMeter").text(
                 formatMeterNumber(
                     getApiNumber(
                         brplData,
                         "totalMeter",
-                        "TotalMeter"
+                        "TotalMeter",
+                        "TOTALMETERS"
                     )
                 )
             );
 
-            // BRPL chart
+
+            // =================================================
+            // BRPL CHART
+            // =================================================
+
             drawMeterTypeChart(
                 brplData,
                 "brplMeterTypeChart",
@@ -174,6 +235,7 @@ async function loadMeterSummary() {
         // =====================================================
 
         if (canAccessCompany("BYPL")) {
+
             const response = await fetch(
                 `${getApiUrl(
                     "DashboardApi/meter-type-wise-summary-bypl"
@@ -184,6 +246,7 @@ async function loadMeterSummary() {
             );
 
             if (!response.ok) {
+
                 throw new Error(
                     `Failed to load BYPL Meter Summary. Status: ${response.status}`
                 );
@@ -191,49 +254,69 @@ async function loadMeterSummary() {
 
             const byplData = await response.json();
 
-            // Allied
+            console.log("BYPL Meter Summary:", byplData);
+
+
+            // =================================================
+            // ALLIED
+            // =================================================
+
             $("#byplAllied1Ph").text(
                 formatMeterNumber(
                     getApiNumber(
                         byplData,
                         "allied_1PhCount",
-                        "Allied_1PhCount"
+                        "Allied_1PhCount",
+                        "ALLIED_1PH"
                     )
                 )
             );
+
 
             $("#byplAllied3Ph").text(
                 formatMeterNumber(
                     getApiNumber(
                         byplData,
                         "allied_3PhCount",
-                        "Allied_3PhCount"
+                        "Allied_3PhCount",
+                        "ALLIED_3PH"
                     )
                 )
             );
 
-            // Kimbal
+
+            // =================================================
+            // KIMBAL
+            // =================================================
+
             $("#byplKimbal1Ph").text(
                 formatMeterNumber(
                     getApiNumber(
                         byplData,
                         "kimbal_1PhCount",
-                        "Kimbal_1PhCount"
+                        "Kimbal_1PhCount",
+                        "KIMBAL_1PH"
                     )
                 )
             );
+
 
             $("#byplKimbal3Ph").text(
                 formatMeterNumber(
                     getApiNumber(
                         byplData,
                         "kimbal_3PhCount",
-                        "Kimbal_3PhCount"
+                        "Kimbal_3PhCount",
+                        "KIMBAL_3PH"
                     )
                 )
             );
 
-            // Secure
+
+            // =================================================
+            // SECURE: 3-PHASE
+            // =================================================
+
             $("#byplSecure3Ph").text(
                 formatMeterNumber(
                     getApiNumber(
@@ -241,30 +324,62 @@ async function loadMeterSummary() {
                         "secure_3PhCount",
                         "Secure_3PhCount",
                         "secure3PhCount",
-                        "Secure3PhCount"
+                        "Secure3PhCount",
+                        "SECURE_3PH"
                     )
                 )
             );
 
-            // Total meters
+
+            // =================================================
+            // GENUS: 3-PHASE
+            // =================================================
+
+            $("#byplGenus3Ph").text(
+                formatMeterNumber(
+                    getApiNumber(
+                        byplData,
+                        "genus_3PhCount",
+                        "Genus_3PhCount",
+                        "genus_3PHCount",
+                        "Genus_3PHCount",
+                        "genus3PhCount",
+                        "Genus3PhCount",
+                        "GENUS_3PH"
+                    )
+                )
+            );
+
+
+            // =================================================
+            // TOTAL METERS
+            // =================================================
+
             $("#byplTotalMeter").text(
                 formatMeterNumber(
                     getApiNumber(
                         byplData,
                         "totalMeter",
-                        "TotalMeter"
+                        "TotalMeter",
+                        "TOTALMETERS"
                     )
                 )
             );
 
-            // BYPL chart
+
+            // =================================================
+            // BYPL CHART
+            // =================================================
+
             drawMeterTypeChart(
                 byplData,
                 "byplMeterTypeChart",
                 "BYPL"
             );
         }
+
     } catch (error) {
+
         console.error("Meter Summary Error:", error);
     }
 }
@@ -272,30 +387,39 @@ async function loadMeterSummary() {
 
 // =============================================================
 // METER TYPE PIE CHART
-// Allied + Kimbal + Secure
+// Allied + Kimbal + Secure + Genus
 // =============================================================
 
 function drawMeterTypeChart(data, canvasId, company) {
+
     const canvas = document.getElementById(canvasId);
 
     if (!canvas) {
+
         console.error(`Canvas not found: ${canvasId}`);
+
         return;
     }
+
 
     // =========================================================
     // DESTROY EXISTING CHART
     // =========================================================
 
     if (company === "BRPL" && brplMeterTypeChart) {
+
         brplMeterTypeChart.destroy();
+
         brplMeterTypeChart = null;
     }
 
     if (company === "BYPL" && byplMeterTypeChart) {
+
         byplMeterTypeChart.destroy();
+
         byplMeterTypeChart = null;
     }
+
 
     // =========================================================
     // VENDOR COUNTS
@@ -304,23 +428,45 @@ function drawMeterTypeChart(data, canvasId, company) {
     const allied = getApiNumber(
         data,
         "alliedCount",
-        "AlliedCount"
+        "AlliedCount",
+        "ALLIEDCOUNT"
     );
+
 
     const kimbal = getApiNumber(
         data,
         "kimbalCount",
-        "KimbalCount"
+        "KimbalCount",
+        "KIMBALCOUNT"
     );
+
 
     const secure = getApiNumber(
         data,
         "secureCount",
-        "SecureCount"
+        "SecureCount",
+        "SECURECOUNT"
     );
 
-    // Pie percentages are calculated from all three vendors.
-    const total = allied + kimbal + secure;
+
+    // =========================================================
+    // GENUS COUNT
+    // =========================================================
+
+    const genus = getApiNumber(
+        data,
+        "genusCount",
+        "GenusCount",
+        "GENUSCOUNT"
+    );
+
+
+    // =========================================================
+    // TOTAL FOR PERCENTAGE CALCULATION
+    // =========================================================
+
+    const total = allied + kimbal + secure + genus;
+
 
     // =========================================================
     // COLORS
@@ -334,83 +480,133 @@ function drawMeterTypeChart(data, canvasId, company) {
 
     const secureColor = "#F59E0B";
 
+    const genusColor = "#EF4444";
+
+
     // =========================================================
     // CREATE PIE CHART
     // =========================================================
 
     const chart = new Chart(canvas, {
+
         type: "pie",
 
         data: {
+
             labels: [
                 "Allied",
                 "Kimbal",
-                "Secure"
+                "Secure",
+                "Genus"
             ],
 
             datasets: [
                 {
+
                     data: [
                         allied,
                         kimbal,
-                        secure
+                        secure,
+                        genus
                     ],
 
                     backgroundColor: [
                         alliedColor,
                         kimbalColor,
-                        secureColor
+                        secureColor,
+                        genusColor
                     ],
 
                     borderColor: "#ffffff",
+
                     borderWidth: 2,
+
                     hoverOffset: 6
                 }
             ]
         },
 
+
+        // =====================================================
+        // CHART OPTIONS
+        // =====================================================
+
         options: {
+
             responsive: true,
+
             maintainAspectRatio: false,
 
+
             animation: {
+
                 animateRotate: true,
+
                 animateScale: true,
+
                 duration: 700
             },
 
+
             plugins: {
+
+                // =================================================
+                // LEGEND
+                // =================================================
+
                 legend: {
+
                     position: "bottom",
 
                     labels: {
+
                         usePointStyle: true,
+
                         pointStyle: "circle",
+
                         padding: 6,
+
                         boxWidth: 8,
+
                         boxHeight: 8,
 
                         font: {
+
                             size: 9,
+
                             weight: "600"
                         }
                     }
                 },
 
+
+                // =================================================
+                // TOOLTIP
+                // =================================================
+
                 tooltip: {
+
                     backgroundColor: "rgba(33, 37, 41, 0.95)",
+
                     padding: 8,
+
                     cornerRadius: 6,
 
+
                     callbacks: {
+
                         label: function (context) {
+
                             const value = Number(
                                 context.raw || 0
                             );
 
                             const percentage = total > 0
+
                                 ? ((value / total) * 100).toFixed(1)
+
                                 : "0.0";
+
 
                             return (
                                 `${context.label}: ` +
@@ -424,13 +620,17 @@ function drawMeterTypeChart(data, canvasId, company) {
         }
     });
 
+
     // =========================================================
     // SAVE CHART INSTANCE
     // =========================================================
 
     if (company === "BRPL") {
+
         brplMeterTypeChart = chart;
+
     } else if (company === "BYPL") {
+
         byplMeterTypeChart = chart;
     }
 }
